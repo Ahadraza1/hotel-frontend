@@ -1,0 +1,558 @@
+/* ===========================================================
+   Rooms Page  (rm-*)
+   Add Room Page  (ar-*)
+   Self-contained — imported via index.css.
+   IMPORTANT: Do NOT delete. All Rooms page styles live here.
+   =========================================================== */
+
+/* ============================================================
+   Add Room Page (ar-*)
+   ============================================================ */
+
+.ar-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+/* Back button */
+.ar-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.ar-back-btn:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+/* Two-column form layout */
+.ar-form-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.ar-form-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Section card header */
+.ar-section {
+  padding: 1.5rem !important;
+}
+
+.ar-section-header {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+}
+
+.ar-section-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.ar-section-sub {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.2rem;
+}
+
+/* 2-column field grid */
+.ar-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.125rem;
+}
+
+.ar-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ar-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ar-required {
+  color: hsl(var(--danger));
+  margin-left: 0.125rem;
+}
+
+.ar-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+/* ── Side summary card ── */
+.ar-form-side {
+  position: sticky;
+  top: 6rem;                   /* below the 4.5rem sticky topbar */
+}
+
+.ar-summary-card {
+  padding: 1.375rem !important;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ar-summary-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+  margin: 0;
+}
+
+.ar-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.ar-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ar-summary-price-row {
+  padding-top: 0.5rem;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+  margin-top: 0.25rem;
+}
+
+.ar-summary-key {
+  font-size: 0.73rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+.ar-summary-val {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  text-align: right;
+}
+
+.ar-summary-price {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: hsl(var(--grandeur-gold));
+  font-family: var(--font-display);
+}
+
+.ar-empty {
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+}
+
+/* Submit + cancel buttons */
+.ar-submit-btn {
+  width: 100%;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.ar-cancel-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.ar-btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  display: inline-block;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .ar-form-layout { grid-template-columns: 1fr; }
+  .ar-form-side   { position: static; }
+}
+
+@media (max-width: 540px) {
+  .ar-grid-2 { grid-template-columns: 1fr; }
+}
+
+
+/* ── Page root ── */
+.rm-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Page header row ── */
+.rm-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rm-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.rm-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.rm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+/* ── Status KPI summary cards ── */
+.rm-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.875rem;
+}
+
+.rm-kpi-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: 12px;
+  padding: 1.125rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: default;
+}
+.rm-kpi-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  transform: translateY(-1px);
+}
+
+.rm-kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.rm-kpi-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+/* KPI colour variants */
+.rm-kpi-green  { color: hsl(var(--premium-green)); }
+.rm-kpi-gold   { color: hsl(var(--grandeur-gold)); }
+.rm-kpi-danger { color: hsl(var(--danger)); }
+.rm-kpi-muted  { color: hsl(var(--muted-foreground)); }
+
+/* ── Table card ── */
+.rm-table-card {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.rm-table-scroll {
+  overflow-x: auto;
+}
+.rm-table-scroll::-webkit-scrollbar       { height: 5px; }
+.rm-table-scroll::-webkit-scrollbar-track { background: transparent; }
+.rm-table-scroll::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+
+.rm-th-actions { text-align: right; }
+.rm-td-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  padding-right: 0.75rem;
+}
+
+.rm-cell-bold {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.rm-type-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: hsl(var(--muted) / 0.7);
+  border: 1px solid hsl(var(--border) / 0.7);
+  color: hsl(var(--foreground));
+}
+
+.rm-status-select {
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  height: auto !important;
+  min-width: 8rem;
+}
+
+.rm-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 7px;
+  border: 1px solid hsl(var(--border) / 0.7);
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.rm-icon-btn:hover {
+  background: hsl(var(--muted) / 0.7);
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+.rm-icon-btn-danger { color: hsl(var(--danger)); border-color: hsl(var(--danger) / 0.3); }
+.rm-icon-btn-danger:hover {
+  background: hsl(var(--danger) / 0.08);
+  border-color: hsl(var(--danger) / 0.45);
+  color: hsl(var(--danger));
+}
+
+/* ===========================================================
+   Modal overlay + card
+   position:fixed — works without Tailwind
+   =========================================================== */
+
+.rm-overlay {
+  position: fixed;
+  inset: 0;
+  /*
+   * z-index: 100000 — must beat:
+   *   - app-header sticky  z-index: 1000
+   *   - sidebar            z-index: 1100
+   *   - header backdrop-filter stacking context (browser quirk that can
+   *     elevate sticky+backdrop-filter elements above fixed children)
+   */
+  z-index: 100000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  /* 5rem top = 4.5rem header height + 0.5rem breathing room */
+  padding: 5rem 1rem 1rem;
+  background: rgba(0, 0, 0, 0.52);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: rm-fade-in 0.2s ease;
+  overflow-y: auto;
+}
+
+@keyframes rm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Modal card */
+.rm-modal {
+  width: 100%;
+  max-width: 36rem;
+  background: hsl(var(--card));
+  border-radius: 18px;
+  border: 1px solid hsl(var(--border) / 0.8);
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.22),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: rm-slide-up 0.28s cubic-bezier(0.34, 1.46, 0.64, 1);
+  max-height: calc(100vh - 6rem);
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes rm-slide-up {
+  from { transform: translateY(16px) scale(0.98); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+/* ── Header band with gold accent ── */
+.rm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.375rem 1.5rem;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--grandeur-gold) / 0.12) 0%,
+    hsl(var(--grandeur-gold) / 0.04) 60%,
+    transparent 100%
+  );
+  border-bottom: 1px solid hsl(var(--grandeur-gold) / 0.2);
+  border-left: 3px solid hsl(var(--grandeur-gold));
+  flex-shrink: 0;
+}
+
+.rm-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Gold icon badge — NO margin-bottom */
+.rm-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--grandeur-gold) / 0.18) 0%,
+    hsl(var(--grandeur-gold) / 0.08) 100%
+  );
+  border: 1px solid hsl(var(--grandeur-gold) / 0.3);
+  color: hsl(var(--grandeur-gold));
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px hsl(var(--grandeur-gold) / 0.15);
+}
+
+.rm-modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.rm-modal-subtitle {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.2rem;
+}
+
+.rm-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 9px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.2s;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.rm-close-btn:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  transform: rotate(90deg);
+}
+
+/* ── Modal body ── */
+.rm-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 2-column form grid */
+.rm-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.125rem;
+  margin-bottom: 1.5rem;
+}
+
+.rm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rm-field-full { grid-column: 1 / -1; }
+
+.rm-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.rm-save-btn {
+  width: 100%;
+  justify-content: center;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .rm-page-header { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
+  .rm-header-actions { width: 100%; flex-wrap: wrap; }
+  .rm-add-btn, .rm-header-actions > button { flex: 1; justify-content: center; }
+}
+
+@media (max-width: 640px) {
+  .rm-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 500px) {
+  .rm-form-grid    { grid-template-columns: 1fr; }
+  .rm-field-full   { grid-column: auto; }
+  .rm-modal        { border-radius: 14px; }
+  .rm-modal-header { padding: 1rem 1.125rem; }
+  .rm-modal-body   { padding: 1.125rem; }
+}

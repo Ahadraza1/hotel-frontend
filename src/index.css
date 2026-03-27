@@ -1,0 +1,27 @@
+/* Global CSS Import Layer */
+
+@import './styles/base.css';
+@import './styles/layout.css';
+@import './styles/components.css';
+@import './styles/forms.css';
+@import './styles/tables.css';
+@import './styles/sidebar.css';
+@import './styles/header.css';
+@import './styles/responsive.css';
+@import './styles/auth-signup.css';
+@import './styles/security-audit.css';
+@import './styles/rooms.css';
+@import './styles/bookings.css';
+@import './styles/housekeeping.css';
+@import './styles/inventory.css';
+@import './styles/hr.css';
+@import './styles/crm.css';
+@import './styles/pos.css';
+@import './styles/kitchen.css';
+
+/* Any lingering project-specific global styles can go here */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}

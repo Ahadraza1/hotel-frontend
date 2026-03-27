@@ -1,0 +1,126 @@
+/* Professional Responsive Grid System */
+
+/* Mobile (Default) */
+.grid {
+  display: grid;
+  width: 100%;
+}
+
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+
+/* Small Devices (sm: 640px) */
+@media (min-width: 640px) {
+  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  
+  /* Flex Utilities */
+  .sm\:flex { display: flex; }
+  .sm\:flex-row { flex-direction: row; }
+  .sm\:flex-col { flex-direction: column; }
+  .sm\:items-center { align-items: center; }
+  .sm\:justify-between { justify-content: space-between; }
+  .sm\:gap-4 { gap: 1rem; }
+  
+  /* Sizing */
+  .sm\:w-auto { width: auto; }
+  .sm\:flex-1 { flex: 1; }
+  
+  /* Display */
+  .sm\:block { display: block; }
+  .sm\:inline { display: inline; }
+  .sm\:hidden { display: none; }
+}
+
+/* Tablet Devices (md: 768px) */
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  
+  /* Flex Utilities */
+  .md\:flex-row { flex-direction: row; }
+  .md\:flex-col { flex-direction: column; }
+  .md\:items-center { align-items: center; }
+  
+  /* Sizing */
+  .md\:w-auto { width: auto; }
+  .md\:w-\[10rem\] { width: 10rem; }
+  .md\:w-1\/3 { width: 33.333333%; }
+  .md\:w-1\/4 { width: 25%; }
+  
+  /* Display */
+  .md\:block { display: block; }
+  .md\:table-cell { display: table-cell; }
+  .md\:hidden { display: none; }
+}
+
+/* Tablet & Smaller */
+@media (max-width: 1024px) {
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Laptop Devices (lg: 1024px) */
+@media (min-width: 1024px) {
+  .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  
+  /* Display */
+  .lg\:table-cell { display: table-cell; }
+  .lg\:hidden { display: none; }
+  .lg\:block { display: block; }
+}
+
+/* Desktop Devices (xl: 1280px) */
+@media (min-width: 1280px) {
+  .xl\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+/* Grid Spans */
+.col-span-1 { grid-column: span 1 / span 1; }
+.col-span-2 { grid-column: span 2 / span 2; }
+
+@media (min-width: 768px) {
+  .md\:col-span-2 { grid-column: span 2 / span 2; }
+}
+
+@media (min-width: 1024px) {
+  .lg\:col-span-2 { grid-column: span 2 / span 2; }
+}
+
+/* Specific Tablet Adjustments for Dashboard Card Content */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .main {
+    padding: 1.5rem;
+  }
+  
+  .kpi-card {
+    padding: 1rem;
+  }
+  
+  .kpi-value {
+    font-size: 1.5rem;
+  }
+}
+
+/* Mobile Header Tweak */
+@media (max-width: 767px) {
+  .main {
+    padding: 1rem;
+  }
+  
+  .luxury-btn-outline {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.7rem;
+  }
+  
+  .workspace-badge {
+    display: none; /* Hide workspace text badge on small mobile to save header space */
+  }
+}
+
+/* Utility visibility classes */
+.hidden { display: none; }
+@media (min-width: 768px) {
+  .md\:block { display: block; }
+  .md\:hidden { display: none; }
+}

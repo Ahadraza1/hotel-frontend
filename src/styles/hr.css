@@ -1,0 +1,479 @@
+/* ===========================================================
+   HR Page  (hr-*)
+   Add Staff Page  (as-*)
+   Self-contained — imported via index.css.
+   =========================================================== */
+
+/* ── Page root ── */
+.hr-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.hr-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* ── Invite Section ── */
+.hr-invite-card {
+  margin-top: 1.25rem;
+  padding: 1.5rem !important;
+  position: relative;
+}
+
+.hr-invite-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.hr-invite-close:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.hr-invite-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  margin-bottom: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0;
+}
+
+.hr-invite-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.125rem;
+  margin-bottom: 1.5rem;
+}
+
+.hr-invite-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 140px;
+}
+
+.hr-invite-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hr-invite-divider {
+  border: none;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+  margin-bottom: 1.25rem;
+}
+
+.hr-invite-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hr-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.hr-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Status KPI summary cards ── */
+.hr-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.875rem;
+}
+
+.hr-kpi-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: 12px;
+  padding: 1.125rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: default;
+}
+
+.hr-kpi-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  transform: translateY(-1px);
+}
+
+.hr-kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.hr-kpi-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.hr-kpi-danger { color: hsl(var(--danger)); }
+.hr-kpi-gold { color: hsl(var(--grandeur-gold)); }
+.hr-kpi-green { color: hsl(var(--premium-green)); }
+.hr-kpi-info { color: hsl(var(--foreground)); }
+
+/* ── Tables ── */
+.hr-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.hr-section-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.hr-table-card {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.hr-table-scroll {
+  overflow-x: auto;
+}
+.hr-table-scroll::-webkit-scrollbar       { height: 5px; }
+.hr-table-scroll::-webkit-scrollbar-track { background: transparent; }
+.hr-table-scroll::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+
+.hr-cell-bold { font-weight: 600; color: hsl(var(--foreground)); }
+
+.hr-th-actions { text-align: right; }
+.hr-td-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  padding-right: 0.75rem;
+}
+
+/* ── Specific Button styles ── */
+.hr-generate-btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  transition: all 0.2s;
+}
+.hr-generate-btn:hover {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--border) / 0.8);
+}
+
+.hr-pay-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: hsl(var(--premium-green) / 0.1);
+  color: hsl(var(--premium-green));
+  border: 1px solid hsl(var(--premium-green) / 0.3);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.hr-pay-btn:hover {
+  background: hsl(var(--premium-green) / 0.15);
+  border-color: hsl(var(--premium-green) / 0.5);
+}
+
+.hr-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 7px;
+  border: 1px solid hsl(var(--border) / 0.7);
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.hr-icon-btn:hover {
+  background: hsl(var(--muted) / 0.7);
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+
+.hr-icon-btn-success { color: hsl(var(--premium-green)); border-color: hsl(var(--premium-green) / 0.3); }
+.hr-icon-btn-success:hover {
+  background: hsl(var(--premium-green) / 0.08);
+  border-color: hsl(var(--premium-green) / 0.45);
+  color: hsl(var(--premium-green));
+}
+
+.hr-icon-btn-danger { color: hsl(var(--danger)); border-color: hsl(var(--danger) / 0.3); }
+.hr-icon-btn-danger:hover {
+  background: hsl(var(--danger) / 0.08);
+  border-color: hsl(var(--danger) / 0.45);
+  color: hsl(var(--danger));
+}
+
+/* Loading */
+.hr-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 4rem 2rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .hr-page-header { flex-direction: column; align-items: flex-start; }
+  .hr-add-btn     { align-self: flex-start; }
+}
+@media (max-width: 640px) {
+  .hr-kpi-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ============================================================
+   Add Staff Page (as-*)
+   ============================================================ */
+
+.as-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.as-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+/* Back button */
+.as-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.as-back-btn:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+/* Two-column form layout */
+.as-form-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.as-form-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Section card header */
+.as-section {
+  padding: 1.5rem !important;
+}
+
+.as-section-header {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+}
+
+.as-section-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.as-section-sub {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.2rem;
+}
+
+/* 2-column field grid */
+.as-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.125rem;
+}
+
+.as-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.as-field-full {
+  grid-column: 1 / -1;
+}
+
+.as-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.as-required {
+  color: hsl(var(--danger));
+  margin-left: 0.125rem;
+}
+
+/* ── Side summary card ── */
+.as-form-side {
+  position: sticky;
+  top: 6rem;
+}
+
+.as-summary-card {
+  padding: 1.375rem !important;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.as-summary-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+  margin: 0;
+}
+
+.as-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.as-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.as-summary-key {
+  font-size: 0.73rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+.as-summary-val {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  text-align: right;
+}
+
+.as-summary-salary {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: hsl(var(--grandeur-gold));
+  font-family: var(--font-display);
+  padding-top: 0.5rem;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+  margin-top: 0.25rem;
+}
+
+.as-empty {
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+}
+
+/* Submit + cancel buttons */
+.as-submit-btn {
+  width: 100%;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.as-cancel-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.as-btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  display: inline-block;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .as-form-layout { grid-template-columns: 1fr; }
+  .as-form-side   { position: static; }
+}
+@media (max-width: 540px) {
+  .as-grid-2 { grid-template-columns: 1fr; }
+}

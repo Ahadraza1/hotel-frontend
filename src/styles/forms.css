@@ -1,0 +1,112 @@
+/* Form Elements Styles */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.luxury-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  color: hsl(var(--foreground));
+}
+
+.luxury-input {
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--input));
+  background-color: hsl(var(--background));
+  padding: 0.5rem 0.75rem;
+  min-height: 2.75rem;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.luxury-input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.luxury-input:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 1px hsl(var(--ring));
+}
+
+.luxury-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.luxury-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.luxury-select {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.luxury-checkbox {
+  height: 1rem;
+  width: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid hsl(var(--primary));
+  accent-color: hsl(var(--primary));
+}
+
+/* Search Wrapper Utilities */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  height: 1rem;
+  width: 1rem;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 2.25rem;
+  width: 100%;
+}
+
+@media (max-width: 1023px) {
+  .form-group {
+    margin-bottom: 0.875rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .luxury-label {
+    font-size: 0.8125rem;
+  }
+
+  .luxury-input,
+  .luxury-select,
+  textarea.luxury-input,
+  .luxury-textarea {
+    min-height: 3rem;
+    padding: 0.65rem 0.875rem;
+    font-size: 0.9375rem;
+  }
+
+  .search-wrapper {
+    width: 100%;
+  }
+}

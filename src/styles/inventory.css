@@ -1,0 +1,481 @@
+/* ===========================================================
+   Inventory Page  (inv-*)
+   Create Purchase Order Page  (cpo-*)
+   Self-contained — imported via index.css.
+   =========================================================== */
+
+/* ── Page root ── */
+.inv-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Page header row ── */
+.inv-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.inv-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.inv-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Status KPI summary cards ── */
+.inv-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.875rem;
+}
+
+.inv-kpi-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.7);
+  border-radius: 12px;
+  padding: 1.125rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: default;
+}
+
+.inv-kpi-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  transform: translateY(-1px);
+}
+
+.inv-kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.inv-kpi-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.inv-kpi-danger { color: hsl(var(--danger)); }
+.inv-kpi-gold { color: hsl(var(--grandeur-gold)); }
+.inv-kpi-green { color: hsl(var(--premium-green)); }
+.inv-kpi-info { color: hsl(var(--foreground)); }
+
+/* ── Low Stock Alert Panel ── */
+.inv-alert-panel {
+  background: hsl(var(--danger) / 0.06);
+  border: 1px solid hsl(var(--danger) / 0.2);
+  border-radius: 12px;
+  padding: 1.125rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.inv-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: hsl(var(--danger));
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.inv-alert-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.inv-alert-item {
+  background: hsl(var(--danger) / 0.1);
+  color: hsl(var(--danger));
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+
+/* ── Toolbar (search + filter) ── */
+.inv-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.inv-search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 22rem;
+}
+
+.inv-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.inv-search-input {
+  width: 100%;
+  padding: 0.45rem 0.875rem 0.45rem 2.1rem;
+  font-size: 0.8125rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.inv-search-input::placeholder { color: hsl(var(--muted-foreground)); }
+.inv-search-input:focus {
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+}
+
+.inv-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.875rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.inv-filter-btn:hover {
+  background: hsl(var(--muted) / 0.6);
+  border-color: hsl(var(--border) / 0.9);
+}
+
+/* ── Table card ── */
+.inv-table-card {
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100vh - 22rem);
+  min-height: 12rem;
+}
+
+.inv-table-scroll {
+  overflow-y: auto;
+  overflow-x: auto;
+  flex: 1;
+}
+.inv-table-scroll::-webkit-scrollbar       { height: 5px; width: 5px; }
+.inv-table-scroll::-webkit-scrollbar-track { background: transparent; }
+.inv-table-scroll::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+
+/* Sticky header cells */
+.inv-table-card .luxury-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: hsl(var(--card));
+  box-shadow: 0 1px 0 0 hsl(var(--border));
+}
+
+/* Row hover should not bleed over sticky header */
+.inv-table-card .luxury-table tbody tr:hover td {
+  background-color: hsl(var(--secondary) / 0.5);
+}
+
+.inv-cell-bold { font-weight: 600; color: hsl(var(--foreground)); }
+
+.inv-cell-id {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: hsl(var(--grandeur-gold));
+  letter-spacing: 0.02em;
+}
+
+.inv-stock-value {
+  font-weight: 600;
+}
+.inv-stock-low { color: hsl(var(--danger)); }
+.inv-stock-ok { color: hsl(var(--premium-green)); }
+
+.inv-th-actions { text-align: right; }
+
+.inv-td-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  padding-right: 0.75rem;
+}
+
+.inv-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 7px;
+  border: 1px solid hsl(var(--border) / 0.7);
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.inv-icon-btn:hover {
+  background: hsl(var(--muted) / 0.7);
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+
+/* Loading */
+.inv-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 4rem 2rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .inv-page-header { flex-direction: column; align-items: flex-start; }
+  .inv-add-btn     { align-self: flex-start; }
+}
+
+@media (max-width: 640px) {
+  .inv-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ============================================================
+   Create Purchase Order Page (cpo-*)
+   ============================================================ */
+
+.cpo-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cpo-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+/* Back button */
+.cpo-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.cpo-back-btn:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+/* Two-column form layout */
+.cpo-form-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.cpo-form-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Section card header */
+.cpo-section {
+  padding: 1.5rem !important;
+}
+
+.cpo-section-header {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+}
+
+.cpo-section-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.cpo-section-sub {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.2rem;
+}
+
+/* 2-column field grid */
+.cpo-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.125rem;
+}
+
+.cpo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cpo-field-full {
+  grid-column: 1 / -1;
+}
+
+.cpo-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cpo-required {
+  color: hsl(var(--danger));
+  margin-left: 0.125rem;
+}
+
+/* ── Side summary card ── */
+.cpo-form-side {
+  position: sticky;
+  top: 6rem;
+}
+
+.cpo-summary-card {
+  padding: 1.375rem !important;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cpo-summary-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+  margin: 0;
+}
+
+.cpo-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.cpo-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cpo-summary-price-row {
+  padding-top: 0.5rem;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+  margin-top: 0.25rem;
+}
+
+.cpo-summary-key {
+  font-size: 0.73rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+.cpo-summary-val {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  text-align: right;
+}
+
+.cpo-summary-total {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: hsl(var(--grandeur-gold));
+  font-family: var(--font-display);
+}
+
+.cpo-empty {
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+}
+
+/* Submit + cancel buttons */
+.cpo-submit-btn {
+  width: 100%;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.cpo-cancel-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.cpo-btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  display: inline-block;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .cpo-form-layout { grid-template-columns: 1fr; }
+  .cpo-form-side   { position: static; }
+}
+
+@media (max-width: 540px) {
+  .cpo-grid-2 { grid-template-columns: 1fr; }
+}

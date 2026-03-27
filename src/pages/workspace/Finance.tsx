@@ -1,0 +1,525 @@
+import { useEffect, useState } from "react";
+import api from "@/api/axios";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSystemSettings } from "@/contexts/SystemSettingsContext";
+import { useModulePermissions } from "@/hooks/useModulePermissions";
+import { DollarSign, ArrowLeft, CreditCard, History } from "lucide-react";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+const viewInvoice = async (invoiceId: string) => {
+  const res = await api.get(`/invoices/${invoiceId}/pdf`, {
+    responseType: "blob",
+  });
+
+  const file = new Blob([res.data], { type: "application/pdf" });
+
+  const fileURL = URL.createObjectURL(file);
+
+  window.open(fileURL);
+};
+
+const downloadInvoice = async (invoiceId: string) => {
+  const res = await api.get(`/invoices/${invoiceId}/pdf?download=true`, {
+    responseType: "blob",
+  });
+
+  const url = window.URL.createObjectURL(new Blob([res.data]));
+
+  const link = document.createElement("a");
+
+  link.href = url;
+
+  link.setAttribute("download", `invoice-${invoiceId}.pdf`);
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+};
+
+interface Invoice {
+  _id: string;
+  invoiceId: string;
+  type: "ROOM" | "RESTAURANT";
+
+  bookingId?: string | null;
+
+  totalAmount: number;
+  taxAmount: number;
+  finalAmount: number;
+  paidAmount: number;
+  dueAmount: number;
+  status: string;
+
+  paymentHistory: {
+    amount: number;
+    method: string;
+    paidAt: string;
+  }[];
+}
+
+const statusBadge: Record<string, string> = {
+  UNPAID: "badge-danger",
+  PARTIALLY_PAID: "badge-warning",
+  PAID: "badge-success",
+};
+
+const Finance = () => {
+  const { user } = useAuth();
+  const { formatCurrency, currencySymbol } = useSystemSettings();
+  const { canAccess, canUpdate } = useModulePermissions("FINANCE");
+  if (user && !canAccess) {
+    window.location.href = "/unauthorized";
+  }
+  const canRecordPayment = canUpdate;
+
+  const [roomInvoices, setRoomInvoices] = useState<Invoice[]>([]);
+  const [restaurantInvoices, setRestaurantInvoices] = useState<Invoice[]>([]);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("CASH");
+
+  const fetchInvoices = async () => {
+    const [roomRes, restaurantRes] = await Promise.all([
+      api.get<{ data: Invoice[] }>("/invoices", {
+        params: { type: "ROOM" },
+      }),
+      api.get<{ data: Invoice[] }>("/invoices", {
+        params: { type: "RESTAURANT" },
+      }),
+    ]);
+
+    setRoomInvoices(roomRes.data.data || []);
+    setRestaurantInvoices(restaurantRes.data.data || []);
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const handleRecordPayment = async () => {
+    if (!selectedInvoice) return;
+
+    await api.patch(`/invoices/${selectedInvoice.invoiceId}/payment`, {
+      amount: Number(paymentAmount),
+      method: paymentMethod,
+    });
+
+    setSelectedInvoice(null);
+    setPaymentAmount("");
+    setPaymentMethod("CASH");
+
+    await fetchInvoices();
+  };
+
+  /* ── Pagination ── */
+  const [roomCurrentPage, setRoomCurrentPage] = useState(1);
+  const [restaurantCurrentPage, setRestaurantCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  const roomTotalPages = Math.ceil(roomInvoices.length / itemsPerPage);
+  const restaurantTotalPages = Math.ceil(restaurantInvoices.length / itemsPerPage);
+
+  const paginatedRoomInvoices = roomInvoices.slice(
+    (roomCurrentPage - 1) * itemsPerPage,
+    roomCurrentPage * itemsPerPage,
+  );
+
+  const paginatedPOSInvoices = restaurantInvoices.slice(
+    (restaurantCurrentPage - 1) * itemsPerPage,
+    restaurantCurrentPage * itemsPerPage,
+  );
+
+  return (
+    <div className="flex-col-gap-6 animate-fade-in">
+      {!selectedInvoice ? (
+        <>
+          <div className="add-branch-header" style={{ marginBottom: 0 }}>
+            <div className="flex items-center gap-4">
+              <div className="add-branch-header-icon-wrap">
+                <DollarSign className="add-branch-header-icon" />
+              </div>
+              <div>
+                <h1 className="page-title">Finance & Invoices</h1>
+                <p className="page-subtitle">
+                  Track and record payments for the branch
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="luxury-card finance-table-card">
+            <div className="finance-table-scroll">
+              <table className="luxury-table min-w-[700px]">
+                <thead>
+                  <tr>
+                    <th className="col-serial">#</th>
+                    <th>Invoice ID</th>
+                    <th>Total</th>
+                    <th>Tax</th>
+                    <th>Final</th>
+                    <th>Paid</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th className="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedRoomInvoices.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={9}
+                        className="text-center py-6 text-muted-foreground"
+                      >
+                        No invoices found.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedRoomInvoices.map((inv, i) => (
+                      <tr key={inv._id}>
+                        <td className="col-serial">
+                          {(roomCurrentPage - 1) * itemsPerPage + i + 1}
+                        </td>
+                        <td className="font-mono text-xs">{inv.invoiceId}</td>
+                        <td className="font-medium">
+                          {formatCurrency(inv.totalAmount)}
+                        </td>
+                        <td className="text-muted-foreground">
+                          {formatCurrency(inv.taxAmount)}
+                        </td>
+                        <td className="font-semibold">
+                          {formatCurrency(inv.finalAmount)}
+                        </td>
+                        <td>
+                          {formatCurrency(inv.paidAmount)}
+                        </td>
+                        <td>
+                          {formatCurrency(inv.dueAmount)}
+                        </td>
+                        <td>
+                          <span
+                            className={`luxury-badge ${statusBadge[inv.status]}`}
+                          >
+                            {inv.status}
+                          </span>
+                        </td>
+                        <td className="text-right flex gap-2 justify-end">
+                          {inv.status === "PAID" ? (
+                            <>
+                              <button
+                                onClick={() => viewInvoice(inv.invoiceId)}
+                                className="luxury-btn luxury-btn-outline whitespace-nowrap"
+                              >
+                                View
+                              </button>
+
+                              <button
+                                onClick={() => downloadInvoice(inv.invoiceId)}
+                                className="luxury-btn luxury-btn-outline whitespace-nowrap"
+                              >
+                                Download
+                              </button>
+                            </>
+                          ) : canRecordPayment ? (
+                            <button
+                              className="luxury-btn luxury-btn-outline whitespace-nowrap"
+                              onClick={() => setSelectedInvoice(inv)}
+                            >
+                              Record Payment
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground text-xs font-semibold uppercase">
+                              —
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Footer */}
+            {roomTotalPages > 1 && (
+              <div className="table-footer border-t border-[hsl(var(--border))] mt-0">
+                <span className="pagination-info">
+                  Showing {(roomCurrentPage - 1) * itemsPerPage + 1} to{" "}
+                  {Math.min(roomCurrentPage * itemsPerPage, roomInvoices.length)} of{" "}
+                  {roomInvoices.length} entries
+                </span>
+                <div className="pagination">
+                  <button
+                    className="page-btn"
+                    disabled={roomCurrentPage === 1}
+                    onClick={() => setRoomCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="page-btn"
+                    disabled={roomCurrentPage === roomTotalPages}
+                    onClick={() =>
+                      setRoomCurrentPage((p) => Math.min(roomTotalPages, p + 1))
+                    }
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="luxury-card finance-table-card mt-6">
+            <h2 className="text-lg font-semibold mb-3">
+              Restaurant POS Invoices
+            </h2>
+
+            <div className="finance-table-scroll">
+              <table className="luxury-table min-w-[700px]">
+                <thead>
+                  <tr>
+                    <th className="col-serial">#</th>
+                    <th>Invoice ID</th>
+                    <th>Total</th>
+                    <th>Tax</th>
+                    <th>Final</th>
+                    <th>Paid</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th className="text-right">Action</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {paginatedPOSInvoices.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={9}
+                        className="text-center py-6 text-muted-foreground"
+                      >
+                        No POS invoices found.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedPOSInvoices.map((inv, i) => (
+                      <tr key={inv._id}>
+                        <td className="col-serial">
+                          {(restaurantCurrentPage - 1) * itemsPerPage + i + 1}
+                        </td>
+
+                        <td className="font-mono text-xs">{inv.invoiceId}</td>
+
+                        <td>{formatCurrency(inv.totalAmount)}</td>
+
+                        <td>{formatCurrency(inv.taxAmount)}</td>
+
+                        <td>{formatCurrency(inv.finalAmount)}</td>
+
+                        <td>{formatCurrency(inv.paidAmount)}</td>
+
+                        <td>{formatCurrency(inv.dueAmount)}</td>
+
+                        <td>
+                          <span
+                            className={`luxury-badge ${statusBadge[inv.status]}`}
+                          >
+                            {inv.status}
+                          </span>
+                        </td>
+
+                        <td className="text-right flex gap-2 justify-end">
+                          <button
+                            onClick={() => viewInvoice(inv.invoiceId)}
+                            className="luxury-btn luxury-btn-outline"
+                          >
+                            View
+                          </button>
+
+                          <button
+                            onClick={() => downloadInvoice(inv.invoiceId)}
+                            className="luxury-btn luxury-btn-outline"
+                          >
+                            Download
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {restaurantTotalPages > 1 && (
+              <div className="table-footer border-t border-[hsl(var(--border))] mt-0">
+                <span className="pagination-info">
+                  Showing {(restaurantCurrentPage - 1) * itemsPerPage + 1} to{" "}
+                  {Math.min(
+                    restaurantCurrentPage * itemsPerPage,
+                    restaurantInvoices.length,
+                  )}{" "}
+                  of {restaurantInvoices.length} entries
+                </span>
+                <div className="pagination">
+                  <button
+                    className="page-btn"
+                    disabled={restaurantCurrentPage === 1}
+                    onClick={() =>
+                      setRestaurantCurrentPage((p) => Math.max(1, p - 1))
+                    }
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="page-btn"
+                    disabled={restaurantCurrentPage === restaurantTotalPages}
+                    onClick={() =>
+                      setRestaurantCurrentPage((p) =>
+                        Math.min(restaurantTotalPages, p + 1),
+                      )
+                    }
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="as-root">
+            <div className="as-header-left mb-6">
+              <button
+                onClick={() => {
+                  setSelectedInvoice(null);
+                  setPaymentAmount("");
+                  setPaymentMethod("CASH");
+                }}
+                className="as-back-btn"
+                aria-label="Back to finances"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <div>
+                <h1 className="page-title text-2xl mb-1">Record Payment</h1>
+                <p className="page-subtitle text-xs font-mono mt-0">
+                  ID: {selectedInvoice.invoiceId}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 items-start">
+              <div className="luxury-card as-section w-full">
+                <div className="as-section-header">
+                  <h2 className="as-section-title">Payment Details</h2>
+                  <p className="as-section-sub">
+                    Enter the payment amount and method.
+                  </p>
+                </div>
+
+                <div className="as-grid-2">
+                  <div className="as-field">
+                    <label className="as-label pb-2">Payment Amount</label>
+                    <label className="as-label -mb-1">{currencySymbol}</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        placeholder="0.00"
+                        className="luxury-input w-full"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="as-field">
+                    <label className="as-label pb-2">Payment Method</label>
+                    <select
+                      className="luxury-input w-full mt-[1.2rem]"
+                      aria-label="Payment method"
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    >
+                      <option value="CASH">Cash</option>
+                      <option value="CARD">Card</option>
+                      <option value="UPI">UPI</option>
+                      <option value="BANK_TRANSFER">Bank Transfer</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                  <button
+                    onClick={() => {
+                      setSelectedInvoice(null);
+                      setPaymentAmount("");
+                      setPaymentMethod("CASH");
+                    }}
+                    className="luxury-btn luxury-btn-outline as-cancel-btn flex-1 py-3 !bg-muted/30"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleRecordPayment}
+                    className="luxury-btn luxury-btn-primary as-submit-btn flex-1 py-3"
+                    disabled={!paymentAmount || Number(paymentAmount) <= 0}
+                  >
+                    Confirm Payment
+                  </button>
+                </div>
+              </div>
+
+              <div className="luxury-card as-section w-full">
+                <div className="as-section-header flex items-center gap-3">
+                  <History size={20} className="text-muted-foreground" />
+                  <h2 className="as-section-title !mb-0">Payment History</h2>
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                  {selectedInvoice.paymentHistory.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground min-h-[120px]">
+                      <History size={24} className="mb-2 opacity-50" />
+                      <p className="text-sm">No payments recorded yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedInvoice.paymentHistory.map((p, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3"
+                        >
+                          <div className="flex flex-col gap-1">
+                            <span className="font-semibold text-sm">
+                              {formatCurrency(p.amount)}
+                            </span>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium bg-muted px-2 py-0.5 rounded w-fit">
+                              {p.method}
+                            </span>
+                          </div>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {new Date(p.paidAt).toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default Finance;

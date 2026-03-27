@@ -1,0 +1,331 @@
+/* Table Styles */
+
+.table-container {
+  width: 100%;
+  overflow: auto;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  -webkit-overflow-scrolling: touch;
+}
+
+.luxury-table {
+  width: max-content;
+  min-width: 100%;
+  caption-side: bottom;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+.luxury-table thead tr {
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.luxury-table th {
+  height: 3rem;
+  padding: 0 1rem;
+  text-align: left;
+  vertical-align: middle;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.luxury-table tbody tr {
+  border-bottom: 1px solid hsl(var(--border));
+  transition: background-color 0.2s ease;
+}
+
+.luxury-table tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.luxury-table tbody tr:hover {
+  background-color: hsla(var(--secondary), 0.5);
+}
+
+.luxury-table td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+/* Serial Number Column */
+.col-serial {
+  width: 48px;
+  min-width: 48px;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+/* Pagination Footer Styles */
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 0 1rem 1rem 1rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #666;
+}
+
+.pagination {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.page-btn {
+    padding: 8px 14px;
+    font-size: 14px;
+    border: 1px solid #d6d6d6;
+    background-color: #f4f4f4;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-btn:hover:not(:disabled) {
+    background-color: #e8e8e8;
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-btn.active {
+    background-color: #c9a24d !important;   /* luxury gold tone */
+    border-color: #c9a24d !important;
+    color: #ffffff !important;
+} 
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.user-email {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ═══════════════════════════════════════════════
+   Users & Roles — Sticky-header scrollable table
+   ═══════════════════════════════════════════════ */
+
+/*
+  The card itself uses flex-column so the sticky
+  thead stays pinned while only the tbody scrolls.
+  max-height keeps it inside the visible viewport.
+*/
+.ur-table-card {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100vh - 22rem);
+  min-height: 12rem;
+}
+
+/* Scrollable wrapper that wraps just the <table> */
+.ur-table-scroll {
+  overflow-y: auto;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.ur-table-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.ur-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ur-table-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+.ur-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.35);
+}
+
+/* Sticky header cells */
+.ur-table-card .luxury-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: hsl(var(--card));
+  box-shadow: 0 1px 0 0 hsl(var(--border));
+}
+
+/* Row hover should not bleed over sticky header */
+.ur-table-card .luxury-table tbody tr:hover td {
+  background-color: hsl(var(--secondary) / 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Security & Audit — Sticky title + sticky-thead tables
+   ═══════════════════════════════════════════════════════
+
+   Layout stack inside each card:
+   ┌─ .sa-login-card / .sa-audit-card  (flex-col, max-height)
+   │   ├─ .finance-table-header  → FIXED — never scrolls
+   │   └─ .sa-table-scroll       → scrollable region
+   │       └─ .luxury-table
+   │           ├─ thead th       → sticky inside scroll region
+   │           └─ tbody          → scrolls
+   └──────────────────────────────────────────────────────
+*/
+
+/* Shared base for both cards */
+.sa-login-card,
+.sa-audit-card {
+  overflow: hidden !important;   /* contain children */
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100vh - 22rem);
+  min-height: 12rem;
+}
+
+/* The title bar (.finance-table-header) is already in
+   normal flow at the top of the flex column — it
+   naturally stays fixed as the scroll region below it grows. */
+
+/* Scrollable tbody region */
+.sa-table-scroll {
+  overflow-y: auto;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.sa-table-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.sa-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sa-table-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+.sa-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.35);
+}
+
+/* Sticky column-header row inside the scroll container */
+.sa-login-card .luxury-table thead th,
+.sa-audit-card  .luxury-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: hsl(var(--card));
+  /* Thin gold-tinted separator line below the column headers */
+  box-shadow: 0 1px 0 0 hsl(var(--border));
+}
+
+/* Row hover must not paint over sticky header cells */
+.sa-login-card .luxury-table tbody tr:hover td,
+.sa-audit-card  .luxury-table tbody tr:hover td {
+  background-color: hsl(var(--secondary) / 0.5);
+}
+
+/* ============================================================
+   Global Sticky Table Behavior 
+   Applies to any container ending in -table-card and corresponding -table-scroll
+   ============================================================ */
+
+[class$="-table-card"], [class*="-table-card "] {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100vh - 22rem);
+  min-height: 12rem;
+}
+
+[class$="-table-scroll"], [class*="-table-scroll "] {
+  overflow-y: auto;
+  overflow-x: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+[class$="-table-scroll"]::-webkit-scrollbar, 
+[class*="-table-scroll "]::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+/* Sticky header cells */
+[class$="-table-card"] .luxury-table thead th,
+[class*="-table-card "] .luxury-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: hsl(var(--card));
+  box-shadow: 0 1px 0 0 hsl(var(--border));
+}
+
+@media (max-width: 767px) {
+  .luxury-table {
+    font-size: 0.8125rem;
+  }
+
+  .luxury-table th,
+  .luxury-table td {
+    white-space: nowrap;
+  }
+
+  .luxury-table th {
+    height: 2.75rem;
+    padding: 0 0.75rem;
+    font-size: 0.65rem;
+  }
+
+  .luxury-table td {
+    padding: 0.875rem 0.75rem;
+  }
+
+  .table-footer {
+    padding: 0 0.75rem 0.875rem;
+  }
+
+  .pagination {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .page-btn {
+    flex: 1;
+    min-height: 2.75rem;
+  }
+}
