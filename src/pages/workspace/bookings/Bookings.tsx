@@ -10,6 +10,8 @@ import {
   BookOpen,
   Pencil,
   Trash2,
+  MoreHorizontal,
+  X,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "@/api/axios";
@@ -67,6 +69,7 @@ const Bookings = () => {
   const [search, setSearch] = useState("");
   const [filterCheckIn, setFilterCheckIn] = useState("");
   const [filterCheckOut, setFilterCheckOut] = useState("");
+  const [openActionId, setOpenActionId] = useState<string | null>(null);
 
   /* ── fetch ── */
   const fetchBookings = async () => {
@@ -383,63 +386,89 @@ const Bookings = () => {
 
                     {canShowActions && (
                       <td>
-                        <div className="bk-td-actions">
-                          {canUpdate && (
-                            <button
-                              className="bk-action-btn"
-                              onClick={() =>
-                                navigate(
-                                  `/workspace/${branchId}/bookings/edit/${b.bookingId}`,
-                                )
-                              }
-                            >
-                              <Pencil size={11} />
-                              Update
-                            </button>
-                          )}
+                        <div className="bk-action-wrapper">
+                          <button
+                            className="bk-action-trigger"
+                            aria-label="Open actions menu"
+                            aria-haspopup="true"
+                            aria-expanded={openActionId === b._id}
+                            onClick={() =>
+                              setOpenActionId(
+                                openActionId === b._id ? null : b._id,
+                              )
+                            }
+                          >
+                            <MoreHorizontal size={18} aria-hidden="true" />
+                          </button>
 
-                          {canDelete && (
-                            <button
-                              className="bk-action-btn bk-action-btn-danger"
-                              onClick={() => handleDeleteBooking(b.bookingId)}
-                            >
-                              <Trash2 size={11} />
-                              Delete
-                            </button>
-                          )}
+                          {openActionId === b._id && (
+                            <div className="bk-action-menu">
+                              {canUpdate && (
+                                <button
+                                  className="bk-action-item"
+                                  onClick={() => {
+                                    navigate(
+                                      `/workspace/${branchId}/bookings/edit/${b.bookingId}`,
+                                    );
+                                    setOpenActionId(null);
+                                  }}
+                                >
+                                  <Pencil size={15} />
+                                  Update
+                                </button>
+                              )}
 
-                          {b.status === "CONFIRMED" && (
-                            <>
-                              <button
-                                className="bk-action-btn bk-action-btn-checkin"
-                                onClick={() =>
-                                  updateStatus(b.bookingId, "CHECKED_IN")
-                                }
-                              >
-                                <LogIn size={11} />
-                                Check-In
-                              </button>
-                              <button
-                                className="bk-action-btn bk-action-btn-danger"
-                                onClick={() =>
-                                  updateStatus(b.bookingId, "CANCELLED")
-                                }
-                              >
-                                Cancel
-                              </button>
-                            </>
-                          )}
+                              {b.status === "CONFIRMED" && (
+                                <>
+                                  <button
+                                    className="bk-action-item"
+                                    onClick={() => {
+                                      updateStatus(b.bookingId, "CHECKED_IN");
+                                      setOpenActionId(null);
+                                    }}
+                                  >
+                                    <LogIn size={15} />
+                                    Check-In
+                                  </button>
+                                  <button
+                                    className="bk-action-item bk-action-danger"
+                                    onClick={() => {
+                                      updateStatus(b.bookingId, "CANCELLED");
+                                      setOpenActionId(null);
+                                    }}
+                                  >
+                                    <X size={15} />
+                                    Cancel
+                                  </button>
+                                </>
+                              )}
 
-                          {b.status === "CHECKED_IN" && (
-                            <button
-                              className="bk-action-btn"
-                              onClick={() =>
-                                updateStatus(b.bookingId, "CHECKED_OUT")
-                              }
-                            >
-                              <LogOut size={11} />
-                              Check-Out
-                            </button>
+                              {b.status === "CHECKED_IN" && (
+                                <button
+                                  className="bk-action-item"
+                                  onClick={() => {
+                                    updateStatus(b.bookingId, "CHECKED_OUT");
+                                    setOpenActionId(null);
+                                  }}
+                                >
+                                  <LogOut size={15} />
+                                  Check-Out
+                                </button>
+                              )}
+
+                              {canDelete && (
+                                <button
+                                  className="bk-action-item bk-action-danger"
+                                  onClick={() => {
+                                    handleDeleteBooking(b.bookingId);
+                                    setOpenActionId(null);
+                                  }}
+                                >
+                                  <Trash2 size={15} />
+                                  Delete
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </td>

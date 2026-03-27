@@ -100,6 +100,41 @@
   background-color: var(--lnd-dark-bg) !important;
 }
 
+/* ── Utility Classes for dynamic-like colors ── */
+.lnd-color-gold { color: var(--lnd-gold); }
+.lnd-color-gold-light { color: var(--lnd-gold-light); }
+.lnd-color-gold-dark { color: var(--lnd-gold-dark); }
+.lnd-color-grandeur { color: var(--lnd-grandeur); }
+.lnd-color-green { color: var(--lnd-green); }
+
+.lnd-bg-gold { background-color: var(--lnd-gold); }
+.lnd-bg-gold-light { background-color: var(--lnd-gold-light); }
+.lnd-bg-gold-dark { background-color: var(--lnd-gold-dark); }
+.lnd-bg-grandeur { background-color: var(--lnd-grandeur); }
+.lnd-bg-green { background-color: var(--lnd-green); }
+
+/* Mockup dot colors */
+.lnd-bg-dot-red { background-color: #ff5f56; }
+.lnd-bg-dot-yellow { background-color: #ffbd2e; }
+.lnd-bg-dot-green { background-color: #27c93f; }
+
+/* KPI variant colors (to replace dynamic color prop where possible) */
+.lnd-kpi-gold { --kpi-c: var(--lnd-gold); }
+.lnd-kpi-gold-light { --kpi-c: var(--lnd-gold-light); }
+.lnd-kpi-grandeur { --kpi-c: var(--lnd-grandeur); }
+.lnd-kpi-gold-dark { --kpi-c: var(--lnd-gold-dark); }
+
+.lnd-kpi-card-themed .lnd-kpi-icon { background: color-mix(in srgb, var(--kpi-c), transparent 86%); color: var(--kpi-c); }
+.lnd-kpi-card-themed .lnd-kpi-glow { background: var(--kpi-c); }
+.lnd-kpi-card-themed .lnd-kpi-value { color: var(--kpi-c); }
+
+/* Testimonial avatar variants */
+.lnd-t-gold { --t-c: var(--lnd-gold); }
+.lnd-t-gold-light { --t-c: var(--lnd-gold-light); }
+.lnd-t-grandeur { --t-c: var(--lnd-grandeur); }
+.lnd-t-gold-dark { --t-c: var(--lnd-gold-dark); }
+.lnd-testimonial-avatar-themed { background: color-mix(in srgb, var(--t-c), transparent 80%); color: var(--t-c); }
+
 /* ── Accent text — solid gold ── */
 .lnd-gradient-text {
   color: var(--lnd-gold);

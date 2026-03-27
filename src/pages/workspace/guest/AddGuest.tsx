@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, UserPlus, Save, Mail, Phone, UserRound, Calendar } from "lucide-react";
 import api from "@/api/axios";
@@ -6,9 +6,10 @@ import { useToast } from "@/components/confirm/ConfirmProvider";
 import { validateEmailField, validatePhoneField } from "@/lib/fieldValidation";
 
 const AddGuest = () => {
-  const { branchId } = useParams();
+  const { branchId, guestId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const isEditMode = Boolean(guestId);
 
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -20,6 +21,48 @@ const AddGuest = () => {
     phone: "",
     loyaltyDate: "",
   });
+
+  useEffect(() => {
+    const loadGuest = async () => {
+      if (!guestId || !branchId) return;
+
+      try {
+        const res = await api.get<{
+          data: Array<{
+            guestId: string;
+            firstName: string;
+            lastName?: string;
+            email?: string;
+            phone?: string;
+          }>;
+        }>("/crm/guests", {
+          params: { branchId },
+        });
+
+        const guest = (res.data.data || []).find((item) => item.guestId === guestId);
+
+        if (!guest) {
+          toast.error("Guest not found.");
+          navigate(`/workspace/${branchId}/crm`);
+          return;
+        }
+
+        setForm({
+          firstName: guest.firstName || "",
+          lastName: guest.lastName || "",
+          email: guest.email || "",
+          phone: guest.phone || "",
+          loyaltyDate: "",
+        });
+      } catch (err) {
+        const error = err as { response?: { data?: { message?: string } } };
+        toast.error(error.response?.data?.message || "Failed to load guest.");
+        navigate(`/workspace/${branchId}/crm`);
+      }
+    };
+
+    loadGuest();
+  }, [branchId, guestId, navigate, toast]);
 
   const getFieldError = (name: string, value: string) => {
     if (!value.trim()) return "This field is required";
@@ -57,7 +100,11 @@ const AddGuest = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const nextErrors: Record<string, string> = {};
-    (["firstName", "lastName", "email", "phone", "loyaltyDate"] as const).forEach((field) => {
+    const fieldsToValidate = isEditMode
+      ? (["firstName", "lastName", "email", "phone"] as const)
+      : (["firstName", "lastName", "email", "phone", "loyaltyDate"] as const);
+
+    fieldsToValidate.forEach((field) => {
       const nextError = getFieldError(field, form[field]);
       if (nextError) nextErrors[field] = nextError;
     });
@@ -67,19 +114,31 @@ const AddGuest = () => {
     
     try {
       setSaving(true);
-      await api.post("/crm/guests", {
+      const payload = {
         branchId,
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim() || undefined,
         phone: form.phone.trim() || undefined,
         loyaltyDate: form.loyaltyDate || undefined,
-      });
-      toast.success("Guest added successfully.");
+      };
+
+      if (isEditMode) {
+        await api.put(`/crm/guests/${guestId}`, payload);
+      } else {
+        await api.post("/crm/guests", payload);
+      }
+
+      toast.success(
+        isEditMode ? "Guest updated successfully." : "Guest added successfully.",
+      );
       navigate(`/workspace/${branchId}/crm`);
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
-      toast.error(error.response?.data?.message || "Failed to add guest. Please try again.");
+      toast.error(
+        error.response?.data?.message ||
+          `Failed to ${isEditMode ? "update" : "add"} guest. Please try again.`,
+      );
     } finally {
       setSaving(false);
     }
@@ -101,8 +160,14 @@ const AddGuest = () => {
             <UserPlus className="add-branch-header-icon" />
           </div>
           <div>
-            <h1 className="page-title">New Guest Profile</h1>
-            <p className="page-subtitle">Register a new guest into the CRM</p>
+            <h1 className="page-title">
+              {isEditMode ? "Edit Guest Profile" : "New Guest Profile"}
+            </h1>
+            <p className="page-subtitle">
+              {isEditMode
+                ? "Update guest details in the CRM"
+                : "Register a new guest into the CRM"}
+            </p>
           </div>
         </div>
       </div>
@@ -319,7 +384,7 @@ const AddGuest = () => {
               ) : (
                 <>
                   <Save size={15} className="mr-2" />
-                  Create Profile
+                  {isEditMode ? "Update Profile" : "Create Profile"}
                 </>
               )}
             </button>

@@ -468,9 +468,9 @@ const OrganizationSignup = () => {
     ) : null;
 
   return (
-    <div className="lp-root">
+    <div className="lp-root" style={{ minHeight: "100vh" }}>
       {/* ── Left Panel ── */}
-      <div className="lp-left">
+      <div className="lp-left" style={{ position: "sticky", top: 0, height: "100vh" }}>
         {/* Decorative grid overlay */}
         <div className="lp-left-grid" aria-hidden="true" />
         {/* Corner ornaments */}
@@ -540,17 +540,15 @@ const OrganizationSignup = () => {
         <div className="lp-right-glow" aria-hidden="true" />
 
         <div className="org-signup-card-container">
-          <div className="org-signup-topbar">
-            <div>
-              <p className="org-signup-topbar-label">Onboarding Process</p>
-              <h2>Create Your Organization Account</h2>
-              <p className="org-signup-topbar-subtitle">
-                Register your hotel business and manage everything in one place
-              </p>
-            </div>
-            <Link to="/login" className="org-signup-login-link">
-              Already have an account? Login
-            </Link>
+          <div className="lp-form-crown-wrap" style={{ margin: "0 auto 1.5rem" }}>
+            <Crown className="lp-form-crown-icon" />
+          </div>
+          <div className="org-signup-topbar" style={{ textAlign: "center", display: "block" }}>
+            <p className="org-signup-topbar-label">Onboarding Process</p>
+            <h2 className="lp-form-title">Create Your Organization Account</h2>
+            <p className="lp-form-subtitle" style={{ margin: "0.5rem auto 0", maxWidth: "40rem" }}>
+              Register your hotel business and manage everything in one place
+            </p>
           </div>
 
           {successMessage ? (
@@ -1026,6 +1024,18 @@ const OrganizationSignup = () => {
             </form>
           )}
         </div>
+        <p className="lp-demo-note" style={{ marginTop: "2rem" }}>
+          Already have a corporate account?{" "}
+          <Link to="/login" className="org-signup-login-link">
+            Log in here
+          </Link>
+        </p>
+
+        {/* Bottom mode note */}
+        <p className="lp-demo-note" style={{ marginTop: "1rem" }}>
+          <span className="lp-demo-bold">Registration Mode</span> · Step{" "}
+          {currentStep + 1} of 3
+        </p>
       </div>
     </div>
   );

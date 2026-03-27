@@ -19,7 +19,17 @@ import {
 } from "lucide-react";
 import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { LucideIcon } from "lucide-react";
 
+interface MenuItem {
+  title: string;
+  path?: string;
+  route?: string;
+  icon: LucideIcon;
+  roles?: string[];
+  permission?: string | null;
+  permissionKey?: string | null;
+}
 const globalMenuItems = [
   {
     title: "Dashboard",
@@ -182,9 +192,11 @@ export const AppSidebar = ({
 
   const { hasRole, hasPermission, user } = useAuth(); // ✅ user added
 
-  const menuItems = isWorkspaceMode ? workspaceMenuItems : globalMenuItems;
+  const menuItems: MenuItem[] = isWorkspaceMode
+    ? (workspaceMenuItems as MenuItem[])
+    : (globalMenuItems as MenuItem[]);
 
-  const canViewGlobalItem = (item: any) => {
+  const canViewGlobalItem = (item: MenuItem) => {
     if (item.roles && !hasRole(item.roles)) return false;
     if (item.permission && !hasPermission(item.permission)) return false;
     return true;
@@ -233,7 +245,7 @@ export const AppSidebar = ({
       </div>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item: any, index: number) => {
+        {menuItems.map((item: MenuItem, index: number) => {
           /*
            GLOBAL MENU PERMISSION CHECK
           */

@@ -235,6 +235,85 @@
   color: hsl(var(--premium-green));
 }
 
+/* ── Action Dropdown (bk-*) ── */
+.bk-action-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.bk-action-trigger {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  color: hsl(var(--muted-foreground));
+  transition: background 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bk-action-trigger:hover {
+  background: hsl(var(--muted) / 0.7);
+  color: hsl(var(--foreground));
+}
+
+.bk-action-menu {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  width: 200px;
+  background: hsl(var(--card));
+  border-radius: 14px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid hsl(var(--border) / 0.8);
+  padding: 6px 0;
+  z-index: 999;
+  animation: bkFadeScale 0.15s ease-out;
+}
+
+.bk-action-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  background: transparent;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  text-align: left;
+}
+
+.bk-action-item:hover {
+  background: hsl(var(--muted) / 0.6);
+  color: hsl(var(--foreground));
+}
+
+.bk-action-danger {
+  color: #ef4444 !important;
+}
+
+.bk-action-danger:hover {
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #ef4444 !important;
+}
+
+@keyframes bkFadeScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 /* Loading */
 .bk-loading {
   display: flex;

@@ -9,13 +9,19 @@ import {
   BadgeDollarSign,
   UserCheck,
   X,
+  Pencil,
+  Trash2,
+  MoreVertical,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "@/api/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
-import { useToast } from "@/components/confirm/ConfirmProvider";
+import {
+  useToast,
+  useConfirm,
+} from "@/components/confirm/ConfirmProvider";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 
 interface Staff {
@@ -44,23 +50,45 @@ const HR = () => {
   const branchId = activeBranch?._id || routeBranchId;
   const navigate = useNavigate();
   const toast = useToast();
+  const confirm = useConfirm();
   const { formatCurrency } = useSystemSettings();
   const { user } = useAuth();
-  const { canAccess, canCreate, canUpdate } = useModulePermissions("HR");
+  const { canAccess, canCreate, canUpdate, canDelete } =
+    useModulePermissions("HR");
 
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
 
+  const canManageRecords = canUpdate || canDelete || canAccess;
+
   const [staff, setStaff] = useState<Staff[]>([]);
   const [payrolls, setPayrolls] = useState<Payroll[]>([]);
   const [loading, setLoading] = useState(true);
   // ✅ Invite Staff State
+  const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteName, setInviteName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("RECEPTIONIST");
   const [inviteJoinedDate, setInviteJoinedDate] = useState("");
   const [inviteSalary, setInviteSalary] = useState("");
+  const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
+  const [editingPayroll, setEditingPayroll] = useState<Payroll | null>(null);
+  const [staffForm, setStaffForm] = useState({
+    firstName: "",
+    lastName: "",
+    department: "",
+    designation: "",
+    salary: "",
+  });
+  const [payrollForm, setPayrollForm] = useState({
+    month: "",
+    year: "",
+    netSalary: "",
+    status: "UNPAID",
+  });
+  const [openStaffId, setOpenStaffId] = useState<string | null>(null);
+  const [openPayrollId, setOpenPayrollId] = useState<string | null>(null);
 
   // Optimistic tracking for attendance status
   const [attendanceStatus, setAttendanceStatus] = useState<
@@ -108,6 +136,25 @@ const HR = () => {
       console.error("Failed to load payroll");
     }
   }, [branchId]);
+
+  const refreshHrData = useCallback(async () => {
+    await Promise.all([fetchStaff(), fetchPayroll()]);
+  }, [fetchPayroll, fetchStaff]);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenStaffId(null);
+      setOpenPayrollId(null);
+    };
+
+    if (openStaffId || openPayrollId) {
+      document.addEventListener("click", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [openStaffId, openPayrollId]);
 
   useEffect(() => {
     if (!branchId) return;
@@ -175,6 +222,108 @@ const HR = () => {
   };
 
   // ✅ Invite Staff Function
+  const handleOpenStaffEdit = (member: Staff) => {
+    setEditingStaff(member);
+    setStaffForm({
+      firstName: member.firstName || "",
+      lastName: member.lastName || "",
+      department:
+        member.department && member.department !== "—" ? member.department : "",
+      designation:
+        member.designation && member.designation !== "—"
+          ? member.designation
+          : "",
+      salary: String(member.salary ?? 0),
+    });
+  };
+
+  const handleUpdateStaff = async () => {
+    if (!editingStaff) return;
+
+    try {
+      await api.patch(`/hr/staff/${editingStaff.staffId}`, {
+        firstName: staffForm.firstName.trim(),
+        lastName: staffForm.lastName.trim(),
+        department: staffForm.department.trim(),
+        designation: staffForm.designation.trim(),
+        salary: Number(staffForm.salary),
+      });
+      setEditingStaff(null);
+      await refreshHrData();
+      toast.success("Staff updated successfully.");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update staff.");
+    }
+  };
+
+  const handleDeleteStaff = async (member: Staff) => {
+    const confirmed = await confirm({
+      title: "Delete Staff",
+      message: `Are you sure you want to delete ${member.firstName} ${member.lastName}?`,
+      successMessage: "Staff deleted successfully.",
+      errorMessage: "Failed to delete staff.",
+      onConfirm: async () => {
+        await api.delete(`/hr/staff/${member.staffId}`);
+      },
+    });
+
+    if (confirmed) {
+      if (editingStaff?.staffId === member.staffId) {
+        setEditingStaff(null);
+      }
+      await refreshHrData();
+    }
+  };
+
+  const handleOpenPayrollEdit = (payroll: Payroll) => {
+    setEditingPayroll(payroll);
+    setPayrollForm({
+      month: String(payroll.month),
+      year: String(payroll.year),
+      netSalary: String(payroll.netSalary),
+      status: payroll.status,
+    });
+  };
+
+  const handleUpdatePayroll = async () => {
+    if (!editingPayroll) return;
+
+    try {
+      await api.patch(`/hr/payroll/${editingPayroll.payrollId}`, {
+        month: Number(payrollForm.month),
+        year: Number(payrollForm.year),
+        netSalary: Number(payrollForm.netSalary),
+        status: payrollForm.status,
+      });
+      setEditingPayroll(null);
+      await refreshHrData();
+      toast.success("Payroll updated successfully.");
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Failed to update payroll.",
+      );
+    }
+  };
+
+  const handleDeletePayroll = async (payroll: Payroll) => {
+    const confirmed = await confirm({
+      title: "Delete Payroll",
+      message: `Are you sure you want to delete payroll ${payroll.payrollId}?`,
+      successMessage: "Payroll deleted successfully.",
+      errorMessage: "Failed to delete payroll.",
+      onConfirm: async () => {
+        await api.delete(`/hr/payroll/${payroll.payrollId}`);
+      },
+    });
+
+    if (confirmed) {
+      if (editingPayroll?.payrollId === payroll.payrollId) {
+        setEditingPayroll(null);
+      }
+      await refreshHrData();
+    }
+  };
+
   const handleInviteStaff = async () => {
     try {
       console.log("🚀 Starting Invite Flow");
@@ -216,6 +365,7 @@ const HR = () => {
       setInviteRole("");
       setInviteJoinedDate("");
       setInviteSalary("");
+      setShowInviteForm(false);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
 
@@ -275,7 +425,10 @@ const HR = () => {
         </div>
 
         {canCreate && (
-          <button className="luxury-btn luxury-btn-primary hr-add-btn">
+          <button
+            className="luxury-btn luxury-btn-primary hr-add-btn"
+            onClick={() => setShowInviteForm(true)}
+          >
             <Plus size={15} />
             Add Staff
           </button>
@@ -283,110 +436,273 @@ const HR = () => {
       </div>
 
       {/* ── Invite Staff Section ── */}
-      <div className="luxury-card hr-invite-card">
-        <button
-          className="hr-invite-close"
-          aria-label="Close"
-          onClick={() => {
-            setInviteName("");
-            setInviteEmail("");
-            setInviteRole("RECEPTIONIST");
-            setInviteJoinedDate("");
-            setInviteSalary("");
-          }}
-        >
-          <X size={16} />
-        </button>
-
-        <h3 className="hr-invite-title">Register New Staff</h3>
-
-        <div className="hr-invite-grid">
-          <div className="hr-invite-field">
-            <label className="hr-invite-label">Full Name</label>
-            <input
-              className="luxury-input"
-              value={inviteName}
-              onChange={(e) => setInviteName(e.target.value)}
-              placeholder="e.g. John Doe"
-            />
-          </div>
-
-          <div className="hr-invite-field">
-            <label className="hr-invite-label">Email Address</label>
-            <input
-              className="luxury-input"
-              type="email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="e.g. john@example.com"
-            />
-          </div>
-
-          <div className="hr-invite-field">
-            <label className="hr-invite-label">Assign Role</label>
-            <select
-              className="luxury-input"
-              value={inviteRole}
-              title="Assign Role"
-              onChange={(e) => setInviteRole(e.target.value)}
-            >
-              <option value="">Select Role</option>
-              <option value="RECEPTIONIST">Receptionist</option>
-              <option value="CHEF">Chef</option>
-              <option value="ACCOUNTANT">Accountant</option>
-              <option value="HR">Branch HR </option>
-              <option value="RESTAURANT">Restaurant Manager</option>
-              <option value="HOUSEKEEPING">Housekeeping</option>
-            </select>
-          </div>
-
-          <div className="hr-invite-field">
-            <label className="hr-invite-label">Joined Date</label>
-            <input
-              className="luxury-input"
-              type="date"
-              value={inviteJoinedDate}
-              onChange={(e) => setInviteJoinedDate(e.target.value)}
-            />
-          </div>
-
-          <div className="hr-invite-field">
-            <label className="hr-invite-label">Monthly Salary ($)</label>
-            <input
-              className="luxury-input"
-              type="number"
-              value={inviteSalary}
-              onChange={(e) => setInviteSalary(e.target.value)}
-              placeholder="e.g. 3000"
-            />
-          </div>
-        </div>
-
-        <hr className="hr-invite-divider" />
-
-        <div className="hr-invite-actions">
+      {showInviteForm && (
+        <div className="luxury-card hr-invite-card">
           <button
+            className="hr-invite-close"
+            aria-label="Close"
             onClick={() => {
+              setShowInviteForm(false);
               setInviteName("");
               setInviteEmail("");
-              setInviteRole("");
+              setInviteRole("RECEPTIONIST");
               setInviteJoinedDate("");
               setInviteSalary("");
             }}
-            className="luxury-btn luxury-btn-ghost"
           >
-            Cancel
+            <X size={16} />
           </button>
-          <button
-            onClick={handleInviteStaff}
-            className="luxury-btn luxury-btn-primary"
-          >
-            Add to System
-          </button>
+
+          <h3 className="hr-invite-title">Register New Staff</h3>
+
+          <div className="hr-invite-grid">
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Full Name</label>
+              <input
+                className="luxury-input"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                placeholder="e.g. John Doe"
+              />
+            </div>
+
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Email Address</label>
+              <input
+                className="luxury-input"
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="e.g. john@example.com"
+              />
+            </div>
+
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Assign Role</label>
+              <select
+                className="luxury-input"
+                value={inviteRole}
+                title="Assign Role"
+                onChange={(e) => setInviteRole(e.target.value)}
+              >
+                <option value="">Select Role</option>
+                <option value="RECEPTIONIST">Receptionist</option>
+                <option value="CHEF">Chef</option>
+                <option value="ACCOUNTANT">Accountant</option>
+                <option value="HR">Branch HR </option>
+                <option value="RESTAURANT">Restaurant Manager</option>
+                <option value="HOUSEKEEPING">Housekeeping</option>
+              </select>
+            </div>
+
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Joined Date</label>
+              <input
+                className="luxury-input"
+                type="date"
+                value={inviteJoinedDate}
+                onChange={(e) => setInviteJoinedDate(e.target.value)}
+              />
+            </div>
+
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Monthly Salary ($)</label>
+              <input
+                className="luxury-input"
+                type="number"
+                value={inviteSalary}
+                onChange={(e) => setInviteSalary(e.target.value)}
+                placeholder="e.g. 3000"
+              />
+            </div>
+          </div>
+
+          <hr className="hr-invite-divider" />
+
+          <div className="hr-invite-actions">
+            <button
+              onClick={() => {
+                setShowInviteForm(false);
+                setInviteName("");
+                setInviteEmail("");
+                setInviteRole("");
+                setInviteJoinedDate("");
+                setInviteSalary("");
+              }}
+              className="luxury-btn luxury-btn-ghost"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleInviteStaff}
+              className="luxury-btn luxury-btn-primary"
+            >
+              Add to System
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Salary Summary KPI Cards ── */}
+      {editingStaff && (
+        <div className="luxury-card hr-invite-card">
+          <button
+            className="hr-invite-close"
+            aria-label="Close"
+            onClick={() => setEditingStaff(null)}
+          >
+            <X size={16} />
+          </button>
+          <h3 className="hr-invite-title">Edit Staff</h3>
+          <div className="hr-invite-grid">
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">First Name</label>
+              <input
+                className="luxury-input"
+                value={staffForm.firstName}
+                onChange={(e) =>
+                  setStaffForm((prev) => ({ ...prev, firstName: e.target.value }))
+                }
+              />
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Last Name</label>
+              <input
+                className="luxury-input"
+                value={staffForm.lastName}
+                onChange={(e) =>
+                  setStaffForm((prev) => ({ ...prev, lastName: e.target.value }))
+                }
+              />
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Department</label>
+              <input
+                className="luxury-input"
+                value={staffForm.department}
+                onChange={(e) =>
+                  setStaffForm((prev) => ({ ...prev, department: e.target.value }))
+                }
+              />
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Designation</label>
+              <input
+                className="luxury-input"
+                value={staffForm.designation}
+                onChange={(e) =>
+                  setStaffForm((prev) => ({ ...prev, designation: e.target.value }))
+                }
+              />
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Salary</label>
+              <input
+                className="luxury-input"
+                type="number"
+                value={staffForm.salary}
+                onChange={(e) =>
+                  setStaffForm((prev) => ({ ...prev, salary: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+          <hr className="hr-invite-divider" />
+          <div className="hr-invite-actions">
+            <button
+              onClick={() => setEditingStaff(null)}
+              className="luxury-btn luxury-btn-ghost"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdateStaff}
+              className="luxury-btn luxury-btn-primary"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      )}
+
+      {editingPayroll && (
+        <div className="luxury-card hr-invite-card">
+          <button
+            className="hr-invite-close"
+            aria-label="Close"
+            onClick={() => setEditingPayroll(null)}
+          >
+            <X size={16} />
+          </button>
+          <h3 className="hr-invite-title">Edit Payroll</h3>
+          <div className="hr-invite-grid">
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Month</label>
+              <input
+                className="luxury-input"
+                type="number"
+                min="1"
+                max="12"
+                value={payrollForm.month}
+                onChange={(e) =>
+                  setPayrollForm((prev) => ({ ...prev, month: e.target.value }))
+                }
+              />
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Year</label>
+              <input
+                className="luxury-input"
+                type="number"
+                value={payrollForm.year}
+                onChange={(e) =>
+                  setPayrollForm((prev) => ({ ...prev, year: e.target.value }))
+                }
+              />
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Net Salary</label>
+              <input
+                className="luxury-input"
+                type="number"
+                value={payrollForm.netSalary}
+                onChange={(e) =>
+                  setPayrollForm((prev) => ({ ...prev, netSalary: e.target.value }))
+                }
+              />
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label">Status</label>
+              <select
+                className="luxury-input"
+                value={payrollForm.status}
+                onChange={(e) =>
+                  setPayrollForm((prev) => ({ ...prev, status: e.target.value }))
+                }
+              >
+                <option value="UNPAID">UNPAID</option>
+                <option value="PAID">PAID</option>
+              </select>
+            </div>
+          </div>
+          <hr className="hr-invite-divider" />
+          <div className="hr-invite-actions">
+            <button
+              onClick={() => setEditingPayroll(null)}
+              className="luxury-btn luxury-btn-ghost"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdatePayroll}
+              className="luxury-btn luxury-btn-primary"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="hr-kpi-grid">
         <div className="hr-kpi-card">
           <Briefcase size={16} className="text-foreground mb-1" />
@@ -434,6 +750,7 @@ const HR = () => {
                 <th>Salary</th>
                 <th>Status</th>
                 <th>Attendance</th>
+                <th className="hr-th-actions">Action</th>
                 <th className="hr-th-actions">Payroll</th>
               </tr>
             </thead>
@@ -441,7 +758,7 @@ const HR = () => {
               {paginatedStaff.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="text-center py-6 text-muted-foreground"
                   >
                     No staff members found.
@@ -500,7 +817,51 @@ const HR = () => {
                     </td>
 
                     <td>
-                      <div className="hr-td-actions">
+                      {canManageRecords && (
+                        <div className="bk-action-wrapper">
+                          <button
+                            className="bk-action-trigger"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenStaffId(
+                                openStaffId === s.staffId ? null : s.staffId,
+                              );
+                            }}
+                            title="More Actions"
+                          >
+                            <MoreVertical size={18} />
+                          </button>
+
+                          {openStaffId === s.staffId && (
+                            <div className="bk-action-menu">
+                              <button
+                                className="bk-action-item"
+                                onClick={() => {
+                                  handleOpenStaffEdit(s);
+                                  setOpenStaffId(null);
+                                }}
+                              >
+                                <Pencil size={15} />
+                                Edit Staff
+                              </button>
+                              <button
+                                className="bk-action-item bk-action-danger"
+                                onClick={() => {
+                                  handleDeleteStaff(s);
+                                  setOpenStaffId(null);
+                                }}
+                              >
+                                <Trash2 size={15} />
+                                Delete Staff
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </td>
+
+                    <td>
+                      <div className="flex gap-2 flex-wrap">
                         <button
                           onClick={() => generatePayroll(s._id)}
                           className="hr-generate-btn"
@@ -596,7 +957,7 @@ const HR = () => {
                     </td>
                     <td>
                       <div className="hr-td-actions">
-                        {p.status !== "PAID" ? (
+                        {p.status !== "PAID" && (
                           <button
                             onClick={() => markPaid(p.payrollId)}
                             className="hr-pay-btn"
@@ -604,10 +965,50 @@ const HR = () => {
                             <DollarSign size={13} />
                             Mark Paid
                           </button>
-                        ) : (
-                          <span className="text-muted-foreground text-xs font-semibold uppercase">
-                            —
-                          </span>
+                        )}
+
+                        {canManageRecords && (
+                          <div className="bk-action-wrapper">
+                            <button
+                              className="bk-action-trigger"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenPayrollId(
+                                  openPayrollId === p.payrollId
+                                    ? null
+                                    : p.payrollId,
+                                );
+                              }}
+                              title="More Actions"
+                            >
+                              <MoreVertical size={18} />
+                            </button>
+
+                            {openPayrollId === p.payrollId && (
+                              <div className="bk-action-menu">
+                                <button
+                                  className="bk-action-item"
+                                  onClick={() => {
+                                    handleOpenPayrollEdit(p);
+                                    setOpenPayrollId(null);
+                                  }}
+                                >
+                                  <Pencil size={15} />
+                                  Edit Payroll
+                                </button>
+                                <button
+                                  className="bk-action-item bk-action-danger"
+                                  onClick={() => {
+                                    handleDeletePayroll(p);
+                                    setOpenPayrollId(null);
+                                  }}
+                                >
+                                  <Trash2 size={15} />
+                                  Delete Payroll
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>

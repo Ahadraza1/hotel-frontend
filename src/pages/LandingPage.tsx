@@ -79,7 +79,7 @@ const testimonials = [
     name: "Arjun Mehta",
     role: "Hotel Chain Owner · 12 Properties",
     avatar: "AM",
-    color: "#C9A85C",
+    variant: "gold",
     review:
       "HotelOS completely transformed how we operate. Managing 12 hotels used to require 3 different tools. Now everything is in one place — bookings, staff, finances. Revenue is up 28% in 6 months.",
   },
@@ -87,7 +87,7 @@ const testimonials = [
     name: "Sofia Reyes",
     role: "General Manager · Grand Palace Group",
     avatar: "SR",
-    color: "#B08D57",
+    variant: "grandeur",
     review:
       "The analytics alone are worth every rupee. I get a live view of occupancy, revenue, and staff performance across all our branches before my morning coffee. Game changer.",
   },
@@ -95,7 +95,7 @@ const testimonials = [
     name: "James Okafor",
     role: "Property Manager · Oceanic Resorts",
     avatar: "JO",
-    color: "#A07830",
+    variant: "gold-dark",
     review:
       "Role-based access means my branch managers only see what they need. The HR and payroll module saved us 40 hours a month. I can't imagine going back.",
   },
@@ -103,7 +103,7 @@ const testimonials = [
     name: "Priya Nair",
     role: "Director of Operations · Heritage Hotels",
     avatar: "PN",
-    color: "#DFC48A",
+    variant: "gold-light",
     review:
       "Setup took less than a day. The CRM has helped us identify our top guests and offer personalized upgrades. Guest satisfaction scores have never been higher.",
   },
@@ -141,7 +141,7 @@ function KpiCard({
   prefix,
   suffix,
   sub,
-  color,
+  variant,
   isVisible,
 }: {
   label: string;
@@ -149,16 +149,16 @@ function KpiCard({
   prefix?: string;
   suffix?: string;
   sub: string;
-  color: string;
+  variant: "gold" | "gold-light" | "grandeur" | "gold-dark";
   isVisible: boolean;
 }) {
   const count = useCountUp(value, 1800, isVisible);
   return (
-    <div className="lnd-kpi-card">
-      <div className="lnd-kpi-icon" style={{ background: color + "22", color }}>
-        <span className="lnd-kpi-glow" style={{ background: color }} />
+    <div className={`lnd-kpi-card lnd-kpi-card-themed lnd-kpi-${variant}`}>
+      <div className="lnd-kpi-icon">
+        <span className="lnd-kpi-glow" />
       </div>
-      <div className="lnd-kpi-value" style={{ color }}>
+      <div className="lnd-kpi-value">
         {prefix}
         {count.toLocaleString()}
         {suffix}
@@ -180,6 +180,7 @@ function SparklineChart({ color }: { color: string }) {
   const pts = points
     .map((p, i) => `${(i / (points.length - 1)) * w},${h - (p / maxY) * h}`)
     .join(" ");
+  const gradId = `sg-${color.replace("#", "")}`;
   return (
     <svg
       viewBox={`0 0 ${w} ${h}`}
@@ -187,15 +188,12 @@ function SparklineChart({ color }: { color: string }) {
       className="lnd-sparkline"
     >
       <defs>
-        <linearGradient id={`sg-${color}`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.4" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polygon
-        points={`0,${h} ${pts} ${w},${h}`}
-        fill={`url(#sg-${color})`}
-      />
+      <polygon points={`0,${h} ${pts} ${w},${h}`} fill={`url(#${gradId})`} />
       <polyline
         points={pts}
         fill="none"
@@ -212,16 +210,19 @@ function SparklineChart({ color }: { color: string }) {
    DASHBOARD MOCKUP
 ───────────────────────────────────────────── */
 function DashboardMockup() {
+  const { formatCompactCurrency } = useSystemSettings();
   return (
     <div className="lnd-mockup-shell">
       {/* Top bar */}
       <div className="lnd-mock-topbar">
         <div className="lnd-mock-dots">
-          <span style={{ background: "#ff5f56" }} />
-          <span style={{ background: "#ffbd2e" }} />
-          <span style={{ background: "#27c93f" }} />
+          <span className="lnd-bg-dot-red" />
+          <span className="lnd-bg-dot-yellow" />
+          <span className="lnd-bg-dot-green" />
         </div>
-        <div className="lnd-mock-breadcrumb">HotelOS · Grand Palace · Dashboard</div>
+        <div className="lnd-mock-breadcrumb">
+          HotelOS · Grand Palace · Dashboard
+        </div>
         <div className="lnd-mock-avatar">SA</div>
       </div>
 
@@ -230,7 +231,10 @@ function DashboardMockup() {
         {/* Mini sidebar */}
         <div className="lnd-mock-sidebar">
           {["🏠", "📅", "👤", "📊", "⚙️"].map((ic, i) => (
-            <div key={i} className={`lnd-mock-nav-item ${i === 0 ? "active" : ""}`}>
+            <div
+              key={i}
+              className={`lnd-mock-nav-item ${i === 0 ? "active" : ""}`}
+            >
               {ic}
             </div>
           ))}
@@ -241,17 +245,39 @@ function DashboardMockup() {
           {/* KPIs row */}
           <div className="lnd-mock-kpi-row">
             {[
-              { label: "Revenue", value: formatCompactCurrency(124000), color: "#C9A85C", trend: "+18%" },
-              { label: "Bookings", value: "847", color: "#DFC48A", trend: "+12%" },
-              { label: "Occupancy", value: "91%", color: "#B08D57", trend: "+5%" },
-              { label: "Guests", value: "1,203", color: "#A07830", trend: "+8%" },
+              {
+                label: "Revenue",
+                value: formatCompactCurrency(124000),
+                color: "#C9A85C",
+                trend: "+18%",
+              },
+              {
+                label: "Bookings",
+                value: "847",
+                color: "#DFC48A",
+                trend: "+12%",
+              },
+              {
+                label: "Occupancy",
+                value: "91%",
+                color: "#B08D57",
+                trend: "+5%",
+              },
+              {
+                label: "Guests",
+                value: "1,203",
+                color: "#A07830",
+                trend: "+8%",
+              },
             ].map((k) => (
               <div key={k.label} className="lnd-mock-kpi">
                 <div className="lnd-mock-kpi-label">{k.label}</div>
-                <div className="lnd-mock-kpi-val" style={{ color: k.color }}>
+                <div
+                  className={`lnd-mock-kpi-val lnd-color-${k.label.toLowerCase() === "revenue" ? "gold" : k.label.toLowerCase() === "bookings" ? "gold-light" : "grandeur"}`}
+                >
                   {k.value}
                 </div>
-                <div className="lnd-mock-kpi-trend" style={{ color: "#6EC4A4" }}>
+                <div className="lnd-mock-kpi-trend lnd-color-green">
                   ↑ {k.trend}
                 </div>
               </div>
@@ -346,15 +372,20 @@ const LandingPage = () => {
   const [kpiVisible, setKpiVisible] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => { setScrolled(window.scrollY > 20); setMobileMenuOpen(false); };
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+      setMobileMenuOpen(false);
+    };
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setKpiVisible(true); },
-      { threshold: 0.3 }
+      ([entry]) => {
+        if (entry.isIntersecting) setKpiVisible(true);
+      },
+      { threshold: 0.3 },
     );
     if (kpiRef.current) observer.observe(kpiRef.current);
     return () => observer.disconnect();
@@ -365,7 +396,9 @@ const LandingPage = () => {
 
     const loadPlans = async () => {
       try {
-        const response = await api.get<LandingPlan[]>("/public/subscription-plans");
+        const response = await api.get<LandingPlan[]>(
+          "/public/subscription-plans",
+        );
         if (!active) return;
         setPlans(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
@@ -386,7 +419,10 @@ const LandingPage = () => {
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
-    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 100);
+    setTimeout(
+      () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }),
+      100,
+    );
   };
 
   return (
@@ -408,21 +444,35 @@ const LandingPage = () => {
             <button
               className="lnd-theme-toggle"
               onClick={toggleTheme}
-              aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
-              title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+              aria-label={
+                theme === "light"
+                  ? "Switch to dark mode"
+                  : "Switch to light mode"
+              }
+              title={
+                theme === "light"
+                  ? "Switch to dark mode"
+                  : "Switch to light mode"
+              }
             >
               {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
             </button>
-            <button className="lnd-btn-ghost lnd-desktop-only" onClick={() => navigate("/login")}>
+            <button
+              className="lnd-btn-ghost lnd-desktop-only"
+              onClick={() => navigate("/login")}
+            >
               Sign In
             </button>
-            <button className="lnd-btn-primary lnd-desktop-only" onClick={() => navigate("/signup")}>
+            <button
+              className="lnd-btn-primary lnd-desktop-only"
+              onClick={() => navigate("/signup")}
+            >
               Start Free Trial
             </button>
             {/* Hamburger — mobile only */}
             <button
               className="lnd-hamburger"
-              onClick={() => setMobileMenuOpen(o => !o)}
+              onClick={() => setMobileMenuOpen((o) => !o)}
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
             >
@@ -440,8 +490,24 @@ const LandingPage = () => {
             <button onClick={() => scrollTo("pricing")}>Pricing</button>
             <button onClick={() => scrollTo("testimonials")}>Reviews</button>
             <div className="lnd-mobile-menu-cta">
-              <button className="lnd-btn-ghost" onClick={() => { navigate("/login"); setMobileMenuOpen(false); }}>Sign In</button>
-              <button className="lnd-btn-primary" onClick={() => { navigate("/login"); setMobileMenuOpen(false); }}>Start Free Trial</button>
+              <button
+                className="lnd-btn-ghost"
+                onClick={() => {
+                  navigate("/login");
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Sign In
+              </button>
+              <button
+                className="lnd-btn-primary"
+                onClick={() => {
+                  navigate("/login");
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Start Free Trial
+              </button>
             </div>
           </div>
         )}
@@ -490,7 +556,6 @@ const LandingPage = () => {
               <button
                 className="lnd-btn-primary lnd-btn-lg"
                 onClick={() => navigate("/login")}
-                id="hero-start-trial"
               >
                 Start Free Trial
                 <span className="lnd-btn-arrow">→</span>
@@ -498,7 +563,6 @@ const LandingPage = () => {
               <button
                 className="lnd-btn-outline lnd-btn-lg"
                 onClick={() => scrollTo("how-it-works")}
-                id="hero-book-demo"
               >
                 Book Demo
               </button>
@@ -520,13 +584,18 @@ const LandingPage = () => {
       <section className="lnd-trust">
         <p className="lnd-trust-label">TRUSTED BY LEADING HOSPITALITY BRANDS</p>
         <div className="lnd-trust-logos">
-          {["Grand Palace", "Oceanic Resorts", "Heritage Hotels", "Summit Group", "Azure Stays", "Pinnacle Hotels"].map(
-            (b) => (
-              <div key={b} className="lnd-trust-logo">
-                {b}
-              </div>
-            )
-          )}
+          {[
+            "Grand Palace",
+            "Oceanic Resorts",
+            "Heritage Hotels",
+            "Summit Group",
+            "Azure Stays",
+            "Pinnacle Hotels",
+          ].map((b) => (
+            <div key={b} className="lnd-trust-logo">
+              {b}
+            </div>
+          ))}
         </div>
       </section>
 
@@ -547,7 +616,11 @@ const LandingPage = () => {
 
           <div className="lnd-features-grid">
             {features.map((f, i) => (
-              <div key={f.title} className="lnd-feature-card" style={{ animationDelay: `${i * 80}ms` }}>
+              <div
+                key={f.title}
+                className="lnd-feature-card"
+                style={{ animationDelay: `${i * 80}ms` } as React.CSSProperties}
+              >
                 <div className="lnd-feature-icon">{f.icon}</div>
                 <h3 className="lnd-feature-title">{f.title}</h3>
                 <p className="lnd-feature-desc">{f.desc}</p>
@@ -559,7 +632,11 @@ const LandingPage = () => {
       </section>
 
       {/* ── ANALYTICS / KPI ── */}
-      <section className="lnd-section lnd-analytics-section" id="analytics" ref={kpiRef}>
+      <section
+        className="lnd-section lnd-analytics-section"
+        id="analytics"
+        ref={kpiRef}
+      >
         <div className="lnd-orb lnd-orb-analytics-1" />
         <div className="lnd-orb lnd-orb-analytics-2" />
         <div className="lnd-section-inner">
@@ -581,7 +658,7 @@ const LandingPage = () => {
               value={2840000}
               prefix="$"
               sub="across all branches this year"
-              color="#C9A85C"
+              variant="gold"
               isVisible={kpiVisible}
             />
             <KpiCard
@@ -589,14 +666,14 @@ const LandingPage = () => {
               value={18450}
               prefix="$"
               sub="live bookings + restaurant POS"
-              color="#DFC48A"
+              variant="gold-light"
               isVisible={kpiVisible}
             />
             <KpiCard
               label="Active Bookings"
               value={847}
               sub="confirmed reservations right now"
-              color="#B08D57"
+              variant="grandeur"
               isVisible={kpiVisible}
             />
             <KpiCard
@@ -604,7 +681,7 @@ const LandingPage = () => {
               value={91}
               suffix="%"
               sub="average across all properties"
-              color="#A07830"
+              variant="gold-dark"
               isVisible={kpiVisible}
             />
           </div>
@@ -628,28 +705,41 @@ const LandingPage = () => {
                     <div key={i} className="lnd-bar-wrapper">
                       <div
                         className="lnd-bar"
-                        style={{ height: `${h}%` }}
+                        style={{ height: `${h}%` } as React.CSSProperties}
                       >
                         <div
-                          className="lnd-bar-fill"
-                          style={{
-                            background:
-                              h === 100
-                                ? "#A07830"
-                                : "#C9A85C",
-                          }}
+                          className={`lnd-bar-fill ${h === 100 ? "lnd-bg-gold-dark" : "lnd-bg-gold"}`}
                         />
                       </div>
                       <span className="lnd-bar-label">
-                        {["J","F","M","A","M","J","J","A","S","O","N","D"][i]}
+                        {
+                          [
+                            "J",
+                            "F",
+                            "M",
+                            "A",
+                            "M",
+                            "J",
+                            "J",
+                            "A",
+                            "S",
+                            "O",
+                            "N",
+                            "D",
+                          ][i]
+                        }
                       </span>
                     </div>
-                  )
+                  ),
                 )}
               </div>
               <div className="lnd-chart-legend">
-                <span><i style={{ background: "#B08D57" }} /> Room Revenue</span>
-                <span><i style={{ background: "#C9A85C" }} /> POS Revenue</span>
+                <span>
+                  <i className="lnd-bg-grandeur" /> Room Revenue
+                </span>
+                <span>
+                  <i className="lnd-bg-gold" /> POS Revenue
+                </span>
               </div>
             </div>
           </div>
@@ -717,7 +807,6 @@ const LandingPage = () => {
                   setBilling(billing === "monthly" ? "yearly" : "monthly")
                 }
                 aria-label="Toggle billing period"
-                id="billing-toggle"
               >
                 <span className="lnd-toggle-thumb" />
               </button>
@@ -749,7 +838,9 @@ const LandingPage = () => {
                     </span>
                     <span className="lnd-plan-period">/mo</span>
                   </div>
-                  <div className="lnd-plan-branches">{formatBranchLabel(p.maxBranches)}</div>
+                  <div className="lnd-plan-branches">
+                    {formatBranchLabel(p.maxBranches)}
+                  </div>
                 </div>
                 <ul className="lnd-plan-features">
                   {p.features.map((f) => (
@@ -761,7 +852,6 @@ const LandingPage = () => {
                 <button
                   className={`lnd-plan-cta ${p.isPopular ? "lnd-btn-primary" : "lnd-btn-outline"}`}
                   onClick={() => navigate("/login")}
-                  id={`plan-cta-${p.name.toLowerCase()}`}
                 >
                   Get Started
                 </button>
@@ -793,8 +883,7 @@ const LandingPage = () => {
                 <p className="lnd-testimonial-review">"{t.review}"</p>
                 <div className="lnd-testimonial-author">
                   <div
-                    className="lnd-testimonial-avatar"
-                    style={{ background: t.color + "33", color: t.color }}
+                    className={`lnd-testimonial-avatar lnd-testimonial-avatar-themed lnd-t-${t.variant}`}
                   >
                     {t.avatar}
                   </div>
@@ -820,8 +909,8 @@ const LandingPage = () => {
             <span className="lnd-gradient-text">Smarter Today</span>
           </h2>
           <p className="lnd-cta-sub">
-            Set up your first property in minutes. No contracts, no hidden
-            fees. Scale from 1 hotel to 1,000 on a single platform.
+            Set up your first property in minutes. No contracts, no hidden fees.
+            Scale from 1 hotel to 1,000 on a single platform.
           </p>
           <div className="lnd-cta-actions">
             <button
@@ -859,7 +948,12 @@ const LandingPage = () => {
             </p>
             <div className="lnd-footer-social">
               {["𝕏", "in", "f", "▶"].map((s, i) => (
-                <a key={i} href="#" className="lnd-social-icon" aria-label={`Social link ${i + 1}`}>
+                <a
+                  key={i}
+                  href="#"
+                  className="lnd-social-icon"
+                  aria-label={`Social link ${i + 1}`}
+                >
                   {s}
                 </a>
               ))}

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { formatDistanceToNow } from "date-fns";
 import {
   Sun,
   Moon,
@@ -14,6 +15,8 @@ import {
 import api from "@/api/axios";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/hooks/useNotifications";
 import { useNavigate, useLocation } from "react-router-dom";
 
 interface AppHeaderProps {
@@ -85,6 +88,13 @@ const getPageTitle = (
     },
   };
 
+  if (pathname.includes("/notifications")) {
+    return {
+      title: "Notifications",
+      subtitle: "Relevant updates for your active access scope",
+    };
+  }
+
   if (pathname.startsWith("/workspace/"))
     return { title: "Branch Workspace", subtitle: "Active branch session" };
 
@@ -116,18 +126,30 @@ export const AppHeader = ({
 }: AppHeaderProps) => {
   const { theme, toggleTheme } = useTheme();
   const { activeBranch, branches, isLoadingBranches } = useBranchWorkspace();
+  const { user: authUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   const [user, setUser] = useState<HeaderUser | null>(null);
 
   const workspaceRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
+  const notifRef = useRef<HTMLDivElement | null>(null);
+  const { data: notificationData, isLoading: notificationsLoading } =
+    useNotifications(5);
 
   const { title, subtitle } = getPageTitle(location.pathname);
+  const notifications = notificationData?.notifications || [];
+  const isWorkspaceContext = location.pathname.startsWith("/workspace/");
+  const notificationBranchId = activeBranch?._id || authUser?.branchId || null;
+  const notificationsPath =
+    (isWorkspaceContext || authUser?.branchId) && notificationBranchId
+      ? `/workspace/${notificationBranchId}/notifications`
+      : "/notifications";
 
   useEffect(() => {
     const fetchHeaderData = async () => {
@@ -178,6 +200,10 @@ export const AppHeader = ({
         !workspaceRef.current.contains(e.target as Node)
       ) {
         setWorkspaceOpen(false);
+      }
+
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
       }
     };
 
@@ -313,14 +339,81 @@ export const AppHeader = ({
           {theme === "light" ? <Moon size={17} /> : <Sun size={17} />}
         </button>
 
-        <button
-          type="button"
-          className="header-icon-btn header-notif-btn"
-          aria-label="Notifications"
-        >
-          <Bell size={17} />
-          <span className="notif-dot" />
-        </button>
+        <div className="dropdown-container" ref={notifRef}>
+          <button
+            type="button"
+            className="header-icon-btn header-notif-btn"
+            aria-label="Notifications"
+            aria-haspopup="menu"
+            aria-expanded={notifOpen}
+            onClick={() => setNotifOpen((prev) => !prev)}
+          >
+            <Bell size={17} />
+            {notifications.length > 0 && <span className="notif-dot" />}
+          </button>
+
+          {notifOpen && (
+            <div className="dropdown-menu notifications-dropdown">
+              <div className="notifications-dropdown-header">
+                <div>
+                  <p className="notifications-dropdown-title">Notifications</p>
+                  <p className="notifications-dropdown-subtitle">
+                    Filtered by role, branch, and module access
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="notifications-view-all"
+                  onClick={() => {
+                    navigate(notificationsPath);
+                    setNotifOpen(false);
+                  }}
+                >
+                  View all
+                </button>
+              </div>
+
+              <div className="notifications-dropdown-body">
+                {notificationsLoading ? (
+                  <p className="notifications-empty">Loading notifications...</p>
+                ) : notifications.length === 0 ? (
+                  <p className="notifications-empty">
+                    No notifications in your allowed scope.
+                  </p>
+                ) : (
+                  notifications.map((notification) => (
+                    <button
+                      key={notification._id}
+                      type="button"
+                      className="notification-item"
+                      onClick={() => {
+                        navigate(notificationsPath);
+                        setNotifOpen(false);
+                      }}
+                    >
+                      <div className="notification-item-top">
+                        <span className="notification-item-title">
+                          {notification.title}
+                        </span>
+                        <span className="notification-item-module">
+                          {notification.module}
+                        </span>
+                      </div>
+                      <p className="notification-item-message">
+                        {notification.message}
+                      </p>
+                      <span className="notification-item-time">
+                        {formatDistanceToNow(new Date(notification.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <button
           type="button"

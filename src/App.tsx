@@ -61,6 +61,7 @@ import HR from "./pages/workspace/hr/HR";
 import AddStaff from "./pages/workspace/hr/AddStaff";
 import Finance from "./pages/workspace/Finance";
 import BranchSettings from "./pages/workspace/BranchSettings";
+import Notifications from "./pages/Notifications";
 import PlatformUsers from "./pages/platform/PlatformUsers";
 
 const queryClient = new QueryClient();
@@ -271,6 +272,14 @@ const App = () => {
                           element={<Integrations />}
                         />
                         <Route path="/settings" element={<SystemSettings />} />
+                        <Route
+                          path="/notifications"
+                          element={
+                            <ProtectedRoute>
+                              <Notifications />
+                            </ProtectedRoute>
+                          }
+                        />
 
                         <Route
                           path="/workspace/:branchId"
@@ -348,6 +357,15 @@ const App = () => {
 
                           <Route
                             path="crm/add"
+                            element={
+                              <ProtectedRoute permission="ACCESS_CRM">
+                                <AddGuest />
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          <Route
+                            path="crm/edit/:guestId"
                             element={
                               <ProtectedRoute permission="ACCESS_CRM">
                                 <AddGuest />
@@ -477,6 +495,15 @@ const App = () => {
                             element={
                               <ProtectedRoute permission="ACCESS_BRANCH_SETTINGS">
                                 <BranchSettings />
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          <Route
+                            path="notifications"
+                            element={
+                              <ProtectedRoute>
+                                <Notifications />
                               </ProtectedRoute>
                             }
                           />

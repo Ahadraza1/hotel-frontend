@@ -29,6 +29,8 @@ import {
   X,
   Utensils,
   Send,
+  Wallet,
+  Smartphone,
 } from "lucide-react";
 
 interface Category {
@@ -73,6 +75,8 @@ const POS = () => {
   const [showCart, setShowCart] = useState(false);
   const [search, setSearch] = useState("");
   const [tableNumber, setTableNumber] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<string>("CASH");
+  const [amountReceived, setAmountReceived] = useState<string>("0.00");
   interface LiveOrder {
     orderId: string;
     tableNumber?: string;
@@ -129,11 +133,12 @@ const POS = () => {
     }
   };
 
-  const filteredMenu = menu.filter(
-    (item) =>
-      item.categoryId === selectedCategory &&
-      item.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredMenu = menu.filter((item) => {
+    const matchesCategory =
+      selectedCategory === null || item.categoryId === selectedCategory;
+    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const selectedCategoryDetails =
     categories.find((category) => category.categoryId === selectedCategory) ||
@@ -231,13 +236,13 @@ const POS = () => {
 
   const getCategoryIcon = (name: string) => {
     const lower = name.toLowerCase();
-    if (lower.includes("starter")) return <UtensilsCrossed size={16} />;
-    if (lower.includes("main")) return <ConciergeBell size={16} />;
-    if (lower.includes("beverage")) return <Coffee size={16} />;
-    if (lower.includes("wine") || lower.includes("spirit"))
-      return <Wine size={16} />;
-    if (lower.includes("dessert")) return <Cake size={16} />;
-    return <UtensilsCrossed size={16} />;
+    if (lower.includes("appetizer") || lower.includes("starter")) return "🥗";
+    if (lower.includes("main")) return "🥘";
+    if (lower.includes("pasta")) return "🍝";
+    if (lower.includes("seafood")) return "🍤";
+    if (lower.includes("dessert")) return "🍰";
+    if (lower.includes("beverage") || lower.includes("drink")) return "🥤";
+    return "🍴";
   };
 
   const editCategory = () => {
@@ -294,179 +299,168 @@ const POS = () => {
   return (
     <div className="pos-layout">
       {/* LEFT SIDE: MENU SECTION */}
-      <div className="pos-menu-section p-6">
-        {/* HEADER */}
-        <div className="rm-page-header mb-8">
-          <div className="rm-title-group">
-            <div className="add-branch-header-icon-wrap bg-[hsl(var(--primary)/0.1)]">
-              <UtensilsCrossed className="add-branch-header-icon text-[hsl(var(--primary))]" />
+      <div className="pos-menu-section">
+        {/* TOP BAR: SEARCH & BRANCH INFO */}
+        <div className="pos-top-bar px-6 pt-6 pb-4">
+          <div className="pos-top-bar-content flex justify-between items-center w-full gap-4">
+            <div className="pos-search-wrapper flex-1">
+              <Search className="pos-search-icon" size={18} />
+              <input
+                type="text"
+                placeholder="Search menu items..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pos-search-input-refined"
+              />
             </div>
-            <div>
-              <h1 className="page-title text-2xl font-bold tracking-tight">Restaurant POS</h1>
-              <p className="page-subtitle text-muted-foreground text-sm">Global Point of Sale Terminal</p>
-            </div>
-          </div>
-          <div className="rm-header-actions">
-            {(canCreate || canUpdate || canDelete) && (
-              <div className="flex gap-2 flex-wrap">
-                {canCreate && (
-                  <button
-                    className="luxury-btn luxury-btn-outline"
-                    onClick={() => navigate(`/workspace/${branchId}/pos/category/add`)}
-                  >
-                    <Plus size={15} /> Add Category
-                  </button>
-                )}
-                {canCreate && (
-                  <button
-                    className="luxury-btn luxury-btn-outline"
-                    onClick={() => navigate(`/workspace/${branchId}/pos/menu/add`)}
-                  >
-                    <Plus size={15} /> Add Menu
-                  </button>
-                )}
-                {canUpdate && selectedCategoryDetails && (
-                  <button
-                    className="luxury-btn luxury-btn-outline"
-                    onClick={editCategory}
-                  >
-                    <Pencil size={15} /> Edit Category
-                  </button>
-                )}
-                {canDelete && selectedCategoryDetails && (
-                  <button
-                    className="luxury-btn luxury-btn-outline"
-                    onClick={deleteCategory}
-                  >
-                    <Trash2 size={15} /> Delete Category
-                  </button>
-                )}
-              </div>
-            )}
-            <div className="flex items-center gap-2 bg-[hsl(var(--muted))] text-muted-foreground px-3 py-2 rounded-md border border-[hsl(var(--border))] text-[13px] opacity-80 pointer-events-none whitespace-nowrap hidden sm:flex">
-              <Clock size={16} />
-              <span>
-                {new Date().toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
-            </div>
-          </div>
-        </div>
 
-        {/* SEARCH BAR */}
-        <div className="mb-6">
-          <div className="inv-search-wrap !max-w-none w-full">
-            <Search className="inv-search-icon" />
-            <input
-              placeholder="Search menu items..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="inv-search-input"
-            />
-          </div>
-        </div>
-
-        {/* CATEGORY TABS */}
-        <div className="pos-category-tabs mb-6 pb-2 scrollbar-custom border-b border-[hsl(var(--border))] border-opacity-50">
-          {categories.map((cat) => (
-            <button
-              key={cat.categoryId}
-              onClick={() => setSelectedCategory(cat.categoryId)}
-              className={`pos-category-btn flex items-center gap-2 ${selectedCategory === cat.categoryId ? "active" : ""}`}
-            >
-              {getCategoryIcon(cat.name)}
-              <span>{cat.name}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* MENU GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredMenu.map((item) => (
-            <div
-              key={item.itemId}
-              onClick={() => !item.isSoldOut && addToCart(item)}
-              className={`pos-menu-card ${item.isSoldOut ? "opacity-70" : ""}`}
-            >
-              <div>
-                <div className="pos-menu-title">{item.name}</div>
-                {item.description && (
-                  <div className="pos-menu-desc mt-1 line-clamp-2">
-                    {item.description}
-                  </div>
-                )}
-              </div>
-              <div className="flex justify-between items-center mt-4 pt-2">
-                <div className="pos-menu-price">{formatCurrency(item.price)}</div>
-                <div
-                  className="flex items-center gap-2"
-                  onClick={(event) => event.stopPropagation()}
+            <div className="pos-management-toolbar flex items-center gap-2">
+              {canCreate && (
+                <button
+                  className="pos-mgmt-btn add"
+                  onClick={() => navigate(`/workspace/${branchId}/pos/category/add`)}
+                  title="Add Category"
                 >
+                  <Plus size={16} />
+                  <span>Category</span>
+                </button>
+              )}
+              {canCreate && (
+                <button
+                  className="pos-mgmt-btn add"
+                  onClick={() => navigate(`/workspace/${branchId}/pos/menu/add`)}
+                  title="Add Menu Item"
+                >
+                  <Utensils size={16} />
+                  <span>Menu Item</span>
+                </button>
+              )}
+
+              {selectedCategory && (
+                <div className="flex items-center gap-2 ml-2 pl-4 border-l border-border/40">
                   {canUpdate && (
                     <button
-                      type="button"
-                      className="rm-icon-btn"
-                      onClick={() => editItem(item.itemId)}
-                      title="Edit menu item"
+                      className="pos-mgmt-btn edit"
+                      onClick={editCategory}
+                      title="Edit Selected Category"
                     >
                       <Pencil size={15} />
                     </button>
                   )}
                   {canDelete && (
                     <button
-                      type="button"
-                      className="rm-icon-btn rm-icon-btn-danger"
-                      onClick={() => deleteItem(item)}
-                      title="Delete menu item"
+                      className="pos-mgmt-btn delete"
+                      onClick={deleteCategory}
+                      title="Delete Selected Category"
                     >
                       <Trash2 size={15} />
                     </button>
                   )}
-                  {item.isSoldOut && (
-                    <div className="pos-status-badge pos-status-soldout">
-                      SOLD OUT
-                    </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* CATEGORY LIST (HORIZONTAL SCROLL) */}
+        <div className="pos-category-container px-6 mb-4">
+          <div className="pos-category-scroller scrollbar-hide">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`pos-cat-pill ${selectedCategory === null ? "active" : ""}`}
+            >
+              All
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat.categoryId}
+                onClick={() => setSelectedCategory(cat.categoryId)}
+                className={`pos-cat-pill ${selectedCategory === cat.categoryId ? "active" : ""}`}
+              >
+                <span>{getCategoryIcon(cat.name)}</span>
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* MENU GRID */}
+        <div className="pos-menu-grid-container px-6 pb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredMenu.map((item, idx) => (
+              <div
+                key={item.itemId}
+                onClick={() => !item.isSoldOut && addToCart(item)}
+                className={`pos-item-card-refined group ${item.isSoldOut ? "sold-out" : ""}`}
+              >
+                <div className={`pos-item-visual bg-gradient-to-br pos-gradient-${(idx % 6) + 1}`}>
+                   {item.isSoldOut && <span className="pos-unavailable-badge">Unavailable</span>}
+                </div>
+                <div className="pos-item-content">
+                  <h3 className="pos-item-name-refined">{item.name}</h3>
+                  <div className="pos-item-meta">
+                    <span className="pos-item-price-refined">{formatCurrency(item.price)}</span>
+                    <span className="pos-item-time-refined">
+                      <Clock size={12} className="inline mr-1 opacity-60" />
+                      {Math.floor(Math.random() * 20) + 5}m
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quick Actions (Hover) */}
+                <div className="pos-item-actions-refined opacity-0 group-hover:opacity-100 transition-opacity">
+                  {canUpdate && (
+                    <button
+                      className="pos-item-action-btn-refined"
+                      onClick={(e) => { e.stopPropagation(); editItem(item.itemId); }}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button
+                      className="pos-item-action-btn-refined text-destructive"
+                      onClick={(e) => { e.stopPropagation(); deleteItem(item); }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
       {/* RIGHT SIDE: CART PANEL */}
-      <div className={`pos-cart-panel ${showCart ? "active" : ""}`}>
-        <div className="pos-cart-header-area">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="pos-cart-title underline decoration-[hsl(var(--primary)/0.3)] underline-offset-8">Current Order</h3>
-              <p className="pos-cart-subtitle">Review items to complete payment</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                className="pos-clear-btn"
-                onClick={() => setCart([])}
-              >
-                CLEAR ALL
+      <div className={`pos-order-panel ${showCart ? "active" : ""}`}>
+        <div className="pos-order-panel-header p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="pos-panel-title">Current Order</h2>
+            {cart.length > 0 && (
+              <button className="pos-panel-clear" onClick={() => setCart([])}>
+                Clear All
               </button>
-              <button
-                className="pos-close-btn"
-                onClick={() => setShowCart(false)}
-                title="Collapse order panel"
-              >
-                <X size={20} strokeWidth={2.5} />
-              </button>
-            </div>
+            )}
+            <button className="pos-panel-close lg:hidden" onClick={() => setShowCart(false)}>
+              <X size={20} />
+            </button>
           </div>
 
-          <div className="pos-table-badge">
-            <Users size={16} className="text-muted-foreground" />
+          {/* ORDER TYPE TABS (Mockup) */}
+          <div className="pos-order-tabs">
+            <button className="pos-order-tab active">Dine-in</button>
+            <button className="pos-order-tab">Takeaway</button>
+            <button className="pos-order-tab">Delivery</button>
+          </div>
+
+          {/* TABLE SELECTOR */}
+          <div className="pos-select-wrap mt-4">
+            <Users className="pos-select-icon" size={16} />
             <select
               value={tableNumber}
               onChange={(e) => setTableNumber(e.target.value)}
-              className="pos-table-select"
+              className="pos-select-input-refined"
             >
               <option value="">Select Table</option>
               {tables.map((tbl) => (
@@ -478,175 +472,194 @@ const POS = () => {
           </div>
         </div>
 
-        {/* SCROLLABLE AREA: ITEMS + DISCOUNTS + SUMMARY */}
-        <div className="pos-cart-scroll-area scrollbar-custom">
+        {/* ORDER ITEMS (SCROLLABLE) */}
+        <div className="pos-order-items-list px-6 scrollbar-custom">
           {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-50 py-20 grow">
-              <ShoppingCart size={40} strokeWidth={1.5} className="mb-4" />
-              <p className="text-sm font-medium tracking-tight">Cart is currently empty</p>
+            <div className="pos-empty-state">
+              <ShoppingCart size={48} strokeWidth={1} className="mb-4 opacity-20" />
+              <p>No items in cart</p>
             </div>
           ) : (
-            <>
-              {/* CART ITEMS LIST */}
-              <div className="flex flex-col gap-4">
-                {cart.map((item) => (
-                  <div key={item.itemId} className="pos-order-item">
-                    <div className="pos-order-item-header">
-                      <div>
-                        <p className="pos-order-item-name">{item.name}</p>
-                        <p className="pos-order-item-price">{formatCurrency(item.price)} / each</p>
-                      </div>
-                      <span className="pos-order-item-total">
-                        {formatCurrency(item.price * item.quantity)}
-                      </span>
-                    </div>
-                    <div className="pos-order-item-actions">
-                      <div className="pos-qty-control">
-                        <button className="pos-qty-btn" onClick={() => updateQty(item.itemId, -1)}>
-                          <Minus size={14} />
-                        </button>
-                        <span className="pos-qty-val">{item.quantity}</span>
-                        <button className="pos-qty-btn" onClick={() => updateQty(item.itemId, 1)}>
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                      <button
-                        onClick={() => setCart(cart.filter((c) => c.itemId !== item.itemId))}
-                        className="pos-order-item-remove-btn"
-                        title="Remove item"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+            <div className="flex flex-col gap-4 py-2">
+              {cart.map((item) => (
+                <div key={item.itemId} className="pos-order-card-refined">
+                  <div className="pos-order-card-main">
+                    <span className="pos-order-card-name">{item.name}</span>
+                    <span className="pos-order-card-price">{formatCurrency(item.price * item.quantity)}</span>
                   </div>
-                ))}
-              </div>
-
-              {/* DISCOUNT SELECTOR */}
-              <div className="mt-8 border-t pt-8">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
-                  Apply Discount
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {[0, 5, 10, 15, 20].map((pct) => (
-                    <button
-                      key={pct}
-                      onClick={() => setDiscount(pct)}
-                      className={`pos-discount-btn ${discount === pct ? "active" : ""}`}
+                  <div className="pos-order-card-footer mt-3">
+                    <div className="pos-qty-refiner">
+                      <button onClick={() => updateQty(item.itemId, -1)}>-</button>
+                      <span>{item.quantity}</span>
+                      <button onClick={() => updateQty(item.itemId, 1)}>+</button>
+                    </div>
+                    <button 
+                      className="pos-order-remove-refined"
+                      onClick={() => setCart(cart.filter((c) => c.itemId !== item.itemId))}
                     >
-                      {pct}%
+                      <Trash2 size={14} />
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* SUMMARY BOX */}
-              <div className="pos-summary-box mt-8">
-                <div className="pos-summary-row">
-                  <span>Subtotal ({cart.reduce((a, c) => a + c.quantity, 0)} items)</span>
-                  <span className="pos-summary-value">{formatCurrency(subTotal)}</span>
-                </div>
-                <div className="pos-summary-row">
-                  <span>Tax ({branchTaxPercentage}%)</span>
-                  <span className="pos-summary-value">{formatCurrency(taxAmount)}</span>
-                </div>
-                <div className="pos-summary-row">
-                  <span>Service ({branchServiceChargePercentage}%)</span>
-                  <span className="pos-summary-value">{formatCurrency(serviceCharge)}</span>
-                </div>
-                {discount > 0 && (
-                  <div className="pos-summary-row text-emerald-600 font-bold bg-emerald-50/50 p-2 rounded-lg -mx-1 border border-emerald-100">
-                    <span>Discount ({discount}%)</span>
-                    <span>-{formatCurrency(discountAmount)}</span>
                   </div>
-                )}
-              </div>
-            </>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* FIXED FOOTER AREA: TOTAL + ACTIONS */}
-        <div className="pos-cart-footer-area sticky-bottom">
-          <div className="pos-summary-total">
-            <span className="pos-total-label">Payable amount</span>
-            <span className="pos-total-amount">{formatCurrency(total)}</span>
+        {/* ORDER TOTAL & ACTIONS (FIXED) */}
+        <div className="pos-order-panel-footer p-6">
+          <div className="pos-bill-summary mt-6">
+            <div className="pos-discount-section mb-4">
+              <label className="pos-discount-label">% DISCOUNT</label>
+              <div className="pos-discount-chips">
+                {[0, 5, 10, 15, 20].map((val) => (
+                  <button
+                    key={val}
+                    className={`pos-discount-chip ${discount === val ? "active" : ""}`}
+                    onClick={() => setDiscount(val)}
+                  >
+                    {val}%
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pos-bill-row">
+              <span className="opacity-70">Subtotal ({cart.reduce((a, b) => a + b.quantity, 0)} items)</span>
+              <span>{formatCurrency(subTotal)}</span>
+            </div>
+            
+            {discount > 0 && (
+              <div className="pos-bill-row discount">
+                <span>Discount ({discount}%)</span>
+                <span>-{formatCurrency(discountAmount)}</span>
+              </div>
+            )}
+
+            <div className="pos-bill-row">
+              <span className="opacity-70">Tax ({branchTaxPercentage}%)</span>
+              <span>{formatCurrency(taxAmount)}</span>
+            </div>
+
+            {branchServiceChargePercentage > 0 && (
+              <div className="pos-bill-row">
+                <span className="opacity-70">Service Charge ({branchServiceChargePercentage}%)</span>
+                <span>{formatCurrency(serviceCharge)}</span>
+              </div>
+            )}
+
+            <div className="pos-bill-row total">
+              <span>Total</span>
+              <span>{formatCurrency(total)}</span>
+            </div>
           </div>
 
-          {showPayment ? (
-            <div className="mt-6">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
-                Payment Method
-              </p>
-              <div className="grid grid-cols-3 gap-3">
-                <button
-                  className="flex flex-col items-center gap-2 p-4 bg-slate-50 border-2 border-transparent rounded-2xl hover:border-[hsl(var(--primary))] hover:bg-white transition-all group"
-                  onClick={() => placeOrder("CARD")}
-                >
-                  <CreditCard className="text-slate-400 group-hover:text-[hsl(var(--primary))] mb-1" />
-                  <span className="text-[11px] font-black">CARD</span>
-                </button>
-                <button
-                  className="flex flex-col items-center gap-2 p-4 bg-slate-50 border-2 border-transparent rounded-2xl hover:border-[hsl(var(--primary))] hover:bg-white transition-all group"
-                  onClick={() => placeOrder("CASH")}
-                >
-                  <Banknote className="text-slate-400 group-hover:text-[hsl(var(--primary))] mb-1" />
-                  <span className="text-[11px] font-black">CASH</span>
-                </button>
-                <button
-                  className="flex flex-col items-center gap-2 p-4 bg-slate-50 border-2 border-transparent rounded-2xl hover:border-[hsl(var(--primary))] hover:bg-white transition-all group"
-                  onClick={() => placeOrder("ROOM")}
-                >
-                  <Building className="text-slate-400 group-hover:text-[hsl(var(--primary))] mb-1" />
-                  <span className="text-[11px] font-black">ROOM</span>
-                </button>
-              </div>
-              <button
-                onClick={() => setShowPayment(false)}
-                className="w-full mt-4 py-2 text-slate-400 text-[11px] font-bold uppercase tracking-widest hover:text-slate-600 transition-colors"
-              >
-                ← Back to Order
-              </button>
-            </div>
-          ) : (
-            <div className="pos-btn-grid">
-              <button
-                className="pos-action-btn pos-btn-kot group"
-                onClick={() => placeOrder()}
-                disabled={cart.length === 0}
-              >
-                <div className="rotate-[-45deg] transition-transform group-hover:scale-125 group-hover:rotate-0">
-                  <Send size={15} />
-                </div>
-                <span>Send KOT</span>
-              </button>
-              <button
-                className="pos-action-btn pos-btn-pay"
-                onClick={() => setShowPayment(true)}
-                disabled={cart.length === 0}
-              >
-                <CreditCard size={18} />
-                <span>Pay Now</span>
-              </button>
-              <button className="pos-action-btn pos-btn-bill">
-                <Printer size={18} />
-                <span>Bill</span>
-              </button>
-            </div>
-          )}
+          <div className="pos-panel-actions mt-6">
+             <button 
+               className="pos-btn-refined-outline"
+               onClick={() => placeOrder()}
+               disabled={cart.length === 0 || !tableNumber}
+             >
+               <Send size={16} className="rotate-45" /> Send KOT
+             </button>
+             <button 
+               className="pos-btn-refined-primary"
+               onClick={() => {
+                 setAmountReceived("0.00");
+                 setShowPayment(true);
+               }}
+               disabled={cart.length === 0 || !tableNumber}
+             >
+               <CreditCard size={18} /> Charge
+             </button>
+          </div>
         </div>
       </div>
 
+      {/* PAYMENT MODAL */}
+      {showPayment && (
+        <div className="pos-modal-overlay">
+          <div className="pos-payment-modal animate-fade-in">
+            <div className="pos-modal-header">
+              <h3>Payment</h3>
+              <button 
+                className="pos-modal-close" 
+                onClick={() => setShowPayment(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="pos-modal-body p-8">
+              <div className="text-center mb-8">
+                <p className="pos-due-label">TOTAL DUE</p>
+                <h2 className="pos-due-amount">{formatCurrency(total)}</h2>
+              </div>
 
-      {/* MOBILE CART BUTTON */}
-      {cart.length > 0 && !showCart && (
-        <button
-          onClick={() => setShowCart(true)}
-          className="pos-cart-floating flex items-center gap-3 z-[999] text-[15px] font-medium"
-        >
-          <ShoppingCart size={18} /> {cart.reduce((a, c) => a + c.quantity, 0)}{" "}
-          items • {formatCurrency(total)}
+              <div className="pos-payment-methods mb-8">
+                <button 
+                  className={`pos-method-btn ${paymentMethod === "CASH" ? "active" : ""}`}
+                  onClick={() => setPaymentMethod("CASH")}
+                >
+                  <Banknote size={24} />
+                  <span>Cash</span>
+                </button>
+                <button 
+                  className={`pos-method-btn ${paymentMethod === "CARD" ? "active" : ""}`}
+                  onClick={() => setPaymentMethod("CARD")}
+                >
+                  <CreditCard size={24} />
+                  <span>Card</span>
+                </button>
+                <button 
+                  className={`pos-method-btn ${paymentMethod === "UPI" ? "active" : ""}`}
+                  onClick={() => setPaymentMethod("UPI")}
+                >
+                  <Smartphone size={24} />
+                  <span>UPI</span>
+                </button>
+                <button 
+                  className={`pos-method-btn ${paymentMethod === "WALLET" ? "active" : ""}`}
+                  onClick={() => setPaymentMethod("WALLET")}
+                >
+                  <Wallet size={24} />
+                  <span>Wallet</span>
+                </button>
+              </div>
+
+              <div className="pos-input-group mb-8">
+                <label className="pos-input-label">Amount Received</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  className="pos-modal-input"
+                  value={amountReceived}
+                  onChange={(e) => setAmountReceived(e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                />
+              </div>
+
+              <button 
+                className="pos-confirm-payment-btn"
+                onClick={() => placeOrder(paymentMethod)}
+              >
+                Confirm Payment · {formatCurrency(total)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE CART TRIGGER */}
+      {!showCart && cart.length > 0 && (
+        <button className="pos-mobile-cart-btn" onClick={() => setShowCart(true)}>
+          <ShoppingCart size={20} />
+          <span>{cart.reduce((a, b) => a + b.quantity, 0)} items</span>
+          <span className="ml-auto font-bold">{formatCurrency(total)}</span>
         </button>
       )}
+
+      {/* ACTIONS (CATEGORY/MENU) - PORTABLE BTNS */}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import api from "@/api/axios";
+import { useConfirm } from "@/components/confirm/ConfirmProvider";
 import {
   Star,
   Ban,
@@ -16,6 +17,8 @@ import {
   MoreHorizontal,
   X,
   SlidersHorizontal,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
 interface Guest {
@@ -55,15 +58,18 @@ interface GuestProfile {
 const CRM = () => {
   const { branchId } = useParams();
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const { formatCurrency } = useSystemSettings();
   const { user } = useAuth();
-  const { canAccess, canCreate, canUpdate } = useModulePermissions("CRM");
+  const { canAccess, canCreate, canUpdate, canDelete } =
+    useModulePermissions("CRM");
 
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
 
   const canManageGuests = canCreate || canUpdate;
+  const canShowActions = canManageGuests || canDelete;
 
   const [guests, setGuests] = useState<Guest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +78,7 @@ const CRM = () => {
   const [filterType, setFilterType] = useState("ALL");
   const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null);
   const [profileData, setProfileData] = useState<GuestProfile | null>(null);
+  const [openActionId, setOpenActionId] = useState<string | null>(null);
 
   const fetchGuests = useCallback(async () => {
     try {
@@ -99,6 +106,27 @@ const CRM = () => {
   const toggleBlacklist = async (guestId: string) => {
     await api.patch(`/crm/guests/${guestId}/blacklist`);
     fetchGuests();
+  };
+
+  const handleDeleteGuest = async (guestId: string, guestName: string) => {
+    const confirmed = await confirm({
+      title: "Delete Guest",
+      message: `Are you sure you want to delete ${guestName}?`,
+      successMessage: "Guest deleted successfully.",
+      errorMessage: "Failed to delete guest.",
+      onConfirm: async () => {
+        await api.delete(`/crm/guests/${guestId}`);
+      },
+    });
+
+    if (confirmed) {
+      setOpenActionId(null);
+      if (selectedGuestId === guestId) {
+        setSelectedGuestId(null);
+        setProfileData(null);
+      }
+      await fetchGuests();
+    }
   };
 
   const viewProfile = async (guestId: string) => {
@@ -285,7 +313,7 @@ const CRM = () => {
                 <th>Contact Information</th>
                 <th>Loyalty Data</th>
                 <th>Tags & Flags</th>
-                {canUpdate && <th className="crm-th-actions">Actions</th>}
+                {canShowActions && <th className="crm-th-actions">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -343,43 +371,98 @@ const CRM = () => {
                       </div>
                     </td>
 
-                    <td>
-                      {canUpdate && (
-                        <td>
-                          <div className="crm-td-actions">
-                            <button
-                              aria-label={`Toggle VIP status`}
-                              onClick={() => toggleVIP(guest.guestId)}
-                              className={`crm-icon-btn crm-icon-btn-star ${guest.vipStatus ? "active" : ""}`}
-                              title="Toggle VIP"
-                            >
-                              <Star
-                                size={15}
-                                strokeWidth={guest.vipStatus ? 3 : 2}
-                              />
-                            </button>
+                    {canShowActions && (
+                      <td>
+                        <div className="bk-action-wrapper">
+                          <button
+                            className="bk-action-trigger"
+                            aria-label="Open actions menu"
+                            aria-haspopup="true"
+                            aria-expanded={openActionId === guest.guestId}
+                            onClick={() =>
+                              setOpenActionId(
+                                openActionId === guest.guestId
+                                  ? null
+                                  : guest.guestId,
+                              )
+                            }
+                          >
+                            <MoreHorizontal size={18} aria-hidden="true" />
+                          </button>
 
-                            <button
-                              aria-label={`Toggle Blacklist`}
-                              onClick={() => toggleBlacklist(guest.guestId)}
-                              className={`crm-icon-btn crm-icon-btn-ban ${guest.blacklisted ? "active" : ""}`}
-                              title="Toggle Blacklist"
-                            >
-                              <Ban size={15} />
-                            </button>
+                          {openActionId === guest.guestId && (
+                            <div className="bk-action-menu">
+                              <button
+                                className="bk-action-item"
+                                onClick={() => {
+                                  void viewProfile(guest.guestId);
+                                  setOpenActionId(null);
+                                }}
+                              >
+                                <Eye size={15} />
+                                View
+                              </button>
 
-                            <button
-                              aria-label={`View full dossier`}
-                              onClick={() => viewProfile(guest.guestId)}
-                              className="crm-icon-btn crm-icon-btn-view"
-                              title="View Profile"
-                            >
-                              <Eye size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      )}
-                    </td>
+                              {canUpdate && (
+                                <>
+                                  <button
+                                    className="bk-action-item"
+                                    onClick={() => {
+                                      void toggleVIP(guest.guestId);
+                                      setOpenActionId(null);
+                                    }}
+                                  >
+                                    <Star size={15} />
+                                    {guest.vipStatus ? "Remove VIP" : "Mark VIP"}
+                                  </button>
+
+                                  <button
+                                    className="bk-action-item"
+                                    onClick={() => {
+                                      void toggleBlacklist(guest.guestId);
+                                      setOpenActionId(null);
+                                    }}
+                                  >
+                                    <Ban size={15} />
+                                    {guest.blacklisted
+                                      ? "Remove Blacklist"
+                                      : "Blacklist"}
+                                  </button>
+
+                                  <button
+                                    className="bk-action-item"
+                                    onClick={() => {
+                                      navigate(
+                                        `/workspace/${branchId}/crm/edit/${guest.guestId}`,
+                                      );
+                                      setOpenActionId(null);
+                                    }}
+                                  >
+                                    <Pencil size={15} />
+                                    Edit
+                                  </button>
+                                </>
+                              )}
+
+                              {canDelete && (
+                                <button
+                                  className="bk-action-item bk-action-danger"
+                                  onClick={() => {
+                                    void handleDeleteGuest(
+                                      guest.guestId,
+                                      `${guest.firstName} ${guest.lastName || ""}`.trim(),
+                                    );
+                                  }}
+                                >
+                                  <Trash2 size={15} />
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

@@ -6,6 +6,8 @@ import {
   UserCheck,
   X,
   Trash2,
+  Pencil,
+  Loader2,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import api from "@/api/axios";
@@ -17,11 +19,24 @@ interface User {
   name: string;
   email: string;
   role: string;
+  roleRef?:
+    | {
+        _id: string;
+        name: string;
+        normalizedName?: string;
+      }
+    | string;
   organizationId?: string | null;
   branchId?: {
     name?: string;
   } | null;
   isActive: boolean;
+}
+
+interface Role {
+  _id: string;
+  name: string;
+  normalizedName: string;
 }
 
 interface RoleDistribution {
@@ -31,66 +46,72 @@ interface RoleDistribution {
   dotClass: string;
 }
 
+interface RoleEditState {
+  user: User;
+  selectedRole: string;
+}
+
+const ROLE_CHART_COLORS = [
+  "hsl(41, 55%, 57%)",
+  "hsl(160, 59%, 30%)",
+  "hsl(210, 40%, 50%)",
+  "hsl(0, 58%, 39%)",
+  "hsl(280, 40%, 50%)",
+  "hsl(30, 40%, 50%)",
+];
+
+const ROLE_DOT_CLASSES = [
+  "dot-gold",
+  "dot-emerald",
+  "dot-blue",
+  "dot-danger",
+  "dot-violet",
+  "dot-orange",
+];
+
+const buildRoleDistribution = (usersData: User[]): RoleDistribution[] => {
+  const distributionMap: Record<string, number> = {};
+
+  usersData.forEach((user) => {
+    distributionMap[user.role] = (distributionMap[user.role] || 0) + 1;
+  });
+
+  return Object.keys(distributionMap).map((role, index) => ({
+    name: role,
+    value: distributionMap[role],
+    color: ROLE_CHART_COLORS[index % ROLE_CHART_COLORS.length],
+    dotClass: ROLE_DOT_CLASSES[index % ROLE_DOT_CLASSES.length],
+  }));
+};
+
 const UsersRoles = () => {
   const toast = useToast();
   const confirm = useConfirm();
   const { user: currentUser } = useAuth();
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<string[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [roleDistribution, setRoleDistribution] = useState<RoleDistribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusUpdatingIds, setStatusUpdatingIds] = useState<string[]>([]);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
+  const [roleUpdatingIds, setRoleUpdatingIds] = useState<string[]>([]);
+  const [roleEditor, setRoleEditor] = useState<RoleEditState | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [usersRes, rolesRes] = await Promise.all([
           api.get<{ data: User[] }>("/users"),
-          api.get<{ data: { name: string }[] }>("/roles"),
+          api.get<{ data: Role[] }>("/roles"),
         ]);
 
         const usersData = usersRes.data.data || [];
         const rolesData = rolesRes.data.data || [];
 
         setUsers(usersData);
-        setRoles(rolesData.map((r) => r.name));
-
-        // 🔥 Calculate role distribution dynamically
-        const distributionMap: Record<string, number> = {};
-        usersData.forEach((u: User) => {
-          distributionMap[u.role] = (distributionMap[u.role] || 0) + 1;
-        });
-
-        const colors = [
-          "hsl(41, 55%, 57%)",
-          "hsl(160, 59%, 30%)",
-          "hsl(210, 40%, 50%)",
-          "hsl(0, 58%, 39%)",
-          "hsl(280, 40%, 50%)",
-          "hsl(30, 40%, 50%)",
-        ];
-
-        const dotClasses = [
-          "dot-gold",
-          "dot-emerald",
-          "dot-blue",
-          "dot-danger",
-          "dot-violet",
-          "dot-orange",
-        ];
-
-        const formattedDistribution: RoleDistribution[] = Object.keys(distributionMap).map(
-          (role, index) => ({
-            name: role,
-            value: distributionMap[role],
-            color: colors[index % colors.length],
-            dotClass: dotClasses[index % dotClasses.length],
-          })
-        );
-
-        setRoleDistribution(formattedDistribution);
+        setRoles(rolesData);
+        setRoleDistribution(buildRoleDistribution(usersData));
       } catch (error) {
         console.error("Failed to load users/roles", error);
       } finally {
@@ -102,7 +123,7 @@ const UsersRoles = () => {
   }, []);
 
   const filtered = users.filter((u) =>
-    u.name.toLowerCase().includes(search.toLowerCase())
+    u.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const canManageUser = (targetUser: User) => {
@@ -116,6 +137,14 @@ const UsersRoles = () => {
     }
 
     return false;
+  };
+
+  const syncUsers = (updater: (prev: User[]) => User[]) => {
+    setUsers((prev) => {
+      const nextUsers = updater(prev);
+      setRoleDistribution(buildRoleDistribution(nextUsers));
+      return nextUsers;
+    });
   };
 
   const handleToggleStatus = async (targetUser: User) => {
@@ -168,7 +197,7 @@ const UsersRoles = () => {
       errorMessage: "Failed to delete user",
       onConfirm: async () => {
         await api.delete(`/users/${targetUser._id}`);
-        setUsers((prev) => prev.filter((user) => user._id !== targetUser._id));
+        syncUsers((prev) => prev.filter((user) => user._id !== targetUser._id));
       },
     });
 
@@ -180,6 +209,87 @@ const UsersRoles = () => {
     setDeletingIds((prev) => prev.filter((id) => id !== targetUser._id));
   };
 
+  const openRoleEditor = (targetUser: User) => {
+    setRoleEditor({
+      user: targetUser,
+      selectedRole: targetUser.role,
+    });
+  };
+
+  const closeRoleEditor = () => {
+    if (!roleEditor || roleUpdatingIds.includes(roleEditor.user._id)) {
+      return;
+    }
+
+    setRoleEditor(null);
+  };
+
+  const handleRoleSave = async () => {
+    if (!roleEditor) return;
+
+    const { user: targetUser, selectedRole } = roleEditor;
+    if (!selectedRole || selectedRole === targetUser.role) {
+      setRoleEditor(null);
+      return;
+    }
+
+    const selectedRoleOption = roles.find(
+      (role) => role.normalizedName === selectedRole,
+    );
+
+    if (!selectedRoleOption) {
+      toast.error("Selected role not found");
+      return;
+    }
+
+    const confirmed = await confirm({
+      title:
+        targetUser.role === "SUPER_ADMIN"
+          ? "Change Super Admin Role"
+          : "Change User Role",
+      message:
+        targetUser.role === "SUPER_ADMIN"
+          ? `This user is currently a Super Admin. Changing the role to ${selectedRoleOption.normalizedName} will remove Super Admin access.`
+          : `Are you sure you want to change this user's role to ${selectedRoleOption.normalizedName}?`,
+      confirmLabel: "Save",
+      processingLabel: "Saving...",
+    });
+
+    if (!confirmed) return;
+
+    setRoleUpdatingIds((prev) => [...prev, targetUser._id]);
+
+    try {
+      const response = await api.patch<{ success: boolean; user: User }>(
+        `/users/${targetUser._id}/role`,
+        { role: selectedRoleOption.normalizedName },
+      );
+
+      if (response.data.success) {
+        syncUsers((prev) =>
+          prev.map((user) =>
+            user._id === targetUser._id
+              ? {
+                  ...user,
+                  role: response.data.user.role,
+                  roleRef: response.data.user.roleRef,
+                }
+              : user,
+          ),
+        );
+        setRoleEditor(null);
+        toast.success("Role updated successfully");
+      }
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "Failed to update user role";
+      toast.error(message);
+    } finally {
+      setRoleUpdatingIds((prev) => prev.filter((id) => id !== targetUser._id));
+    }
+  };
+
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.isActive).length;
 
@@ -188,7 +298,7 @@ const UsersRoles = () => {
       <div className="animate-fade-in ur-root">
         <div className="eb-loading">
           <span className="eb-loading-spinner" />
-          <span>Loading users…</span>
+          <span>Loading users...</span>
         </div>
       </div>
     );
@@ -196,19 +306,18 @@ const UsersRoles = () => {
 
   return (
     <div className="animate-fade-in ur-root">
-
-      {/* ── Page Header ── */}
       <div className="add-branch-header">
         <div className="add-branch-header-icon-wrap">
           <UsersIcon className="add-branch-header-icon" />
         </div>
         <div>
           <h1 className="page-title">Users &amp; Roles</h1>
-          <p className="page-subtitle">Manage system users and their role assignments</p>
+          <p className="page-subtitle">
+            Manage system users and their role assignments
+          </p>
         </div>
       </div>
 
-      {/* ── KPI Cards ── */}
       <div className="ur-kpi-grid">
         <div className="luxury-card kpi-card gf-kpi-card">
           <div className="gf-kpi-icon-wrap gf-kpi-icon-gold">
@@ -235,20 +344,15 @@ const UsersRoles = () => {
         </div>
       </div>
 
-      {/* ── Main Content: Table + Role Distribution ── */}
       <div className="ur-content-row">
-
-        {/* Left: Search + Table */}
         <div className="ur-table-section">
-
-          {/* Search bar */}
           <div className="luxury-card ur-search-card">
             <div className="ur-search-wrap">
               <Search className="ur-search-icon" />
               <input
                 id="user-search"
                 className="ur-search-input"
-                placeholder="Search users…"
+                placeholder="Search users..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 aria-label="Search users"
@@ -265,7 +369,6 @@ const UsersRoles = () => {
             </div>
           </div>
 
-          {/* Table card */}
           <div className="luxury-card ur-table-card">
             <div className="ur-table-scroll">
               <table className="luxury-table">
@@ -296,11 +399,32 @@ const UsersRoles = () => {
                           </div>
                         </td>
                         <td>
-                          <span className="ur-role-badge">{u.role}</span>
+                          <div className="ur-role-cell">
+                            <span className="ur-role-badge">{u.role}</span>
+                            {currentUser?.role === "SUPER_ADMIN" ? (
+                              <button
+                                type="button"
+                                className="ur-role-edit-btn"
+                                aria-label={`Edit role for ${u.name}`}
+                                onClick={() => openRoleEditor(u)}
+                                disabled={
+                                  roleUpdatingIds.includes(u._id) ||
+                                  deletingIds.includes(u._id)
+                                }
+                              >
+                                {roleUpdatingIds.includes(u._id) ? (
+                                  <Loader2
+                                    size={14}
+                                    className="ur-role-edit-spinner"
+                                  />
+                                ) : (
+                                  <Pencil size={14} />
+                                )}
+                              </button>
+                            ) : null}
+                          </div>
                         </td>
-                        <td className="user-email">
-                          {u.branchId?.name || "All"}
-                        </td>
+                        <td className="user-email">{u.branchId?.name || "All"}</td>
                         <td>
                           <div className="flex items-center justify-between gap-3">
                             <button
@@ -321,7 +445,9 @@ const UsersRoles = () => {
                               />
                             </button>
 
-                            <span className={`luxury-badge ${u.isActive ? "badge-active" : "badge-danger"}`}>
+                            <span
+                              className={`luxury-badge ${u.isActive ? "badge-active" : "badge-danger"}`}
+                            >
                               {u.isActive ? "active" : "inactive"}
                             </span>
 
@@ -350,14 +476,14 @@ const UsersRoles = () => {
           </div>
         </div>
 
-        {/* Right: Role Distribution chart */}
         <div className="luxury-card ur-chart-card">
           <div className="gf-section-header">
             <span className="gf-section-title">Role Distribution</span>
-            <span className="gf-payments-count">{roleDistribution.length} roles</span>
+            <span className="gf-payments-count">
+              {roleDistribution.length} roles
+            </span>
           </div>
 
-          {/* Donut chart */}
           <div className="ur-chart-wrap">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -390,7 +516,6 @@ const UsersRoles = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* Legend */}
           <div className="ur-legend">
             {roleDistribution.map((r) => (
               <div key={r.name} className="ur-legend-row">
@@ -401,8 +526,97 @@ const UsersRoles = () => {
             ))}
           </div>
         </div>
-
       </div>
+
+      {roleEditor ? (
+        <div className="rpe-modal-layer" role="presentation">
+          <div className="rpe-modal-backdrop" onClick={closeRoleEditor} />
+          <div className="rpe-modal ur-role-modal" role="dialog" aria-modal="true">
+            <div className="rpe-modal-header">
+              <div>
+                <h2 className="rpe-modal-title">Edit User Role</h2>
+                <p className="rpe-modal-subtitle">
+                  Update role assignment for {roleEditor.user.name}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rpe-modal-close"
+                aria-label="Close modal"
+                onClick={closeRoleEditor}
+                disabled={roleUpdatingIds.includes(roleEditor.user._id)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="rpe-modal-body">
+              <div className="rpe-modal-form">
+                <label className="rpe-modal-field">
+                  <span className="rpe-modal-label">Role</span>
+                  <select
+                    className="luxury-select ur-role-select"
+                    value={roleEditor.selectedRole}
+                    onChange={(e) =>
+                      setRoleEditor((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              selectedRole: e.target.value,
+                            }
+                          : prev,
+                      )
+                    }
+                    disabled={roleUpdatingIds.includes(roleEditor.user._id)}
+                  >
+                    {roles.map((role) => (
+                      <option key={role._id} value={role.normalizedName}>
+                        {role.normalizedName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {roleEditor.user.role === "SUPER_ADMIN" ? (
+                  <div className="ur-role-modal-note">
+                    This user currently has Super Admin access. Saving a new role
+                    will remove that access after confirmation.
+                  </div>
+                ) : null}
+
+                <div className="rpe-modal-actions">
+                  <button
+                    type="button"
+                    className="luxury-btn luxury-btn-outline"
+                    onClick={closeRoleEditor}
+                    disabled={roleUpdatingIds.includes(roleEditor.user._id)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="luxury-btn luxury-btn-primary"
+                    onClick={handleRoleSave}
+                    disabled={
+                      roleUpdatingIds.includes(roleEditor.user._id) ||
+                      roleEditor.selectedRole === roleEditor.user.role
+                    }
+                  >
+                    {roleUpdatingIds.includes(roleEditor.user._id) ? (
+                      <>
+                        <Loader2 size={16} className="ur-role-edit-spinner" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
