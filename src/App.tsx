@@ -47,6 +47,7 @@ import EditRoom from "./pages/workspace/rooms/EditRoom";
 import Bookings from "./pages/workspace/bookings/Bookings";
 import AddBooking from "./pages/workspace/bookings/AddBooking";
 import EditBooking from "./pages/workspace/bookings/EditBooking";
+import ViewBooking from "./pages/workspace/bookings/ViewBooking";
 import CRM from "./pages/workspace/guest/CRM";
 import AddGuest from "./pages/workspace/guest/AddGuest";
 import Housekeeping from "./pages/workspace/houseKeeping/Housekeeping";
@@ -349,6 +350,15 @@ const App = () => {
                             element={
                               <ProtectedRoute permission="UPDATE_BOOKING">
                                 <EditBooking />
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          <Route
+                            path="bookings/:bookingId"
+                            element={
+                              <ProtectedRoute permission="ACCESS_BOOKINGS">
+                                <ViewBooking />
                               </ProtectedRoute>
                             }
                           />

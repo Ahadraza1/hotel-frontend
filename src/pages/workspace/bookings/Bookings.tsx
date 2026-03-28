@@ -8,6 +8,7 @@ import {
   Search,
   SlidersHorizontal,
   BookOpen,
+  Eye,
   Pencil,
   Trash2,
   MoreHorizontal,
@@ -18,15 +19,20 @@ import api from "@/api/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
-import { useConfirm } from "@/components/confirm/ConfirmProvider";
+import { useConfirm, useToast } from "@/components/confirm/ConfirmProvider";
 
 interface Booking {
   _id: string;
   bookingId: string;
   roomId: string;
   guestName: string;
+  totalGuests?: number;
   bookingSource?: string;
-  mainGuestIdentity?: string;
+  identityDocument?: {
+    url?: string | null;
+    fileName?: string | null;
+    fileType?: string | null;
+  } | null;
   guestsIdentity?: string[];
   checkInDate: string;
   checkOutDate: string;
@@ -35,6 +41,23 @@ interface Booking {
   status: string;
   paymentStatus: string;
 }
+
+const getDocumentUrl = (documentPath?: string | null) => {
+  if (!documentPath) return null;
+
+  const baseUrl =
+    (import.meta.env.VITE_API_BASE_URL || window.location.origin).replace(
+      /\/api\/?$/,
+      "",
+    );
+  const filePath = documentPath.startsWith("http")
+    ? documentPath
+    : documentPath.startsWith("/uploads/")
+      ? documentPath
+      : `/uploads/guest-identities/${documentPath.replace(/^\/+/, "")}`;
+
+  return filePath.startsWith("http") ? filePath : `${baseUrl}${filePath}`;
+};
 
 const statusBadge: Record<string, string> = {
   CONFIRMED: "badge-warning",
@@ -55,6 +78,7 @@ const Bookings = () => {
   const { user } = useAuth();
   const { formatCurrency } = useSystemSettings();
   const confirm = useConfirm();
+  const toast = useToast();
   const { canAccess, canCreate, canUpdate, canDelete } =
     useModulePermissions("BOOKINGS");
 
@@ -95,9 +119,25 @@ const Bookings = () => {
 
   /* ── status update ── */
   const updateStatus = async (bookingId: string, status: string) => {
-    await api.patch(`/bookings/${bookingId}/status`, { status });
-    fetchBookings();
+    try {
+      await api.patch(`/bookings/${bookingId}/status`, { status });
+      await fetchBookings();
+    } catch (error) {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(
+        apiError.response?.data?.message || "Failed to update booking status.",
+      );
+    }
   };
+
+  const handleViewIdentity = (documentUrl?: string | null) => {
+  if (!documentUrl) {
+    toast.warning("Document not available");
+    return;
+  }
+
+  window.open(documentUrl, "_blank", "noopener,noreferrer");
+};
 
   const handleDeleteBooking = async (bookingId: string) => {
     const confirmed = await confirm({
@@ -340,8 +380,27 @@ const Bookings = () => {
                 filtered.map((b, i) => (
                   <tr key={b._id}>
                     <td className="col-serial">{i + 1}</td>
-                    <td className="bk-cell-id">{b.bookingId}</td>
-                    <td className="bk-cell-guest">{b.guestName}</td>
+                    <td className="bk-cell-id">
+                      <button
+                        type="button"
+                        className="bk-link-btn"
+                        onClick={() => navigate(`/workspace/${branchId}/bookings/${b.bookingId}`)}
+                      >
+                        {b.bookingId}
+                      </button>
+                    </td>
+                    <td className="bk-cell-guest">
+                      <button
+                        type="button"
+                        className="bk-link-btn bk-link-btn-guest"
+                        onClick={() => navigate(`/workspace/${branchId}/bookings/${b.bookingId}`)}
+                      >
+                        <span className="bk-guest-name">{b.guestName}</span>
+                        <span className="bk-guest-meta">
+                          {b.totalGuests || 1} guest{(b.totalGuests || 1) !== 1 ? "s" : ""} staying
+                        </span>
+                      </button>
+                    </td>
                     <td>{b.bookingSource || "Walk-in"}</td>
                     <td className="bk-cell-dates">
                       {new Date(b.checkInDate).toLocaleDateString()}
@@ -371,15 +430,14 @@ const Bookings = () => {
                     </td>
 
                     <td>
-                      {b.mainGuestIdentity ? (
-                        <a
-                          href={`${import.meta.env.VITE_API_URL}/uploads/guest-identities/${b.mainGuestIdentity}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {b.identityDocument?.url ? (
+                        <button
+                          type="button"
                           className="bk-action-btn"
+                          onClick={() => handleViewIdentity(b.identityDocument?.url || null)}
                         >
                           View ID
-                        </a>
+                        </button>
                       ) : (
                         <span className="text-muted-foreground text-xs">
                           No ID
@@ -406,6 +464,16 @@ const Bookings = () => {
 
                           {openActionId === b._id && (
                             <div className="bk-action-menu">
+                              <button
+                                className="bk-action-item"
+                                onClick={() => {
+                                  navigate(`/workspace/${branchId}/bookings/${b.bookingId}`);
+                                  setOpenActionId(null);
+                                }}
+                              >
+                                <Eye size={15} />
+                                View
+                              </button>
                               {canUpdate && (
                                 <button
                                   className="bk-action-item"

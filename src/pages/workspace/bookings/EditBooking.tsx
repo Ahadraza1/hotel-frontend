@@ -33,6 +33,11 @@ interface BookingDetails {
   guestEmail: string;
   guestPhone: string;
   totalGuests: number;
+  identityDocument?: {
+    url?: string | null;
+    fileName?: string | null;
+    fileType?: string | null;
+  } | null;
   checkInDate: string;
   checkInTime?: string;
   checkOutDate: string;
@@ -126,7 +131,9 @@ const EditBooking = () => {
 
         setRooms(roomsRes.data.data || []);
         setGuests(guestRows);
-        setExistingMainGuestIdentity(booking.mainGuestIdentity || null);
+        setExistingMainGuestIdentity(
+          booking.identityDocument?.url || booking.mainGuestIdentity || null,
+        );
         setForm({
           roomId: booking.roomId,
           guestName: booking.guestName,
@@ -315,7 +322,7 @@ const EditBooking = () => {
       formData.append("checkOutTime", form.checkOutTime);
 
       if (mainGuestIdentity) {
-        formData.append("mainGuestIdentity", mainGuestIdentity);
+        formData.append("identityDocument", mainGuestIdentity);
       }
 
       guests.forEach((guest, index) => {
@@ -513,7 +520,6 @@ const EditBooking = () => {
                 <label className="ab-label">Identity Proof (Main Guest)</label>
                 <input
                   type="file"
-                  accept="image/*,.pdf"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setMainGuestIdentity(file);
@@ -593,7 +599,6 @@ const EditBooking = () => {
                   <label className="ab-label">Identity Proof</label>
                   <input
                     type="file"
-                    accept="image/*,.pdf"
                     onChange={(e) => handleGuestFile(index, e.target.files?.[0] || null)}
                     className="luxury-input"
                     style={fieldErrors[`guest-${index}-identity`] ? { borderColor: "#dc2626" } : undefined}

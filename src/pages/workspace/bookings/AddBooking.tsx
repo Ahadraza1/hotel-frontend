@@ -228,7 +228,7 @@ const AddBooking = () => {
       formData.append("checkOutTime", form.checkOutTime);
 
       if (mainGuestIdentity) {
-        formData.append("mainGuestIdentity", mainGuestIdentity);
+        formData.append("identityDocument", mainGuestIdentity);
       }
 
       guests.forEach((g, i) => {
@@ -440,7 +440,6 @@ const AddBooking = () => {
                 <label className="ab-label">Identity Proof (Main Guest)</label>
                 <input
                   type="file"
-                  accept="image/*,.pdf"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
                     setMainGuestIdentity(file);
@@ -555,7 +554,6 @@ const AddBooking = () => {
                   <label className="ab-label">Identity Proof</label>
                   <input
                     type="file"
-                    accept="image/*,.pdf"
                     onChange={(e) =>
                       handleGuestFile(index, e.target.files?.[0] || null)
                     }
