@@ -33,7 +33,7 @@ interface BookingDetails {
   guestEmail: string;
   guestPhone: string;
   totalGuests: number;
-  identityDocument?: {
+  identityProof?: {
     url?: string | null;
     fileName?: string | null;
     fileType?: string | null;
@@ -132,7 +132,7 @@ const EditBooking = () => {
         setRooms(roomsRes.data.data || []);
         setGuests(guestRows);
         setExistingMainGuestIdentity(
-          booking.identityDocument?.url || booking.mainGuestIdentity || null,
+          booking.identityProof?.url || null,
         );
         setForm({
           roomId: booking.roomId,
@@ -322,7 +322,7 @@ const EditBooking = () => {
       formData.append("checkOutTime", form.checkOutTime);
 
       if (mainGuestIdentity) {
-        formData.append("identityDocument", mainGuestIdentity);
+        formData.append("identityProof", mainGuestIdentity);
       }
 
       guests.forEach((guest, index) => {

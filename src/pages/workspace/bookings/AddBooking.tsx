@@ -228,7 +228,7 @@ const AddBooking = () => {
       formData.append("checkOutTime", form.checkOutTime);
 
       if (mainGuestIdentity) {
-        formData.append("identityDocument", mainGuestIdentity);
+        formData.append("identityProof", mainGuestIdentity);
       }
 
       guests.forEach((g, i) => {

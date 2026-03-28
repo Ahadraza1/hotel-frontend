@@ -44,12 +44,11 @@ interface BookingDetail {
   totalGuests?: number;
   guestPhone?: string;
   guestEmail?: string;
-  identityDocument?: {
+  identityProof?: {
     url?: string | null;
     fileName?: string | null;
     fileType?: string | null;
   } | null;
-  mainGuestIdentity?: string | null;
   checkInDate: string;
   checkOutDate: string;
   checkInTime?: string;
@@ -167,6 +166,27 @@ const getDocumentUrl = (documentPath?: string | null) => {
   return filePath.startsWith("http") ? filePath : `${baseUrl}${filePath}`;
 };
 
+const getFileExtension = (value?: string | null) => {
+  if (!value) return "";
+  const sanitizedValue = value.split("?")[0].split("#")[0];
+  const parts = sanitizedValue.split(".");
+  return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : "";
+};
+
+const isImageFile = (fileType?: string | null, fileNameOrUrl?: string | null) =>
+  Boolean(
+    fileType?.toLowerCase().startsWith("image/") ||
+      ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"].includes(
+        getFileExtension(fileNameOrUrl),
+      ),
+  );
+
+const isPdfFile = (fileType?: string | null, fileNameOrUrl?: string | null) =>
+  Boolean(
+    fileType?.toLowerCase().includes("pdf") ||
+      getFileExtension(fileNameOrUrl) === "pdf",
+  );
+
 const ViewBooking = () => {
   const { branchId, bookingId } = useParams();
   const navigate = useNavigate();
@@ -183,6 +203,7 @@ const ViewBooking = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<BookingServiceItem | null>(null);
   const [serviceForm, setServiceForm] = useState<ServiceFormState>(emptyServiceForm);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const canProcessPayment = hasPermission("RECORD_PAYMENT") || canUpdate;
 
@@ -229,8 +250,8 @@ const ViewBooking = () => {
   }, [serviceForm.price, serviceForm.quantity]);
 
   const identityDocumentUrl = useMemo(
-    () => getDocumentUrl(booking?.identityDocument?.url || booking?.mainGuestIdentity),
-    [booking?.identityDocument?.url, booking?.mainGuestIdentity],
+    () => getDocumentUrl(booking?.identityProof?.url),
+    [booking?.identityProof?.url],
   );
 
   const resetServiceModal = () => {
@@ -386,7 +407,29 @@ const ViewBooking = () => {
       return;
     }
 
-    window.open(identityDocumentUrl, "_blank", "noopener,noreferrer");
+    if (isImageFile(booking.identityProof?.fileType, booking.identityProof?.fileName || booking.identityProof?.url)) {
+      setPreviewImage(identityDocumentUrl);
+      return;
+    }
+
+    if (isPdfFile(booking.identityProof?.fileType, booking.identityProof?.fileName || booking.identityProof?.url)) {
+      window.open(identityDocumentUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = identityDocumentUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.setAttribute(
+      "download",
+      booking.identityProof?.fileName ||
+        identityDocumentUrl.split("/").pop() ||
+        "identity-proof",
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleGenerateInvoice = async () => {
@@ -562,7 +605,7 @@ const ViewBooking = () => {
                 {booking.totalGuests || 1} guest{(booking.totalGuests || 1) !== 1 ? "s" : ""} staying
               </span>
               <span>{booking.guestPhone || "No phone added"}</span>
-              {booking.identityDocument?.url || booking.mainGuestIdentity ? (
+              {booking.identityProof?.url ? (
                 <button
                   type="button"
                   className="bvd-identity-link"
@@ -829,6 +872,19 @@ const ViewBooking = () => {
             >
               Cancel
             </button>
+          </div>
+        </div>
+      ) : null}
+
+      {previewImage ? (
+        <div className="bvd-modal-layer" role="presentation">
+          <div className="bvd-modal-backdrop" onClick={() => setPreviewImage(null)} />
+          <div className="bvd-modal-card">
+            <img
+              src={previewImage}
+              alt="Identity proof preview"
+              style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain" }}
+            />
           </div>
         </div>
       ) : null}
