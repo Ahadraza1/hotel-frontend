@@ -59,27 +59,6 @@ const getDocumentUrl = (documentPath?: string | null) => {
   return filePath.startsWith("http") ? filePath : `${baseUrl}${filePath}`;
 };
 
-const getFileExtension = (value?: string | null) => {
-  if (!value) return "";
-  const sanitizedValue = value.split("?")[0].split("#")[0];
-  const parts = sanitizedValue.split(".");
-  return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : "";
-};
-
-const isImageFile = (fileType?: string | null, fileNameOrUrl?: string | null) =>
-  Boolean(
-    fileType?.toLowerCase().startsWith("image/") ||
-      ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"].includes(
-        getFileExtension(fileNameOrUrl),
-      ),
-  );
-
-const isPdfFile = (fileType?: string | null, fileNameOrUrl?: string | null) =>
-  Boolean(
-    fileType?.toLowerCase().includes("pdf") ||
-      getFileExtension(fileNameOrUrl) === "pdf",
-  );
-
 const statusBadge: Record<string, string> = {
   CONFIRMED: "badge-warning",
   CHECKED_IN: "badge-active",
@@ -116,7 +95,6 @@ const Bookings = () => {
   const [filterCheckIn, setFilterCheckIn] = useState("");
   const [filterCheckOut, setFilterCheckOut] = useState("");
   const [openActionId, setOpenActionId] = useState<string | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   /* ── fetch ── */
   const fetchBookings = async () => {
@@ -159,27 +137,7 @@ const Bookings = () => {
       return;
     }
 
-    if (isImageFile(identityProof?.fileType, identityProof?.fileName || identityProof?.url)) {
-      setPreviewImage(documentUrl);
-      return;
-    }
-
-    if (isPdfFile(identityProof?.fileType, identityProof?.fileName || identityProof?.url)) {
-      window.open(documentUrl, "_blank", "noopener,noreferrer");
-      return;
-    }
-
-    const link = document.createElement("a");
-    link.href = documentUrl;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.setAttribute(
-      "download",
-      identityProof?.fileName || documentUrl.split("/").pop() || "identity-proof",
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.open(documentUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleDeleteBooking = async (bookingId: string) => {
@@ -594,19 +552,6 @@ const Bookings = () => {
           </table>
         </div>
       </div>
-
-      {previewImage ? (
-        <div className="bvd-modal-layer" role="presentation">
-          <div className="bvd-modal-backdrop" onClick={() => setPreviewImage(null)} />
-          <div className="bvd-modal-card">
-            <img
-              src={previewImage}
-              alt="Identity proof preview"
-              style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain" }}
-            />
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 };
