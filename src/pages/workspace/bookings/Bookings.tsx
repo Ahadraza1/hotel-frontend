@@ -25,6 +25,7 @@ interface Booking {
   bookingId: string;
   roomId: string;
   guestName: string;
+  bookingSource?: string;
   mainGuestIdentity?: string;
   guestsIdentity?: string[];
   checkInDate: string;
@@ -313,6 +314,7 @@ const Bookings = () => {
                 <th>#</th>
                 <th>Booking ID</th>
                 <th>Guest</th>
+                <th>Source</th>
                 <th>Check-In</th>
                 <th>Check-Out</th>
                 <th>Nights</th>
@@ -328,7 +330,7 @@ const Bookings = () => {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={canShowActions ? 11 : 10} className="gf-table-empty">
+                  <td colSpan={canShowActions ? 12 : 11} className="gf-table-empty">
                     {search
                       ? "No bookings match your search."
                       : 'No bookings found. Click "New Booking" to get started.'}
@@ -340,6 +342,7 @@ const Bookings = () => {
                     <td className="col-serial">{i + 1}</td>
                     <td className="bk-cell-id">{b.bookingId}</td>
                     <td className="bk-cell-guest">{b.guestName}</td>
+                    <td>{b.bookingSource || "Walk-in"}</td>
                     <td className="bk-cell-dates">
                       {new Date(b.checkInDate).toLocaleDateString()}
                     </td>

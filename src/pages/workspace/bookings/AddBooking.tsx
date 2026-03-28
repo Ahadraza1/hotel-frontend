@@ -13,6 +13,8 @@ interface Room {
   status: string;
 }
 
+const BOOKING_SOURCE_OPTIONS = ["Walk-in", "Pre-booking", "Online"] as const;
+
 const AddBooking = () => {
   const { branchId } = useParams();
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ const AddBooking = () => {
     roomId: "",
     guestName: "",
     guestType: "",
+    bookingSource: "Walk-in",
     email: "",
     phone: "",
     totalGuests: 1,
@@ -165,6 +168,7 @@ const AddBooking = () => {
       "roomId",
       "guestName",
       "guestType",
+      "bookingSource",
       "email",
       "phone",
       "totalGuests",
@@ -214,6 +218,7 @@ const AddBooking = () => {
       formData.append("roomId", form.roomId);
       formData.append("guestName", form.guestName.trim());
       formData.append("guestType", form.guestType);
+      formData.append("bookingSource", form.bookingSource);
       formData.append("guestEmail", form.email);
       formData.append("guestPhone", form.phone);
       formData.append("totalGuests", String(form.totalGuests));
@@ -332,6 +337,32 @@ const AddBooking = () => {
                 {fieldErrors.guestType ? (
                   <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
                     {fieldErrors.guestType}
+                  </span>
+                ) : null}
+              </div>
+              <div className="ab-field">
+                <label htmlFor="ab-bookingSource" className="ab-label">
+                  Booking Source <span className="ab-required">*</span>
+                </label>
+                <select
+                  id="ab-bookingSource"
+                  name="bookingSource"
+                  value={form.bookingSource}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className="luxury-input"
+                  style={fieldErrors.bookingSource ? { borderColor: "#dc2626" } : undefined}
+                  required
+                >
+                  {BOOKING_SOURCE_OPTIONS.map((source) => (
+                    <option key={source} value={source}>
+                      {source}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.bookingSource ? (
+                  <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                    {fieldErrors.bookingSource}
                   </span>
                 ) : null}
               </div>
@@ -725,6 +756,12 @@ const AddBooking = () => {
                 <span className="ab-summary-key">Guest</span>
                 <span className="ab-summary-val">
                   {form.guestName || <span className="ab-empty">—</span>}
+                </span>
+              </div>
+              <div className="ab-summary-row">
+                <span className="ab-summary-key">Source</span>
+                <span className="ab-summary-val">
+                  {form.bookingSource || <span className="ab-empty">—</span>}
                 </span>
               </div>
               <div className="ab-summary-row">

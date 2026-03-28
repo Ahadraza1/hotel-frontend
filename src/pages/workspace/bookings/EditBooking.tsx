@@ -22,11 +22,14 @@ interface GuestRow {
   existingIdentity?: string | null;
 }
 
+const BOOKING_SOURCE_OPTIONS = ["Walk-in", "Pre-booking", "Online"] as const;
+
 interface BookingDetails {
   bookingId: string;
   roomId: string;
   guestName: string;
   guestType: "ADULT" | "CHILD";
+  bookingSource?: "Walk-in" | "Pre-booking" | "Online";
   guestEmail: string;
   guestPhone: string;
   totalGuests: number;
@@ -72,6 +75,7 @@ const EditBooking = () => {
     roomId: "",
     guestName: "",
     guestType: "",
+    bookingSource: "Walk-in",
     email: "",
     countryCode: "+1",
     phone: "",
@@ -127,6 +131,7 @@ const EditBooking = () => {
           roomId: booking.roomId,
           guestName: booking.guestName,
           guestType: booking.guestType || "",
+          bookingSource: booking.bookingSource || "Walk-in",
           email: booking.guestEmail || "",
           countryCode: phoneData.countryCode,
           phone: phoneData.phone || "",
@@ -248,6 +253,7 @@ const EditBooking = () => {
       "roomId",
       "guestName",
       "guestType",
+      "bookingSource",
       "email",
       "countryCode",
       "phone",
@@ -299,6 +305,7 @@ const EditBooking = () => {
       formData.append("roomId", form.roomId);
       formData.append("guestName", form.guestName.trim());
       formData.append("guestType", form.guestType);
+      formData.append("bookingSource", form.bookingSource);
       formData.append("guestEmail", form.email);
       formData.append("guestPhone", `${form.countryCode}${form.phone}`);
       formData.append("totalGuests", String(form.totalGuests));
@@ -415,6 +422,27 @@ const EditBooking = () => {
                   <option value="CHILD">Child</option>
                 </select>
                 {fieldErrors.guestType ? <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>{fieldErrors.guestType}</span> : null}
+              </div>
+              <div className="ab-field">
+                <label htmlFor="edit-booking-bookingSource" className="ab-label">
+                  Booking Source <span className="ab-required">*</span>
+                </label>
+                <select
+                  id="edit-booking-bookingSource"
+                  name="bookingSource"
+                  value={form.bookingSource}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className="luxury-input"
+                  style={fieldErrors.bookingSource ? { borderColor: "#dc2626" } : undefined}
+                >
+                  {BOOKING_SOURCE_OPTIONS.map((source) => (
+                    <option key={source} value={source}>
+                      {source}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.bookingSource ? <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>{fieldErrors.bookingSource}</span> : null}
               </div>
               <div className="ab-field">
                 <label htmlFor="edit-booking-email" className="ab-label">
@@ -706,6 +734,12 @@ const EditBooking = () => {
                 <span className="ab-summary-key">Guest Type</span>
                 <span className="ab-summary-val">
                   {form.guestType || <span className="ab-empty">-</span>}
+                </span>
+              </div>
+              <div className="ab-summary-row">
+                <span className="ab-summary-key">Source</span>
+                <span className="ab-summary-val">
+                  {form.bookingSource || <span className="ab-empty">-</span>}
                 </span>
               </div>
               <div className="ab-summary-row">
