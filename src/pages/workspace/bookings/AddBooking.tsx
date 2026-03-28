@@ -31,7 +31,6 @@ const AddBooking = () => {
     guestName: "",
     guestType: "",
     email: "",
-    countryCode: "+1",
     phone: "",
     totalGuests: 1,
 
@@ -167,7 +166,6 @@ const AddBooking = () => {
       "guestName",
       "guestType",
       "email",
-      "countryCode",
       "phone",
       "totalGuests",
       "checkInDate",
@@ -217,7 +215,7 @@ const AddBooking = () => {
       formData.append("guestName", form.guestName.trim());
       formData.append("guestType", form.guestType);
       formData.append("guestEmail", form.email);
-      formData.append("guestPhone", `${form.countryCode}${form.phone}`);
+      formData.append("guestPhone", form.phone);
       formData.append("totalGuests", String(form.totalGuests));
       formData.append("checkInDate", form.checkInDate);
       formData.append("checkInTime", form.checkInTime);
@@ -366,37 +364,20 @@ const AddBooking = () => {
                   Phone Number
                 </label>
 
-                <div className="flex gap-2">
-                  <select
-                    name="countryCode"
-                    aria-label="Country Code"
-                    value={form.countryCode}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className="luxury-input max-w-[110px]"
-                    style={fieldErrors.countryCode ? { borderColor: "#dc2626" } : undefined}
-                  >
-                    <option value="+1">+1</option>
-                    <option value="+44">+44</option>
-                    <option value="+91">+91</option>
-                    <option value="+971">+971</option>
-                  </select>
-
-                  <input
-                    id="ab-phone"
-                    type="tel"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className="luxury-input"
-                    style={fieldErrors.phone ? { borderColor: "#dc2626" } : undefined}
-                    placeholder="Phone number"
-                  />
-                </div>
-                {fieldErrors.countryCode || fieldErrors.phone ? (
+                <input
+                  id="ab-phone"
+                  type="tel"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className="luxury-input"
+                  style={fieldErrors.phone ? { borderColor: "#dc2626" } : undefined}
+                  placeholder="Phone number"
+                />
+                {fieldErrors.phone ? (
                   <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
-                    {fieldErrors.countryCode || fieldErrors.phone}
+                    {fieldErrors.phone}
                   </span>
                 ) : null}
               </div>

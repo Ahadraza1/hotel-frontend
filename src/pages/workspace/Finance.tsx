@@ -95,6 +95,16 @@ const createInvoiceForm = (invoice: Invoice): InvoiceFormState => ({
   status: invoice.status ?? "UNPAID",
 });
 
+const formatAmountForInput = (amount: number) => {
+  if (!Number.isFinite(amount)) return "0.00";
+  return (Math.round((amount + Number.EPSILON) * 100) / 100).toFixed(2);
+};
+
+const getDefaultPaymentAmount = (invoice: Invoice) =>
+  formatAmountForInput(
+    invoice.dueAmount > 0 ? invoice.dueAmount : invoice.totalAmount ?? 0,
+  );
+
 const Finance = () => {
   const { user } = useAuth();
   const { formatCurrency, currencySymbol } = useSystemSettings();
@@ -161,7 +171,7 @@ const Finance = () => {
   const openPaymentView = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setActiveView("payment");
-    setPaymentAmount("");
+    setPaymentAmount(getDefaultPaymentAmount(invoice));
     setPaymentMethod("CASH");
   };
 
@@ -675,6 +685,7 @@ const Finance = () => {
                           type="number"
                           placeholder="0.00"
                           className="luxury-input w-full"
+                          step="0.01"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
                         />

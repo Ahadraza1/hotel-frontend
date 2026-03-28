@@ -1,12 +1,17 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "@/api/axios";
 import "@/pages/superadmin/profile/profile.css";
-import { useToast } from "@/components/confirm/ConfirmProvider";
+import { useConfirm, useToast } from "@/components/confirm/ConfirmProvider";
 import { validateEmailField, validatePhoneField } from "@/lib/fieldValidation";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const toast = useToast();
+  const confirm = useConfirm();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState<"profile" | "security">("profile");
   const [passwordSaving, setPasswordSaving] = useState(false);
 
@@ -183,6 +188,25 @@ const Profile = () => {
     !passwordForm.newPassword ||
     !passwordForm.confirmPassword;
 
+  const handleDeleteAccount = async () => {
+    const confirmed = await confirm({
+      title: "Delete Account",
+      message: "Are you sure you want to delete your account? This action cannot be undone.",
+      confirmLabel: "Delete Account",
+      processingLabel: "Deleting...",
+      successMessage: "Account deleted successfully.",
+      errorMessage: "Failed to delete account.",
+      onConfirm: async () => {
+        await api.delete("/users/me");
+      },
+    });
+
+    if (confirmed) {
+      logout();
+      navigate("/login", { replace: true });
+    }
+  };
+
   if (loading) {
     return <div className="page-title">Loading profile...</div>;
   }
@@ -355,6 +379,9 @@ const Profile = () => {
               <button className="btn-primary" onClick={handleSave}>
                 Save Changes
               </button>
+              <button className="btn-danger" onClick={() => void handleDeleteAccount()}>
+                Delete Account
+              </button>
             </div>
           </>
         )}
@@ -427,6 +454,9 @@ const Profile = () => {
                 disabled={isPasswordSubmitDisabled}
               >
                 {passwordSaving ? "Updating..." : "Update Password"}
+              </button>
+              <button className="btn-danger" onClick={() => void handleDeleteAccount()}>
+                Delete Account
               </button>
             </div>
           </>

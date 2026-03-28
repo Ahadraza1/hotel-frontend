@@ -18,6 +18,7 @@ import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useConfirm } from "@/components/confirm/ConfirmProvider";
 
 interface AppHeaderProps {
   onLogout: () => void;
@@ -126,7 +127,8 @@ export const AppHeader = ({
 }: AppHeaderProps) => {
   const { theme, toggleTheme } = useTheme();
   const { activeBranch, branches, isLoadingBranches } = useBranchWorkspace();
-  const { user: authUser } = useAuth();
+  const { user: authUser, logout } = useAuth();
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -141,6 +143,7 @@ export const AppHeader = ({
   const notifRef = useRef<HTMLDivElement | null>(null);
   const { data: notificationData, isLoading: notificationsLoading } =
     useNotifications(5);
+  const canAccessSystemSettings = authUser?.role === "SUPER_ADMIN";
 
   const { title, subtitle } = getPageTitle(location.pathname);
   const notifications = notificationData?.notifications || [];
@@ -166,6 +169,25 @@ export const AppHeader = ({
 
     fetchHeaderData();
   }, []);
+
+  const handleDeleteAccount = async () => {
+    const confirmed = await confirm({
+      title: "Delete Account",
+      message: "Are you sure you want to delete your account? This action cannot be undone.",
+      confirmLabel: "Delete Account",
+      processingLabel: "Deleting...",
+      successMessage: "Account deleted successfully.",
+      errorMessage: "Failed to delete account.",
+      onConfirm: async () => {
+        await api.delete("/users/me");
+      },
+    });
+
+    if (confirmed) {
+      logout();
+      navigate("/login", { replace: true });
+    }
+  };
 
   const groupedBranches = branches.reduce<Record<string, Branch[]>>(
     (acc, b) => {
@@ -415,14 +437,16 @@ export const AppHeader = ({
           )}
         </div>
 
-        <button
-          type="button"
-          className="header-icon-btn"
-          onClick={() => navigate("/settings")}
-          aria-label="Settings"
-        >
-          <Settings size={17} />
-        </button>
+        {canAccessSystemSettings && (
+          <button
+            type="button"
+            className="header-icon-btn"
+            onClick={() => navigate("/settings")}
+            aria-label="Settings"
+          >
+            <Settings size={17} />
+          </button>
+        )}
 
         <div className="header-divider" />
 
@@ -477,16 +501,29 @@ export const AppHeader = ({
                   <span>My Profile</span>
                 </button>
 
+                {canAccessSystemSettings && (
+                  <button
+                    type="button"
+                    className="dropdown-item"
+                    onClick={() => {
+                      navigate("/settings");
+                      setProfileOpen(false);
+                    }}
+                  >
+                    <Settings size={16} />
+                    <span>Settings</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
-                  className="dropdown-item"
+                  className="dropdown-item logout"
                   onClick={() => {
-                    navigate("/settings");
                     setProfileOpen(false);
+                    void handleDeleteAccount();
                   }}
                 >
-                  <Settings size={16} />
-                  <span>Settings</span>
+                  <span>Delete Account</span>
                 </button>
 
                 <div className="dropdown-divider" />

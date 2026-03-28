@@ -41,11 +41,15 @@ interface Guest {
 
 interface GuestBooking {
   bookingId: string;
-  roomId: string;
+  roomId?: string | { roomId?: string; roomNumber?: string } | null;
   status: string;
 }
 
 interface GuestProfile {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
   totalSpent: number;
   loyaltyPoints: number;
   totalStays?: number;
@@ -79,6 +83,27 @@ const CRM = () => {
   const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null);
   const [profileData, setProfileData] = useState<GuestProfile | null>(null);
   const [openActionId, setOpenActionId] = useState<string | null>(null);
+
+  const uploadsBaseUrl = useMemo(() => {
+    const configuredBaseUrl =
+      import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "";
+
+    if (!configuredBaseUrl) {
+      return "";
+    }
+
+    try {
+      return new URL(configuredBaseUrl).origin;
+    } catch {
+      return configuredBaseUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+    }
+  }, []);
+
+  const getGuestDocumentUrl = useCallback(
+    (documentName: string) =>
+      `${uploadsBaseUrl || ""}/uploads/guest-identities/${encodeURIComponent(documentName)}`,
+    [uploadsBaseUrl],
+  );
 
   const fetchGuests = useCallback(async () => {
     try {
@@ -135,6 +160,10 @@ const CRM = () => {
         totalSpent: number;
         loyaltyPoints: number;
         guest: {
+          firstName?: string;
+          lastName?: string;
+          email?: string;
+          phone?: string;
           totalStays: number;
           totalGuests: number;
           currentStatus: string;
@@ -147,6 +176,10 @@ const CRM = () => {
     const payload = res.data.data;
 
     setProfileData({
+      firstName: payload.guest?.firstName,
+      lastName: payload.guest?.lastName,
+      email: payload.guest?.email,
+      phone: payload.guest?.phone,
       totalSpent: payload.totalSpent,
       loyaltyPoints: payload.loyaltyPoints,
       totalStays: payload.guest?.totalStays,
@@ -504,13 +537,31 @@ const CRM = () => {
         (() => {
           const guest = guests.find((g) => g.guestId === selectedGuestId);
           const initials =
-            `${guest?.firstName?.[0] ?? ""}${guest?.lastName?.[0] ?? ""}`.toUpperCase() ||
+            `${profileData.firstName?.[0] ?? guest?.firstName?.[0] ?? ""}${profileData.lastName?.[0] ?? guest?.lastName?.[0] ?? ""}`.toUpperCase() ||
             "G";
           const fullName =
-            [guest?.firstName, guest?.lastName].filter(Boolean).join(" ") ||
+            [
+              profileData.firstName ?? guest?.firstName,
+              profileData.lastName ?? guest?.lastName,
+            ]
+              .filter(Boolean)
+              .join(" ") ||
             "Guest";
+          const email = profileData.email ?? guest?.email;
+          const phone = profileData.phone ?? guest?.phone;
           const statusKey = (b: GuestBooking) =>
             b.status.toLowerCase().replace(/\s+/g, "_");
+          const roomLabel = (booking: GuestBooking) => {
+            if (!booking.roomId) {
+              return "N/A";
+            }
+
+            if (typeof booking.roomId === "string") {
+              return booking.roomId;
+            }
+
+            return booking.roomId.roomNumber || booking.roomId.roomId || "N/A";
+          };
           return (
             <div
               className="crm-profile-overlay"
@@ -538,8 +589,8 @@ const CRM = () => {
                     <div>
                       <p className="crm-profile-name">{fullName}</p>
                       <p className="crm-profile-contact">
-                        {guest?.email && <span>{guest.email}</span>}
-                        {guest?.phone && <span>{guest.phone}</span>}
+                        {email && <span>{email}</span>}
+                        {phone && <span>{phone}</span>}
                       </p>
                     </div>
                   </div>
@@ -622,7 +673,7 @@ const CRM = () => {
                             <span className="crm-doc-name">{doc}</span>
                             <div className="crm-doc-actions">
                               <a
-                                href={`${import.meta.env.VITE_API_URL}/uploads/guest-identities/${doc}`}
+                                href={getGuestDocumentUrl(doc)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="crm-doc-btn crm-doc-btn-view"
@@ -630,8 +681,8 @@ const CRM = () => {
                                 View
                               </a>
                               <a
-                                href={`${import.meta.env.VITE_API_URL}/uploads/guest-identities/${doc}`}
-                                download
+                                href={getGuestDocumentUrl(doc)}
+                                download={doc}
                                 className="crm-doc-btn"
                               >
                                 Download
@@ -667,7 +718,7 @@ const CRM = () => {
                                 #{booking.bookingId.slice(-8)}
                               </span>
                               <span className="crm-booking-room">
-                                Room: {booking.roomId}
+                                Room: {roomLabel(booking)}
                               </span>
                             </div>
                             <span

@@ -271,7 +271,14 @@ const App = () => {
                           path="/integrations"
                           element={<Integrations />}
                         />
-                        <Route path="/settings" element={<SystemSettings />} />
+                        <Route
+                          path="/settings"
+                          element={
+                            <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
+                              <SystemSettings />
+                            </ProtectedRoute>
+                          }
+                        />
                         <Route
                           path="/notifications"
                           element={

@@ -197,6 +197,10 @@ export const AppSidebar = ({
     : (globalMenuItems as MenuItem[]);
 
   const canViewGlobalItem = (item: MenuItem) => {
+    if (item.path === "/settings" && user?.role !== "SUPER_ADMIN") {
+      return false;
+    }
+
     if (item.roles && !hasRole(item.roles)) return false;
     if (item.permission && !hasPermission(item.permission)) return false;
     return true;

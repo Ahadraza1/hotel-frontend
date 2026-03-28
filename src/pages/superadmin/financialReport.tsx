@@ -30,6 +30,7 @@ interface PlanDist {
 interface RecentPayment {
   _id: string;
   organizationName: string;
+  tier: string;
   amount: number;
   date: string;
   status: string;
@@ -364,6 +365,7 @@ const GlobalFinance = () => {
             <thead>
               <tr>
                 <th>Organization</th>
+                <th>Tier</th>
                 <th>Amount</th>
                 <th>Date</th>
                 <th>Status</th>
@@ -372,12 +374,17 @@ const GlobalFinance = () => {
             <tbody>
               {recentPayments.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="gf-table-empty">No recent payments found</td>
+                  <td colSpan={5} className="gf-table-empty">No recent payments found</td>
                 </tr>
               ) : (
                 recentPayments.map((p: RecentPayment) => (
                   <tr key={p._id}>
                     <td className="td-primary">{p.organizationName}</td>
+                    <td>
+                      <span className="luxury-badge badge-info">
+                        {p.tier || "-"}
+                      </span>
+                    </td>
                     <td>{p.amount > 0 ? formatCurrency(p.amount) : "—"}</td>
                     <td className="user-email">{p.date}</td>
                     <td>
