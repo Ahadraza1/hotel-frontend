@@ -94,6 +94,18 @@ const emptyPlanForm: PlanFormState = {
   features: [""],
 };
 
+const PLAN_HIERARCHY = ["FREE", "BASIC", "PROFESSIONAL", "ENTERPRISE"] as const;
+
+const PLAN_NAME_ALIASES: Record<string, (typeof PLAN_HIERARCHY)[number]> = {
+  FREE: "FREE",
+  TRIAL: "FREE",
+  BASIC: "BASIC",
+  STARTER: "BASIC",
+  PROFESSIONAL: "PROFESSIONAL",
+  PRO: "PROFESSIONAL",
+  ENTERPRISE: "ENTERPRISE",
+};
+
 const formatDate = (value?: string | null) => {
   if (!value) return "-";
   return new Date(value).toLocaleDateString("en-IN", {
@@ -105,6 +117,41 @@ const formatDate = (value?: string | null) => {
 
 const planLimitLabel = (limit: number | null) =>
   limit === null ? "Unlimited Branches" : `Up to ${limit} Branches`;
+
+const normalizePlanHierarchyName = (name?: string | null) =>
+  PLAN_NAME_ALIASES[String(name || "").trim().toUpperCase()] || null;
+
+const getPlanHierarchyIndex = (plan?: Pick<Plan, "name"> | null) => {
+  const normalizedName = normalizePlanHierarchyName(plan?.name);
+  return normalizedName ? PLAN_HIERARCHY.indexOf(normalizedName) : -1;
+};
+
+const comparePlans = (currentPlan?: Plan | null, selectedPlan?: Plan | null) => {
+  const currentIndex = getPlanHierarchyIndex(currentPlan);
+  const selectedIndex = getPlanHierarchyIndex(selectedPlan);
+
+  if (currentIndex >= 0 && selectedIndex >= 0) {
+    return selectedIndex - currentIndex;
+  }
+
+  const currentMonthlyPrice = Number(currentPlan?.monthlyPrice || 0);
+  const selectedMonthlyPrice = Number(selectedPlan?.monthlyPrice || 0);
+
+  if (selectedMonthlyPrice !== currentMonthlyPrice) {
+    return selectedMonthlyPrice - currentMonthlyPrice;
+  }
+
+  const currentYearlyPrice = Number(currentPlan?.yearlyPrice || 0);
+  const selectedYearlyPrice = Number(selectedPlan?.yearlyPrice || 0);
+
+  if (selectedYearlyPrice !== currentYearlyPrice) {
+    return selectedYearlyPrice - currentYearlyPrice;
+  }
+
+  return String(selectedPlan?.name || "").localeCompare(
+    String(currentPlan?.name || ""),
+  );
+};
 
 const loadRazorpayScript = async () => {
   if (window.Razorpay) return true;
@@ -196,6 +243,29 @@ const SubscriptionPlans = () => {
       (left, right) => left.monthlyPrice - right.monthlyPrice,
     );
   }, [dashboard?.plans]);
+
+  const currentPlan = useMemo(() => {
+    const activePlanName = currentOrganization?.subscription.activePlan?.name;
+
+    if (!activePlanName) {
+      return null;
+    }
+
+    return (
+      sortedPlans.find((plan) => plan.name === activePlanName) || {
+        _id: "current-plan",
+        name: activePlanName,
+        description:
+          currentOrganization?.subscription.activePlan?.description || "",
+        monthlyPrice: 0,
+        yearlyPrice: 0,
+        branchLimit:
+          currentOrganization?.subscription.activePlan?.branchLimit ?? null,
+        features: currentOrganization?.subscription.activePlan?.features || [],
+        isActive: true,
+      }
+    );
+  }, [currentOrganization?.subscription.activePlan, sortedPlans]);
 
   const overviewCards = useMemo(() => {
     if (!dashboard) return [];
@@ -353,6 +423,27 @@ const SubscriptionPlans = () => {
     if (!assigningOrganization || !assignPlanId) {
       toast.error("Select a plan before saving.");
       return;
+    }
+
+    const selectedPlan =
+      sortedPlans.find((plan) => plan._id === assignPlanId) || null;
+    const organizationCurrentPlan =
+      sortedPlans.find(
+        (plan) => plan.name === assigningOrganization.subscription.activePlan?.name,
+      ) || null;
+
+    if (selectedPlan && organizationCurrentPlan) {
+      const comparison = comparePlans(organizationCurrentPlan, selectedPlan);
+
+      if (comparison < 0) {
+        toast.error("Downgrade not allowed. You can only upgrade the plan.");
+        return;
+      }
+
+      if (comparison === 0) {
+        toast.error("This organization is already on the selected plan.");
+        return;
+      }
     }
 
     try {
@@ -601,6 +692,10 @@ const SubscriptionPlans = () => {
         {sortedPlans.map((plan, index) => {
           const isCurrentPlan =
             currentOrganization?.subscription.activePlan?.name === plan.name;
+          const planComparison = currentPlan ? comparePlans(currentPlan, plan) : 1;
+          const isDowngrade = !!currentPlan && planComparison < 0;
+          const isSamePlan = !!currentPlan && planComparison === 0;
+          const isSelectable = !isDowngrade && !isSamePlan;
           const planPrice =
             billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
           const showPopular = sortedPlans.length >= 3 && index === 1;
@@ -673,16 +768,19 @@ const SubscriptionPlans = () => {
                 </button>
               ) : (
                 <button
-                  className={`luxury-btn ${isCurrentPlan && currentOrganization?.subscription.status === "active" ? "luxury-btn-outline" : "luxury-btn-primary"} sb-plan-btn`}
-                  disabled={processingPlanId === plan._id}
+                  className={`luxury-btn ${isSamePlan ? "luxury-btn-outline" : "luxury-btn-primary"} sb-plan-btn`}
+                  disabled={processingPlanId === plan._id || !isSelectable}
                   onClick={() => upgradePlan(plan)}
                 >
                   {processingPlanId === plan._id
                     ? "Processing..."
-                    : isCurrentPlan &&
-                        currentOrganization?.subscription.status === "active"
+                    : isSamePlan
                       ? "Current Plan"
-                      : "Select Plan"}
+                      : isDowngrade
+                        ? "Downgrade not allowed"
+                        : currentPlan
+                          ? "Upgrade Plan"
+                          : "Select Plan"}
                 </button>
               )}
             </div>
@@ -1003,11 +1101,34 @@ const SubscriptionPlans = () => {
                     onChange={(event) => setAssignPlanId(event.target.value)}
                   >
                     <option value="">Select Plan</option>
-                    {sortedPlans.map((plan) => (
-                      <option key={plan._id} value={plan._id}>
-                        {plan.name}
-                      </option>
-                    ))}
+                    {sortedPlans.map((plan) => {
+                      const organizationCurrentPlan =
+                        sortedPlans.find(
+                          (item) =>
+                            item.name ===
+                            assigningOrganization.subscription.activePlan?.name,
+                        ) || null;
+                      const comparison = organizationCurrentPlan
+                        ? comparePlans(organizationCurrentPlan, plan)
+                        : 1;
+                      const isDisabledOption = comparison <= 0;
+                      const optionLabel =
+                        comparison === 0
+                          ? `${plan.name} (Current Plan)`
+                          : comparison < 0
+                            ? `${plan.name} (Downgrade not allowed)`
+                            : plan.name;
+
+                      return (
+                        <option
+                          key={plan._id}
+                          value={plan._id}
+                          disabled={isDisabledOption}
+                        >
+                          {optionLabel}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
