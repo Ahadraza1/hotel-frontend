@@ -318,6 +318,7 @@ const Bookings = () => {
               <input
                 type="date"
                 className="luxury-input !py-1.5 !text-sm"
+                placeholder="Check-in date"
                 value={filterCheckIn}
                 onChange={(e) => setFilterCheckIn(e.target.value)}
               />
@@ -329,6 +330,7 @@ const Bookings = () => {
               <input
                 type="date"
                 className="luxury-input !py-1.5 !text-sm"
+                placeholder="Check-out date"
                 value={filterCheckOut}
                 onChange={(e) => setFilterCheckOut(e.target.value)}
               />
