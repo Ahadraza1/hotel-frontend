@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sun, Moon } from "lucide-react";
+import { Loader2, Mail, Moon, Phone, Sun, UserRound, X } from "lucide-react";
 import api from "@/api/axios";
+import { useToast } from "@/components/confirm/ConfirmProvider";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import "./landing.css";
@@ -15,6 +16,20 @@ type LandingPlan = {
   features: string[];
   maxBranches: number | null;
   isPopular: boolean;
+};
+
+type ContactFormState = {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+};
+
+const emptyContactForm: ContactFormState = {
+  name: "",
+  email: "",
+  phone: "",
+  message: "",
 };
 
 /* ─────────────────────────────────────────────
@@ -363,11 +378,19 @@ const LandingPage = () => {
   const { formatCompactCurrency, formatCurrency, currencySymbol } =
     useSystemSettings();
   const navigate = useNavigate();
+  const toast = useToast();
   const { theme, toggleTheme } = useTheme();
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [plans, setPlans] = useState<LandingPlan[]>([]);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactForm, setContactForm] =
+    useState<ContactFormState>(emptyContactForm);
+  const [contactErrors, setContactErrors] = useState<
+    Partial<Record<keyof ContactFormState, string>>
+  >({});
   const kpiRef = useRef<HTMLDivElement>(null);
   const [kpiVisible, setKpiVisible] = useState(false);
 
@@ -417,12 +440,116 @@ const LandingPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!contactOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setContactOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [contactOpen]);
+
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
     setTimeout(
       () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }),
       100,
     );
+  };
+
+  const openContact = () => {
+    setMobileMenuOpen(false);
+    setContactOpen(true);
+  };
+
+  const closeContact = () => {
+    if (contactSubmitting) return;
+    setContactOpen(false);
+  };
+
+  const validateContactForm = (form: ContactFormState) => {
+    const errors: Partial<Record<keyof ContactFormState, string>> = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!form.name.trim()) errors.name = "Full name is required";
+    if (!form.email.trim()) errors.email = "Email address is required";
+    else if (!emailRegex.test(form.email.trim())) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    if (!form.phone.trim()) errors.phone = "Phone number is required";
+    else if (!/^\d+$/.test(form.phone.trim())) {
+      errors.phone = "Phone number must contain digits only";
+    }
+
+    if (!form.message.trim()) errors.message = "Message is required";
+
+    return errors;
+  };
+
+  const handleContactChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = event.target;
+    const nextValue = name === "phone" ? value.replace(/[^\d]/g, "") : value;
+
+    setContactForm((current) => ({
+      ...current,
+      [name]: nextValue,
+    }));
+
+    setContactErrors((current) => {
+      if (!current[name as keyof ContactFormState]) return current;
+      const next = { ...current };
+      delete next[name as keyof ContactFormState];
+      return next;
+    });
+  };
+
+  const handleContactSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    const nextErrors = validateContactForm(contactForm);
+    setContactErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+
+    try {
+      setContactSubmitting(true);
+      const response = await api.post<{ message: string }>("/contact", {
+        name: contactForm.name.trim(),
+        email: contactForm.email.trim(),
+        phone: contactForm.phone.trim(),
+        message: contactForm.message.trim(),
+      });
+
+      setContactForm(emptyContactForm);
+      setContactErrors({});
+      setContactOpen(false);
+      toast.success(response.data?.message || "Message sent successfully");
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || "Failed to send your message";
+      toast.error(message);
+    } finally {
+      setContactSubmitting(false);
+    }
   };
 
   return (
@@ -439,6 +566,7 @@ const LandingPage = () => {
             <button onClick={() => scrollTo("analytics")}>Analytics</button>
             <button onClick={() => scrollTo("pricing")}>Pricing</button>
             <button onClick={() => scrollTo("testimonials")}>Reviews</button>
+            <button onClick={openContact}>Contact</button>
           </div>
           <div className="lnd-nav-cta">
             <button
@@ -489,6 +617,7 @@ const LandingPage = () => {
             <button onClick={() => scrollTo("analytics")}>Analytics</button>
             <button onClick={() => scrollTo("pricing")}>Pricing</button>
             <button onClick={() => scrollTo("testimonials")}>Reviews</button>
+            <button onClick={openContact}>Contact</button>
             <div className="lnd-mobile-menu-cta">
               <button
                 className="lnd-btn-ghost"
@@ -947,16 +1076,42 @@ const LandingPage = () => {
               businesses.
             </p>
             <div className="lnd-footer-social">
-              {["𝕏", "in", "f", "▶"].map((s, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="lnd-social-icon"
-                  aria-label={`Social link ${i + 1}`}
-                >
-                  {s}
-                </a>
-              ))}
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lnd-social-icon"
+                aria-label="Twitter"
+              >
+                𝕏
+              </a>
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lnd-social-icon"
+                aria-label="LinkedIn"
+              >
+                in
+              </a>
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lnd-social-icon"
+                aria-label="Facebook"
+              >
+                f
+              </a>
+              <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lnd-social-icon"
+                aria-label="YouTube"
+              >
+                ▶
+              </a>
             </div>
           </div>
 
@@ -973,7 +1128,13 @@ const LandingPage = () => {
               <a href="#">About</a>
               <a href="#">Blog</a>
               <a href="#">Careers</a>
-              <a href="#">Contact</a>
+              <button
+                type="button"
+                className="lnd-footer-link-button"
+                onClick={openContact}
+              >
+                Contact
+              </button>
             </div>
             <div className="lnd-footer-col">
               <h4>Legal</h4>
@@ -990,6 +1151,141 @@ const LandingPage = () => {
           <span>Built for the global hospitality industry</span>
         </div>
       </footer>
+
+      {contactOpen ? (
+        <div
+          className="lnd-contact-modal-layer"
+          role="presentation"
+          onClick={closeContact}
+        >
+          <div
+            className="lnd-contact-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="lnd-contact-close"
+              onClick={closeContact}
+              aria-label="Close contact form"
+              disabled={contactSubmitting}
+            >
+              <X size={18} />
+            </button>
+
+            <div className="lnd-contact-header">
+              <div className="lnd-contact-badge">Contact Concierge</div>
+              <h2 id="contact-modal-title" className="lnd-contact-title">
+                Contact Us
+              </h2>
+              <p className="lnd-contact-sub">
+                Share your requirements and our team will get back to you with
+                a tailored response.
+              </p>
+            </div>
+
+            <form className="lnd-contact-form" onSubmit={handleContactSubmit}>
+              <label className="lnd-contact-field">
+                <span>Full Name</span>
+                <div className="lnd-contact-input-wrap">
+                  <UserRound size={16} />
+                  <input
+                    type="text"
+                    name="name"
+                    value={contactForm.name}
+                    onChange={handleContactChange}
+                    placeholder="John Doe"
+                    autoComplete="name"
+                  />
+                </div>
+                {contactErrors.name ? (
+                  <small className="lnd-contact-error">{contactErrors.name}</small>
+                ) : null}
+              </label>
+
+              <div className="lnd-contact-grid">
+                <label className="lnd-contact-field">
+                  <span>Email Address</span>
+                  <div className="lnd-contact-input-wrap">
+                    <Mail size={16} />
+                    <input
+                      type="email"
+                      name="email"
+                      value={contactForm.email}
+                      onChange={handleContactChange}
+                      placeholder="john@example.com"
+                      autoComplete="email"
+                    />
+                  </div>
+                  {contactErrors.email ? (
+                    <small className="lnd-contact-error">
+                      {contactErrors.email}
+                    </small>
+                  ) : null}
+                </label>
+
+                <label className="lnd-contact-field">
+                  <span>Phone Number</span>
+                  <div className="lnd-contact-input-wrap">
+                    <Phone size={16} />
+                    <input
+                      type="tel"
+                      name="phone"
+                      inputMode="numeric"
+                      value={contactForm.phone}
+                      onChange={handleContactChange}
+                      placeholder="9876543210"
+                      autoComplete="tel"
+                    />
+                  </div>
+                  {contactErrors.phone ? (
+                    <small className="lnd-contact-error">
+                      {contactErrors.phone}
+                    </small>
+                  ) : null}
+                </label>
+              </div>
+
+              <label className="lnd-contact-field">
+                <span>Message / Description</span>
+                <div className="lnd-contact-input-wrap lnd-contact-textarea-wrap">
+                  <textarea
+                    name="message"
+                    value={contactForm.message}
+                    onChange={handleContactChange}
+                    placeholder="Hello, I want to know more about your services."
+                    rows={6}
+                  />
+                </div>
+                {contactErrors.message ? (
+                  <small className="lnd-contact-error">
+                    {contactErrors.message}
+                  </small>
+                ) : null}
+              </label>
+
+              <div className="lnd-contact-actions">
+                <button
+                  type="submit"
+                  className="lnd-btn-primary lnd-contact-submit"
+                  disabled={contactSubmitting}
+                >
+                  {contactSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="lnd-contact-spinner" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
