@@ -1,12 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Building2, Globe, BedDouble, Settings2, CheckCircle2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  Globe,
+  BedDouble,
+  Settings2,
+  CheckCircle2,
+  User,
+  Mail,
+  Phone,
+} from "lucide-react";
 import api from "@/api/axios";
 import { useToast } from "@/components/confirm/ConfirmProvider";
-import { validateCountryField } from "@/lib/fieldValidation";
+import {
+  validateCountryField,
+  validateEmailField,
+  validatePhoneField,
+} from "@/lib/fieldValidation";
 
 interface Organization {
   _id: string;
+  organizationId?: string;
   name: string;
 }
 
@@ -17,6 +32,9 @@ interface Branch {
   country: string;
   rooms: number;
   status: "active" | "inactive" | "maintenance";
+  managerName: string;
+  managerEmail: string;
+  managerPhone: string;
 }
 
 const EditBranch = () => {
@@ -30,7 +48,19 @@ const EditBranch = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Fetch organizations
+  const getFieldError = (name: string, value: string) => {
+    switch (name) {
+      case "country":
+        return validateCountryField(value);
+      case "managerEmail":
+        return value.trim() ? validateEmailField(value) : "";
+      case "managerPhone":
+        return value.trim() ? validatePhoneField(value) : "";
+      default:
+        return "";
+    }
+  };
+
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
@@ -44,7 +74,6 @@ const EditBranch = () => {
     fetchOrganizations();
   }, []);
 
-  // Fetch branch by ID
   useEffect(() => {
     const fetchBranch = async () => {
       try {
@@ -52,7 +81,6 @@ const EditBranch = () => {
 
         console.log("API RESPONSE:", res.data);
 
-        // handle both possible structures
         const branch = res.data.data ? res.data.data : res.data;
 
         if (!branch) {
@@ -65,10 +93,15 @@ const EditBranch = () => {
           organization:
             typeof branch.organization === "string"
               ? branch.organization
-              : branch.organization?._id || "",
+              : branch.organization?._id ||
+                branch.organizationId ||
+                "",
           country: branch.country,
           rooms: branch.rooms,
           status: branch.status,
+          managerName: branch.branchManager?.name || "",
+          managerEmail: branch.branchManager?.email || "",
+          managerPhone: branch.branchManager?.phone || "",
         });
       } catch (err) {
         console.error("Failed to fetch branch", err);
@@ -92,13 +125,13 @@ const EditBranch = () => {
       [name]: name === "rooms" ? Number(value) : value,
     }));
 
-    if (name === "country") {
+    if (["country", "managerEmail", "managerPhone"].includes(name)) {
       setFieldErrors((prev) => {
         const next = { ...prev };
-        const countryError = validateCountryField(value);
+        const nextError = getFieldError(name, value);
 
-        if (countryError) next.country = countryError;
-        else delete next.country;
+        if (nextError) next[name] = nextError;
+        else delete next[name];
 
         return next;
       });
@@ -106,14 +139,16 @@ const EditBranch = () => {
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (e.target.name !== "country") return;
+    if (!["country", "managerEmail", "managerPhone"].includes(e.target.name)) {
+      return;
+    }
 
     setFieldErrors((prev) => {
       const next = { ...prev };
-      const countryError = validateCountryField(e.target.value);
+      const nextError = getFieldError(e.target.name, e.target.value);
 
-      if (countryError) next.country = countryError;
-      else delete next.country;
+      if (nextError) next[e.target.name] = nextError;
+      else delete next[e.target.name];
 
       return next;
     });
@@ -122,9 +157,18 @@ const EditBranch = () => {
   const handleSubmit = async () => {
     if (!form) return;
 
-    const countryError = validateCountryField(form.country);
-    setFieldErrors(countryError ? { country: countryError } : {});
-    if (countryError) return;
+    const nextErrors: Record<string, string> = {};
+    const countryError = getFieldError("country", form.country);
+    if (countryError) nextErrors.country = countryError;
+
+    const managerEmailError = getFieldError("managerEmail", form.managerEmail);
+    if (managerEmailError) nextErrors.managerEmail = managerEmailError;
+
+    const managerPhoneError = getFieldError("managerPhone", form.managerPhone);
+    if (managerPhoneError) nextErrors.managerPhone = managerPhoneError;
+
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
 
     try {
       setLoading(true);
@@ -135,6 +179,11 @@ const EditBranch = () => {
         country: form.country,
         rooms: form.rooms,
         status: form.status,
+        manager: {
+          name: form.managerName,
+          email: form.managerEmail,
+          phone: form.managerPhone,
+        },
       });
 
       toast.success("Branch updated successfully.");
@@ -154,7 +203,7 @@ const EditBranch = () => {
       <div className="animate-fade-in add-branch-root">
         <div className="eb-loading">
           <span className="eb-loading-spinner" />
-          <span>Loading branch details…</span>
+          <span>Loading branch details...</span>
         </div>
       </div>
     );
@@ -162,8 +211,6 @@ const EditBranch = () => {
 
   return (
     <div className="animate-fade-in add-branch-root">
-
-      {/* ── Back Button ── */}
       <button
         onClick={() => navigate(-1)}
         className="add-branch-back-btn"
@@ -175,28 +222,24 @@ const EditBranch = () => {
         <span className="add-branch-back-label">Back to Branches</span>
       </button>
 
-      {/* ── Page Header ── */}
       <div className="add-branch-header">
         <div className="add-branch-header-icon-wrap">
           <Settings2 className="add-branch-header-icon" />
         </div>
         <div>
           <h1 className="page-title">Edit Branch</h1>
-          <p className="page-subtitle">Update branch details and operational settings</p>
+          <p className="page-subtitle">
+            Update branch details and operational settings
+          </p>
         </div>
       </div>
 
-      {/* ── Form Card ── */}
       <div className="luxury-card add-branch-card">
-
-        {/* Section header */}
         <div className="add-branch-section-label">
           <span className="add-branch-section-pill">Branch Details</span>
         </div>
 
         <div className="add-branch-grid">
-
-          {/* Branch Name */}
           <div className="add-branch-field add-branch-field-full">
             <label htmlFor="branch-name" className="add-branch-label">
               Branch Name
@@ -209,12 +252,11 @@ const EditBranch = () => {
                 value={form.name}
                 onChange={handleChange}
                 className="luxury-input add-branch-input-with-icon"
-                placeholder="e.g. The Grand Palace – Dubai"
+                placeholder="e.g. The Grand Palace - Dubai"
               />
             </div>
           </div>
 
-          {/* Organization */}
           <div className="add-branch-field add-branch-field-full">
             <label htmlFor="branch-org" className="add-branch-label">
               Organization
@@ -231,7 +273,10 @@ const EditBranch = () => {
               >
                 <option value="">Select Organization</option>
                 {organizations.map((org) => (
-                  <option key={org._id} value={org._id}>
+                  <option
+                    key={org._id}
+                    value={org.organizationId || org._id}
+                  >
                     {org.name}
                   </option>
                 ))}
@@ -239,7 +284,6 @@ const EditBranch = () => {
             </div>
           </div>
 
-          {/* Country */}
           <div className="add-branch-field">
             <label htmlFor="branch-country" className="add-branch-label">
               Country
@@ -257,13 +301,19 @@ const EditBranch = () => {
               />
             </div>
             {fieldErrors.country ? (
-              <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+              <span
+                style={{
+                  color: "#dc2626",
+                  display: "block",
+                  fontSize: "0.875rem",
+                  marginTop: "0.35rem",
+                }}
+              >
                 {fieldErrors.country}
               </span>
             ) : null}
           </div>
 
-          {/* Total Rooms */}
           <div className="add-branch-field">
             <label htmlFor="branch-rooms" className="add-branch-label">
               Add Rooms
@@ -283,7 +333,6 @@ const EditBranch = () => {
             </div>
           </div>
 
-          {/* Status */}
           <div className="add-branch-field add-branch-field-full">
             <label htmlFor="branch-status" className="add-branch-label">
               Status
@@ -304,10 +353,96 @@ const EditBranch = () => {
               </select>
             </div>
           </div>
-
         </div>
 
-        {/* ── Action Buttons ── */}
+        <div className="add-branch-divider" />
+
+        <div className="add-branch-section-label">
+          <span className="add-branch-section-pill">
+            Branch Manager Details
+          </span>
+        </div>
+
+        <div className="add-branch-grid">
+          <div className="add-branch-field add-branch-field-full">
+            <label htmlFor="manager-name" className="add-branch-label">
+              Manager Name
+            </label>
+            <div className="add-branch-input-wrap">
+              <User className="add-branch-field-icon" />
+              <input
+                id="manager-name"
+                name="managerName"
+                value={form.managerName}
+                onChange={handleChange}
+                className="luxury-input add-branch-input-with-icon"
+                placeholder="e.g. Ahmed Al-Rashidi"
+              />
+            </div>
+          </div>
+
+          <div className="add-branch-field">
+            <label htmlFor="manager-email" className="add-branch-label">
+              Manager Email
+            </label>
+            <div className="add-branch-input-wrap">
+              <Mail className="add-branch-field-icon" />
+              <input
+                id="manager-email"
+                name="managerEmail"
+                value={form.managerEmail}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                type="email"
+                className="luxury-input add-branch-input-with-icon"
+                placeholder="manager@hotel.com"
+              />
+            </div>
+            {fieldErrors.managerEmail ? (
+              <span
+                style={{
+                  color: "#dc2626",
+                  display: "block",
+                  fontSize: "0.875rem",
+                  marginTop: "0.35rem",
+                }}
+              >
+                {fieldErrors.managerEmail}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="add-branch-field">
+            <label htmlFor="manager-phone" className="add-branch-label">
+              Manager Phone
+            </label>
+            <div className="add-branch-input-wrap">
+              <Phone className="add-branch-field-icon" />
+              <input
+                id="manager-phone"
+                name="managerPhone"
+                value={form.managerPhone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className="luxury-input add-branch-input-with-icon"
+                placeholder="+91 99999 00000"
+              />
+            </div>
+            {fieldErrors.managerPhone ? (
+              <span
+                style={{
+                  color: "#dc2626",
+                  display: "block",
+                  fontSize: "0.875rem",
+                  marginTop: "0.35rem",
+                }}
+              >
+                {fieldErrors.managerPhone}
+              </span>
+            ) : null}
+          </div>
+        </div>
+
         <div className="add-branch-actions">
           <button
             onClick={() => navigate(-1)}
@@ -324,7 +459,7 @@ const EditBranch = () => {
             {loading ? (
               <>
                 <span className="add-branch-spinner" />
-                Updating…
+                Updating...
               </>
             ) : (
               <>
@@ -334,7 +469,6 @@ const EditBranch = () => {
             )}
           </button>
         </div>
-
       </div>
     </div>
   );

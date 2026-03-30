@@ -58,12 +58,7 @@ const toTitleCase = (str: string) =>
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
-const toPermissionKey = (value: string) =>
-  value
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
+const toPermissionKey = (value: string) => value.trim().toUpperCase();
 
 const EditorModal = ({
   title,

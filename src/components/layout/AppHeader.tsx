@@ -135,6 +135,7 @@ export const AppHeader = ({
   const [profileOpen, setProfileOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
 
   const [user, setUser] = useState<HeaderUser | null>(null);
 
@@ -153,6 +154,33 @@ export const AppHeader = ({
     (isWorkspaceContext || authUser?.branchId) && notificationBranchId
       ? `/workspace/${notificationBranchId}/notifications`
       : "/notifications";
+  const avatarSrc = user?.avatar?.trim() || "";
+  const shouldShowAvatarFallback = !avatarSrc || avatarLoadFailed;
+
+  const getInitial = (name?: string) =>
+    name ? name.trim().charAt(0).toUpperCase() || "?" : "?";
+
+  const renderAvatarFallback = (size: number, borderRadius: string) => (
+    <div
+      aria-hidden="true"
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        backgroundColor: "hsl(var(--muted))",
+        color: "hsl(var(--foreground))",
+        border: "1.5px solid hsla(var(--grandeur-gold), 0.25)",
+        fontWeight: 700,
+        textTransform: "uppercase",
+      }}
+    >
+      {getInitial(user?.name)}
+    </div>
+  );
 
   useEffect(() => {
     const fetchHeaderData = async () => {
@@ -169,6 +197,10 @@ export const AppHeader = ({
 
     fetchHeaderData();
   }, []);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [avatarSrc]);
 
   const handleDeleteAccount = async () => {
     const confirmed = await confirm({
@@ -458,11 +490,18 @@ export const AppHeader = ({
             aria-haspopup="menu"
             aria-expanded={profileOpen}
           >
-            <img
-              src={user?.avatar || "https://i.pravatar.cc/100?img=3"}
-              alt="User"
-              className="user-avatar-img"
-            />
+            {shouldShowAvatarFallback ? (
+              renderAvatarFallback(32, "50%")
+            ) : (
+              <img
+                src={avatarSrc}
+                alt="User"
+                className="user-avatar-img"
+                onError={() => {
+                  setAvatarLoadFailed(true);
+                }}
+              />
+            )}
             <div className="user-avatar-info">
               <span className="user-avatar-name">{user?.name || "User"}</span>
               <span className="user-avatar-role">
@@ -476,10 +515,17 @@ export const AppHeader = ({
             <div className="dropdown-menu profile-dropdown">
               <div className="profile-header-flex">
                 <div className="profile-avatar-wrap">
-                  <img
-                    src={user?.avatar || "https://i.pravatar.cc/100?img=3"}
-                    alt="Profile"
-                  />
+                  {shouldShowAvatarFallback ? (
+                    renderAvatarFallback(42, "50%")
+                  ) : (
+                    <img
+                      src={avatarSrc}
+                      alt="Profile"
+                      onError={() => {
+                        setAvatarLoadFailed(true);
+                      }}
+                    />
+                  )}
                   <span className="profile-status-dot" />
                 </div>
                 <div className="profile-user-info">

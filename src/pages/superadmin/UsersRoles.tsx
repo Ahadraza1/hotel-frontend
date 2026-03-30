@@ -36,7 +36,7 @@ interface User {
 interface Role {
   _id: string;
   name: string;
-  normalizedName: string;
+  normalizedName?: string;
 }
 
 interface RoleDistribution {
@@ -98,19 +98,27 @@ const UsersRoles = () => {
   const [roleUpdatingIds, setRoleUpdatingIds] = useState<string[]>([]);
   const [roleEditor, setRoleEditor] = useState<RoleEditState | null>(null);
 
+  const fetchRoles = async () => {
+    const rolesRes = await api.get<{ data: Role[] }>("/roles");
+    const rolesData = rolesRes.data.data || [];
+
+    console.log("roles", rolesData);
+    setRoles(rolesData);
+
+    return rolesData;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [usersRes, rolesRes] = await Promise.all([
+        const [usersRes, rolesData] = await Promise.all([
           api.get<{ data: User[] }>("/users"),
-          api.get<{ data: Role[] }>("/roles"),
+          fetchRoles(),
         ]);
 
         const usersData = usersRes.data.data || [];
-        const rolesData = rolesRes.data.data || [];
 
         setUsers(usersData);
-        setRoles(rolesData);
         setRoleDistribution(buildRoleDistribution(usersData));
       } catch (error) {
         console.error("Failed to load users/roles", error);
@@ -209,11 +217,22 @@ const UsersRoles = () => {
     setDeletingIds((prev) => prev.filter((id) => id !== targetUser._id));
   };
 
-  const openRoleEditor = (targetUser: User) => {
-    setRoleEditor({
-      user: targetUser,
-      selectedRole: targetUser.role,
-    });
+  const openRoleEditor = async (targetUser: User) => {
+    try {
+      const rolesData = await fetchRoles();
+
+      setRoleEditor({
+        user: targetUser,
+        selectedRole:
+          rolesData.find(
+            (role) =>
+              (role.normalizedName || role.name) === targetUser.role,
+          )?.normalizedName || targetUser.role,
+      });
+    } catch (error) {
+      console.error("Failed to load roles", error);
+      toast.error("Failed to load roles");
+    }
   };
 
   const closeRoleEditor = () => {
@@ -234,7 +253,7 @@ const UsersRoles = () => {
     }
 
     const selectedRoleOption = roles.find(
-      (role) => role.normalizedName === selectedRole,
+      (role) => (role.normalizedName || role.name) === selectedRole,
     );
 
     if (!selectedRoleOption) {
@@ -249,8 +268,8 @@ const UsersRoles = () => {
           : "Change User Role",
       message:
         targetUser.role === "SUPER_ADMIN"
-          ? `This user is currently a Super Admin. Changing the role to ${selectedRoleOption.normalizedName} will remove Super Admin access.`
-          : `Are you sure you want to change this user's role to ${selectedRoleOption.normalizedName}?`,
+          ? `This user is currently a Super Admin. Changing the role to ${selectedRoleOption.normalizedName || selectedRoleOption.name} will remove Super Admin access.`
+          : `Are you sure you want to change this user's role to ${selectedRoleOption.normalizedName || selectedRoleOption.name}?`,
       confirmLabel: "Save",
       processingLabel: "Saving...",
     });
@@ -262,7 +281,7 @@ const UsersRoles = () => {
     try {
       const response = await api.patch<{ success: boolean; user: User }>(
         `/users/${targetUser._id}/role`,
-        { role: selectedRoleOption.normalizedName },
+        { role: selectedRoleOption.normalizedName || selectedRoleOption.name },
       );
 
       if (response.data.success) {
@@ -406,7 +425,9 @@ const UsersRoles = () => {
                                 type="button"
                                 className="ur-role-edit-btn"
                                 aria-label={`Edit role for ${u.name}`}
-                                onClick={() => openRoleEditor(u)}
+                                onClick={() => {
+                                  void openRoleEditor(u);
+                                }}
                                 disabled={
                                   roleUpdatingIds.includes(u._id) ||
                                   deletingIds.includes(u._id)
@@ -570,8 +591,11 @@ const UsersRoles = () => {
                     disabled={roleUpdatingIds.includes(roleEditor.user._id)}
                   >
                     {roles.map((role) => (
-                      <option key={role._id} value={role.normalizedName}>
-                        {role.normalizedName}
+                      <option
+                        key={role._id}
+                        value={role.normalizedName || role.name}
+                      >
+                        {role.normalizedName || role.name}
                       </option>
                     ))}
                   </select>
