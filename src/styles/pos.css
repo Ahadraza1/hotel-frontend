@@ -898,6 +898,106 @@
   gap: 12px;
 }
 
+.pos-active-orders-section {
+  border-top: 1px solid hsl(var(--border) / 0.6);
+  padding-top: 18px;
+}
+
+.pos-active-orders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pos-active-orders-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+}
+
+.pos-active-orders-subtitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+}
+
+.pos-active-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pos-active-order-empty {
+  border: 1px dashed hsl(var(--border) / 0.9);
+  background: hsl(var(--muted) / 0.18);
+  border-radius: 18px;
+  padding: 14px;
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+}
+
+.pos-active-order-card {
+  border: 1px solid hsl(var(--primary) / 0.18);
+  background:
+    linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.16) 100%);
+  border-radius: 18px;
+  padding: 14px 15px;
+  box-shadow: 0 10px 24px -18px hsla(var(--primary), 0.45);
+}
+
+.pos-active-order-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.pos-active-order-code {
+  font-size: 17px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  line-height: 1.2;
+}
+
+.pos-active-order-location {
+  margin-top: 6px;
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+}
+
+.pos-active-order-right {
+  text-align: right;
+  min-width: 96px;
+}
+
+.pos-active-order-total {
+  font-size: 17px;
+  font-weight: 800;
+  color: hsl(var(--foreground));
+  line-height: 1.2;
+}
+
+.pos-active-order-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: hsla(var(--primary), 0.12);
+  color: hsl(var(--primary));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
 .pos-btn-refined-outline {
   display: flex;
   align-items: center;
@@ -1342,5 +1442,4 @@
     display: none;
   }
 }
-
 

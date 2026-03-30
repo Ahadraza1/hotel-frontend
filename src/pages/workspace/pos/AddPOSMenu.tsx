@@ -232,7 +232,7 @@ const AddPOSMenu = () => {
 
               <div className="ar-field">
                 <label htmlFor="ar-price" className="ar-label">
-                  Price ($) <span className="ar-required">*</span>
+                  Price (₹) <span className="ar-required">*</span>
                 </label>
                 <input
                   id="ar-price"
