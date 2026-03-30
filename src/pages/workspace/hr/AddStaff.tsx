@@ -30,7 +30,11 @@ const AddStaff = () => {
     e.preventDefault();
     if (!form.firstName.trim()) { toast.warning("First Name is required."); return; }
     if (!form.lastName.trim()) { toast.warning("Last Name is required."); return; }
-    if (!form.salary || Number(form.salary) <= 0) {
+
+    const salaryValue =
+      form.salary.trim() === "" ? 0 : Number(form.salary);
+
+    if (!Number.isFinite(salaryValue) || salaryValue < 0) {
       toast.warning("Please enter a valid salary."); return;
     }
 
@@ -42,7 +46,7 @@ const AddStaff = () => {
         lastName: form.lastName.trim(),
         department: form.department.trim() || undefined,
         designation: form.designation.trim() || undefined,
-        salary: Number(form.salary),
+        salary: salaryValue,
       });
       toast.success("Staff member added successfully.");
       navigate(`/workspace/${branchId}/hr`);

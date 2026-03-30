@@ -115,6 +115,7 @@ const HR = () => {
         params: { branchId },
       });
       const staffList = res.data.data || [];
+      console.log("Staff List:", staffList);
       setStaff(staffList);
       setAttendanceStatus(
         staffList.reduce<Record<string, string>>((acc, member) => {
@@ -346,15 +347,20 @@ const HR = () => {
   const handleInviteStaff = async () => {
     try {
       console.log("🚀 Starting Invite Flow");
+      const salaryValue = inviteSalary.trim() === "" ? 0 : Number(inviteSalary);
 
       if (
         !inviteName ||
         !inviteEmail ||
         !inviteRole ||
-        !inviteSalary ||
         !inviteJoinedDate
       ) {
         toast.warning("All fields are required");
+        return;
+      }
+
+      if (!Number.isFinite(salaryValue) || salaryValue < 0) {
+        toast.warning("Please enter a valid salary");
         return;
       }
 
@@ -363,7 +369,7 @@ const HR = () => {
         email: inviteEmail,
         role: inviteRole,
         branchId,
-        salary: Number(inviteSalary),
+        salary: salaryValue,
       });
 
       const inviteRes = await api.post("/invitations", {
@@ -371,12 +377,13 @@ const HR = () => {
         email: inviteEmail,
         role: inviteRole,
         branchId,
-        salary: Number(inviteSalary), // ✅ IMPORTANT FIX
+        salary: salaryValue, // ✅ IMPORTANT FIX
         joinedDate: inviteJoinedDate,
       });
 
       console.log("🎉 Invitation response:", inviteRes.data);
 
+      await fetchStaff();
       toast.success("Staff invited successfully.");
 
       setInviteName("");
