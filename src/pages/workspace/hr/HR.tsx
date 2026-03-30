@@ -50,6 +50,23 @@ interface ApiErrorResponse {
   message?: string;
 }
 
+const departmentOptions = [
+  "FRONT_OFFICE",
+  "HOUSEKEEPING",
+  "RESTAURANT",
+  "HR",
+  "ACCOUNTS",
+];
+
+const designationOptions = [
+  "RECEPTIONIST",
+  "HOUSEKEEPING",
+  "ACCOUNTANT",
+  "HR_MANAGER",
+  "RESTAURANT_MANAGER",
+  "BRANCH_MANAGER",
+];
+
 const HR = () => {
   const { branchId: routeBranchId } = useParams();
   const { activeBranch } = useBranchWorkspace();
@@ -86,6 +103,7 @@ const HR = () => {
     lastName: "",
     department: "",
     designation: "",
+    role: "",
     salary: "",
   });
   const [payrollForm, setPayrollForm] = useState({
@@ -249,6 +267,10 @@ const HR = () => {
         member.designation && member.designation !== "—"
           ? member.designation
           : "",
+      role:
+        member.designation && member.designation !== "â€”"
+          ? member.designation
+          : "",
       salary: String(member.salary ?? 0),
     });
   };
@@ -256,14 +278,35 @@ const HR = () => {
   const handleUpdateStaff = async () => {
     if (!editingStaff) return;
 
+    if (!staffForm.department.trim()) {
+      toast.warning("Department is required");
+      return;
+    }
+
+    if (!staffForm.designation.trim()) {
+      toast.warning("Designation is required");
+      return;
+    }
+
+    const salaryValue = Number(staffForm.salary);
+    if (!Number.isFinite(salaryValue) || salaryValue < 0) {
+      toast.warning("Please enter a valid salary");
+      return;
+    }
+
     try {
-      await api.patch(`/hr/staff/${editingStaff.staffId}`, {
+      const payload = {
         firstName: staffForm.firstName.trim(),
         lastName: staffForm.lastName.trim(),
         department: staffForm.department.trim(),
         designation: staffForm.designation.trim(),
-        salary: Number(staffForm.salary),
-      });
+        role: staffForm.designation.trim(),
+        salary: salaryValue,
+      };
+
+      console.log("Updating Staff:", payload);
+
+      await api.patch(`/hr/staff/${editingStaff.staffId}`, payload);
       setEditingStaff(null);
       await refreshHrData();
       toast.success("Staff updated successfully.");
@@ -622,7 +665,7 @@ const HR = () => {
             </div>
             <div className="hr-invite-field">
               <label className="hr-invite-label" htmlFor="edit-staff-department">Department</label>
-              <input
+              <select
                 id="edit-staff-department"
                 className="luxury-input"
                 value={staffForm.department}
@@ -630,19 +673,37 @@ const HR = () => {
                   setStaffForm((prev) => ({ ...prev, department: e.target.value }))
                 }
                 title="Department"
-              />
+              >
+                <option value="">Select Department</option>
+                {departmentOptions.map((department) => (
+                  <option key={department} value={department}>
+                    {department}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="hr-invite-field">
               <label className="hr-invite-label" htmlFor="edit-staff-designation">Designation</label>
-              <input
+              <select
                 id="edit-staff-designation"
                 className="luxury-input"
                 value={staffForm.designation}
                 onChange={(e) =>
-                  setStaffForm((prev) => ({ ...prev, designation: e.target.value }))
+                  setStaffForm((prev) => ({
+                    ...prev,
+                    designation: e.target.value,
+                    role: e.target.value,
+                  }))
                 }
                 title="Designation"
-              />
+              >
+                <option value="">Select Designation</option>
+                {designationOptions.map((designation) => (
+                  <option key={designation} value={designation}>
+                    {designation}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="hr-invite-field">
               <label className="hr-invite-label" htmlFor="edit-staff-salary">Salary</label>
