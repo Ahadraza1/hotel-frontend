@@ -715,6 +715,20 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
+  transition:
+    width 0.25s ease,
+    opacity 0.25s ease,
+    border-color 0.25s ease;
+}
+
+@media (min-width: 1025px) {
+  .pos-order-panel:not(.active) {
+    width: 0;
+    opacity: 0;
+    border-left-color: transparent;
+    pointer-events: none;
+  }
 }
 
 .pos-panel-title {
@@ -731,6 +745,27 @@
   background: none;
   border: none;
   cursor: pointer;
+}
+
+.pos-panel-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid hsl(var(--border) / 0.7);
+  background: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.pos-panel-close:hover {
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--primary) / 0.35);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
 }
 
 .pos-order-tabs {
@@ -1080,20 +1115,93 @@
 
 .pos-mobile-cart-btn {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
-  background: hsl(var(--primary));
+  bottom: 16px;
+  right: 16px;
+  left: auto;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
   color: white;
-  padding: 14px 20px;
-  border-radius: 16px;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  padding: 0;
+  border-radius: 999px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 0;
   font-weight: 600;
-  box-shadow: 0 10px 30px hsla(var(--primary), 0.4);
+  border: 1px solid hsl(var(--primary) / 0.35);
+  box-shadow: 0 10px 20px hsla(var(--primary), 0.22);
+  backdrop-filter: blur(12px);
   z-index: 100;
   display: none;
+}
+
+.pos-mobile-cart-btn-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  flex-shrink: 0;
+}
+
+.pos-mobile-cart-btn-copy {
+  display: none;
+}
+
+.pos-mobile-cart-btn-count {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.pos-mobile-cart-btn-label {
+  font-size: 9px;
+  line-height: 1.1;
+  color: rgba(255, 255, 255, 0.78);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pos-mobile-cart-btn-total {
+  display: none;
+}
+
+@media (min-width: 1025px) {
+  .pos-mobile-cart-btn {
+    display: flex;
+    right: 24px;
+    bottom: 24px;
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    padding: 0;
+    border-radius: 999px;
+    justify-content: center;
+    box-shadow: 0 14px 28px hsla(var(--primary), 0.24);
+  }
+
+  .pos-mobile-cart-btn-copy,
+  .pos-mobile-cart-btn-total {
+    display: none;
+  }
+
+  .pos-mobile-cart-btn-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 999px;
+    background: transparent;
+    border: none;
+  }
+
+  .pos-mobile-cart-btn-icon svg {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -1106,9 +1214,51 @@
     transform: translateX(100%);
     transition: transform 0.3s;
     width: 320px;
+    height: 100dvh;
+    min-height: 0;
   }
   .pos-order-panel.active {
     transform: translateX(0);
+  }
+  .pos-order-panel-header,
+  .pos-order-panel-footer {
+    flex-shrink: 0;
+  }
+  .pos-order-items-list {
+    min-height: 0;
+    height: 220px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pos-order-card-refined {
+    min-height: 92px;
+  }
+  .pos-panel-title {
+    font-size: 18px;
+  }
+  .pos-panel-clear {
+    font-size: 11px;
+  }
+  .pos-order-tab {
+    font-size: 11px;
+  }
+  .pos-select-input-refined {
+    font-size: 12px;
+  }
+  .pos-order-card-name,
+  .pos-order-card-price,
+  .pos-bill-row {
+    font-size: 13px;
+  }
+  .pos-discount-label,
+  .pos-active-orders-subtitle {
+    font-size: 10px;
+  }
+  .pos-discount-chip,
+  .pos-active-orders-title {
+    font-size: 14px;
+  }
+  .pos-bill-row.total {
+    font-size: 18px;
   }
   .pos-mobile-cart-btn {
     display: flex;
@@ -1442,4 +1592,3 @@
     display: none;
   }
 }
-

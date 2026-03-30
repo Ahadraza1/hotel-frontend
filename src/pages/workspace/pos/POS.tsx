@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import socket from "@/socket";
 import api from "@/api/axios";
@@ -102,6 +102,11 @@ const POS = () => {
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [selectedBookingId, setSelectedBookingId] = useState("");
   const [discount, setDiscount] = useState(0);
+  const orderItemsListRef = useRef<HTMLDivElement | null>(null);
+  const [mobileFocusedItemId, setMobileFocusedItemId] = useState<string | null>(
+    null,
+  );
+  const [isDesktopViewport, setIsDesktopViewport] = useState(false);
 
   useEffect(() => {
     if (user && !canAccess) {
@@ -154,6 +159,47 @@ const POS = () => {
     setSelectedRoomId("");
     setSelectedBookingId("");
   }, [orderMode]);
+
+  useEffect(() => {
+    const syncViewport = () => {
+      setIsDesktopViewport(window.innerWidth > 1024);
+    };
+
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+
+    return () => {
+      window.removeEventListener("resize", syncViewport);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      !showCart ||
+      !mobileFocusedItemId ||
+      typeof window === "undefined" ||
+      window.innerWidth > 1024
+    ) {
+      return;
+    }
+
+    const listElement = orderItemsListRef.current;
+    const itemElement = listElement?.querySelector<HTMLElement>(
+      `[data-cart-item-id="${mobileFocusedItemId}"]`,
+    );
+
+    if (!listElement || !itemElement) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      itemElement.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+      });
+      setMobileFocusedItemId(null);
+    });
+  }, [cart, mobileFocusedItemId, showCart]);
 
   const fetchData = async () => {
     const [catRes, itemRes, tableRes, roomRes, orderRes] = await Promise.all([
@@ -219,6 +265,11 @@ const POS = () => {
   const total = subTotal - discountAmount + taxAmount + serviceCharge;
 
   const addToCart = (item: POSItem) => {
+    if (typeof window !== "undefined" && window.innerWidth <= 1024) {
+      setShowCart(true);
+      setMobileFocusedItemId(item.itemId);
+    }
+
     const existing = cart.find((entry) => entry.itemId === item.itemId);
 
     if (existing) {
@@ -560,7 +611,7 @@ const POS = () => {
               </button>
             )}
             <button
-              className="pos-panel-close lg:hidden"
+              className="pos-panel-close"
               onClick={() => setShowCart(false)}
               title="Close cart"
             >
@@ -666,7 +717,10 @@ const POS = () => {
           )}
         </div>
 
-        <div className="pos-order-items-list px-6 scrollbar-custom">
+        <div
+          ref={orderItemsListRef}
+          className="pos-order-items-list px-6 scrollbar-custom"
+        >
           {cart.length === 0 ? (
             <div className="pos-empty-state">
               <ShoppingCart size={48} strokeWidth={1} className="mb-4 opacity-20" />
@@ -675,7 +729,11 @@ const POS = () => {
           ) : (
             <div className="flex flex-col gap-4 py-2">
               {cart.map((item) => (
-                <div key={item.itemId} className="pos-order-card-refined">
+                <div
+                  key={item.itemId}
+                  data-cart-item-id={item.itemId}
+                  className="pos-order-card-refined"
+                >
                   <div className="pos-order-card-main">
                     <span className="pos-order-card-name">{item.name}</span>
                     <span className="pos-order-card-price">
@@ -795,42 +853,6 @@ const POS = () => {
             </button>
           </div>
 
-          <div className="pos-active-orders-section mt-6">
-            <div className="pos-active-orders-header">
-              <span className="pos-active-orders-title">Active Orders</span>
-              <span className="pos-active-orders-subtitle">Preparing only</span>
-            </div>
-            <div className="pos-active-orders-list">
-              {activeOrders.length === 0 ? (
-                <div className="pos-active-order-empty">
-                  No preparing orders right now.
-                </div>
-              ) : (
-                activeOrders.map((order) => (
-                  <div key={order.orderId} className="pos-active-order-card">
-                    <div className="pos-active-order-top">
-                      <div>
-                        <div className="pos-active-order-code">{order.orderCode}</div>
-                        <div className="pos-active-order-location">
-                          {getOrderLocationLabel(order)}
-                        </div>
-                      </div>
-                      <div className="pos-active-order-right">
-                        <div className="pos-active-order-total">
-                          {formatCurrency(order.grandTotal)}
-                        </div>
-                        <div className="pos-active-order-status">
-                          {order.orderStatus === "IN_PROGRESS"
-                            ? "PREPARING"
-                            : order.orderStatus}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
         </div>
       </div>
 
@@ -910,11 +932,18 @@ const POS = () => {
         </div>
       )}
 
-      {!showCart && cart.length > 0 && (
+      {cart.length > 0 && !showCart && (
         <button className="pos-mobile-cart-btn" onClick={() => setShowCart(true)}>
-          <ShoppingCart size={20} />
-          <span>{cart.reduce((sum, item) => sum + item.quantity, 0)} items</span>
-          <span className="ml-auto font-bold">{formatCurrency(total)}</span>
+          <span className="pos-mobile-cart-btn-icon">
+            <ShoppingCart size={18} />
+          </span>
+          <span className="pos-mobile-cart-btn-copy">
+            <span className="pos-mobile-cart-btn-count">
+              {cart.reduce((sum, item) => sum + item.quantity, 0)} items
+            </span>
+            <span className="pos-mobile-cart-btn-label">View current order</span>
+          </span>
+          <span className="pos-mobile-cart-btn-total">{formatCurrency(total)}</span>
         </button>
       )}
     </div>

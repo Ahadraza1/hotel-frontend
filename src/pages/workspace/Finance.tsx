@@ -22,6 +22,8 @@ interface Invoice {
   invoiceId: string;
   type: "ROOM" | "RESTAURANT";
   bookingId?: string | null;
+  guestName?: string;
+  orderType?: "DINE_IN" | "ROOM_SERVICE" | "TAKEAWAY" | null;
   totalAmount: number;
   taxAmount: number;
   finalAmount: number;
@@ -87,6 +89,18 @@ const renderStatusBadge = (status: string) => {
   );
 };
 
+const orderTypeLabelMap: Record<string, string> = {
+  DINE_IN: "Dine-in",
+  ROOM_SERVICE: "Room Service",
+  TAKEAWAY: "Takeaway",
+};
+
+const getInvoiceGuestName = (invoice: Invoice) =>
+  invoice.guestName?.trim() || "Walk-in Guest";
+
+const getInvoiceOrderType = (invoice: Invoice) =>
+  invoice.orderType ? orderTypeLabelMap[invoice.orderType] || invoice.orderType : "Room Service";
+
 const createInvoiceForm = (invoice: Invoice): InvoiceFormState => ({
   totalAmount: String(invoice.totalAmount ?? 0),
   taxAmount: String(invoice.taxAmount ?? 0),
@@ -129,6 +143,8 @@ const Finance = () => {
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [roomSearch, setRoomSearch] = useState("");
+  const [restaurantSearch, setRestaurantSearch] = useState("");
   const [editForm, setEditForm] = useState<InvoiceFormState>({
     totalAmount: "",
     taxAmount: "",
@@ -246,18 +262,51 @@ const Finance = () => {
   const [restaurantCurrentPage, setRestaurantCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  const roomTotalPages = Math.ceil(roomInvoices.length / itemsPerPage);
-  const restaurantTotalPages = Math.ceil(restaurantInvoices.length / itemsPerPage);
+  const filteredRoomInvoices = roomInvoices.filter((invoice) => {
+    const normalizedSearch = roomSearch.trim().toLowerCase();
 
-  const paginatedRoomInvoices = roomInvoices.slice(
+    if (!normalizedSearch) return true;
+
+    return (
+      invoice.invoiceId.toLowerCase().includes(normalizedSearch) ||
+      getInvoiceGuestName(invoice).toLowerCase().includes(normalizedSearch)
+    );
+  });
+
+  const filteredRestaurantInvoices = restaurantInvoices.filter((invoice) => {
+    const normalizedSearch = restaurantSearch.trim().toLowerCase();
+
+    if (!normalizedSearch) return true;
+
+    return (
+      invoice.invoiceId.toLowerCase().includes(normalizedSearch) ||
+      getInvoiceGuestName(invoice).toLowerCase().includes(normalizedSearch)
+    );
+  });
+
+  const roomTotalPages = Math.max(1, Math.ceil(filteredRoomInvoices.length / itemsPerPage));
+  const restaurantTotalPages = Math.max(
+    1,
+    Math.ceil(filteredRestaurantInvoices.length / itemsPerPage),
+  );
+
+  const paginatedRoomInvoices = filteredRoomInvoices.slice(
     (roomCurrentPage - 1) * itemsPerPage,
     roomCurrentPage * itemsPerPage,
   );
 
-  const paginatedPOSInvoices = restaurantInvoices.slice(
+  const paginatedPOSInvoices = filteredRestaurantInvoices.slice(
     (restaurantCurrentPage - 1) * itemsPerPage,
     restaurantCurrentPage * itemsPerPage,
   );
+
+  useEffect(() => {
+    setRoomCurrentPage(1);
+  }, [roomSearch]);
+
+  useEffect(() => {
+    setRestaurantCurrentPage(1);
+  }, [restaurantSearch]);
 
   if (shouldHideContent) {
     return (
@@ -364,12 +413,23 @@ const Finance = () => {
           </div>
 
           <div className="luxury-card finance-table-card">
+            <div className="p-4 pb-0">
+              <input
+                type="text"
+                className="luxury-input w-full"
+                placeholder="Search room invoices by Invoice ID or Guest Name"
+                value={roomSearch}
+                onChange={(e) => setRoomSearch(e.target.value)}
+              />
+            </div>
             <div className="finance-table-scroll">
               <table className="luxury-table min-w-[700px]">
                 <thead>
                   <tr>
                     <th className="col-serial">#</th>
                     <th>Invoice ID</th>
+                    <th>Guest Name</th>
+                    <th>Order Type</th>
                     <th>Total</th>
                     <th>Tax</th>
                     <th>Final</th>
@@ -383,7 +443,7 @@ const Finance = () => {
                   {paginatedRoomInvoices.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={9}
+                        colSpan={11}
                         className="text-center py-6 text-muted-foreground"
                       >
                         No invoices found.
@@ -396,6 +456,8 @@ const Finance = () => {
                           {(roomCurrentPage - 1) * itemsPerPage + i + 1}
                         </td>
                         <td className="font-mono text-xs">{inv.invoiceId}</td>
+                        <td>{getInvoiceGuestName(inv)}</td>
+                        <td>{getInvoiceOrderType(inv)}</td>
                         <td className="font-medium">
                           {formatCurrency(inv.totalAmount)}
                         </td>
@@ -420,8 +482,10 @@ const Finance = () => {
               <div className="table-footer border-t border-[hsl(var(--border))] mt-0">
                 <span className="pagination-info">
                   Showing {(roomCurrentPage - 1) * itemsPerPage + 1} to{" "}
-                  {Math.min(roomCurrentPage * itemsPerPage, roomInvoices.length)} of{" "}
-                  {roomInvoices.length} entries
+                  {Math.min(
+                    roomCurrentPage * itemsPerPage,
+                    filteredRoomInvoices.length,
+                  )} of {filteredRoomInvoices.length} entries
                 </span>
                 <div className="pagination">
                   <button
@@ -450,12 +514,24 @@ const Finance = () => {
               Restaurant POS Invoices
             </h2>
 
+            <div className="mb-4">
+              <input
+                type="text"
+                className="luxury-input w-full"
+                placeholder="Search POS invoices by Invoice ID or Guest Name"
+                value={restaurantSearch}
+                onChange={(e) => setRestaurantSearch(e.target.value)}
+              />
+            </div>
+
             <div className="finance-table-scroll">
               <table className="luxury-table min-w-[700px]">
                 <thead>
                   <tr>
                     <th className="col-serial">#</th>
                     <th>Invoice ID</th>
+                    <th>Guest Name</th>
+                    <th>Order Type</th>
                     <th>Total</th>
                     <th>Tax</th>
                     <th>Final</th>
@@ -470,7 +546,7 @@ const Finance = () => {
                   {paginatedPOSInvoices.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={9}
+                        colSpan={11}
                         className="text-center py-6 text-muted-foreground"
                       >
                         No POS invoices found.
@@ -483,6 +559,8 @@ const Finance = () => {
                           {(restaurantCurrentPage - 1) * itemsPerPage + i + 1}
                         </td>
                         <td className="font-mono text-xs">{inv.invoiceId}</td>
+                        <td>{getInvoiceGuestName(inv)}</td>
+                        <td>{getInvoiceOrderType(inv)}</td>
                         <td>{formatCurrency(inv.totalAmount)}</td>
                         <td>{formatCurrency(inv.taxAmount)}</td>
                         <td>{formatCurrency(inv.finalAmount)}</td>
@@ -503,9 +581,9 @@ const Finance = () => {
                   Showing {(restaurantCurrentPage - 1) * itemsPerPage + 1} to{" "}
                   {Math.min(
                     restaurantCurrentPage * itemsPerPage,
-                    restaurantInvoices.length,
+                    filteredRestaurantInvoices.length,
                   )}{" "}
-                  of {restaurantInvoices.length} entries
+                  of {filteredRestaurantInvoices.length} entries
                 </span>
                 <div className="pagination">
                   <button
