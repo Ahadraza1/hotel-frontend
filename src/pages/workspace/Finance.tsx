@@ -99,7 +99,9 @@ const getInvoiceGuestName = (invoice: Invoice) =>
   invoice.guestName?.trim() || "Walk-in Guest";
 
 const getInvoiceOrderType = (invoice: Invoice) =>
-  invoice.orderType ? orderTypeLabelMap[invoice.orderType] || invoice.orderType : "Room Service";
+  invoice.orderType
+    ? orderTypeLabelMap[invoice.orderType] || invoice.orderType
+    : "Room Service";
 
 const createInvoiceForm = (invoice: Invoice): InvoiceFormState => ({
   totalAmount: String(invoice.totalAmount ?? 0),
@@ -117,7 +119,7 @@ const formatAmountForInput = (amount: number) => {
 
 const getDefaultPaymentAmount = (invoice: Invoice) =>
   formatAmountForInput(
-    invoice.dueAmount > 0 ? invoice.dueAmount : invoice.totalAmount ?? 0,
+    invoice.dueAmount > 0 ? invoice.dueAmount : (invoice.totalAmount ?? 0),
   );
 
 const Finance = () => {
@@ -284,7 +286,10 @@ const Finance = () => {
     );
   });
 
-  const roomTotalPages = Math.max(1, Math.ceil(filteredRoomInvoices.length / itemsPerPage));
+  const roomTotalPages = Math.max(
+    1,
+    Math.ceil(filteredRoomInvoices.length / itemsPerPage),
+  );
   const restaurantTotalPages = Math.max(
     1,
     Math.ceil(filteredRestaurantInvoices.length / itemsPerPage),
@@ -413,6 +418,7 @@ const Finance = () => {
           </div>
 
           <div className="luxury-card finance-table-card">
+            <h2 className="text-lg font-semibold mb-3">Rooms Invoices</h2>
             <div className="p-4 pb-0">
               <input
                 type="text"
@@ -485,13 +491,16 @@ const Finance = () => {
                   {Math.min(
                     roomCurrentPage * itemsPerPage,
                     filteredRoomInvoices.length,
-                  )} of {filteredRoomInvoices.length} entries
+                  )}{" "}
+                  of {filteredRoomInvoices.length} entries
                 </span>
                 <div className="pagination">
                   <button
                     className="page-btn"
                     disabled={roomCurrentPage === 1}
-                    onClick={() => setRoomCurrentPage((p) => Math.max(1, p - 1))}
+                    onClick={() =>
+                      setRoomCurrentPage((p) => Math.max(1, p - 1))
+                    }
                   >
                     Previous
                   </button>
@@ -635,7 +644,9 @@ const Finance = () => {
             <div className="luxury-card as-section w-full">
               <div className="as-section-header">
                 <h2 className="as-section-title">
-                  {activeView === "edit" ? "Invoice Details" : "Payment Details"}
+                  {activeView === "edit"
+                    ? "Invoice Details"
+                    : "Payment Details"}
                 </h2>
                 <p className="as-section-sub">
                   {activeView === "edit"
@@ -818,7 +829,9 @@ const Finance = () => {
               <div className="as-section-header flex items-center gap-3">
                 <History size={20} className="text-muted-foreground" />
                 <h2 className="as-section-title !mb-0">
-                  {activeView === "edit" ? "Payment History" : "Payment History"}
+                  {activeView === "edit"
+                    ? "Payment History"
+                    : "Payment History"}
                 </h2>
               </div>
 

@@ -295,7 +295,24 @@
   box-shadow: 0 1px 0 0 hsl(var(--border));
 }
 
+.finance-table-card {
+  height: clamp(24rem, 62vh, 38rem);
+  max-height: clamp(24rem, 62vh, 38rem);
+  min-height: clamp(24rem, 62vh, 38rem);
+}
+
+.finance-table-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
 @media (max-width: 767px) {
+  .finance-table-card {
+    height: 26rem;
+    max-height: 26rem;
+    min-height: 26rem;
+  }
+
   .luxury-table {
     font-size: 0.8125rem;
   }
