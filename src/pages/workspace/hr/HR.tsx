@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { AxiosError } from "axios";
 import {
   Plus,
   CheckCircle,
@@ -23,6 +24,7 @@ import {
   useConfirm,
 } from "@/components/confirm/ConfirmProvider";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 
 interface Staff {
   _id: string;
@@ -44,6 +46,10 @@ interface Payroll {
   status: string;
 }
 
+interface ApiErrorResponse {
+  message?: string;
+}
+
 const HR = () => {
   const { branchId: routeBranchId } = useParams();
   const { activeBranch } = useBranchWorkspace();
@@ -53,12 +59,13 @@ const HR = () => {
   const confirm = useConfirm();
   const { formatCurrency } = useSystemSettings();
   const { user } = useAuth();
-  const { canAccess, canCreate, canUpdate, canDelete } =
+  const { canAccess, canView, canCreate, canUpdate, canDelete } =
     useModulePermissions("HR");
-
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
+
+  const shouldHideContent = !!user && canAccess && !canView;
 
   const canManageRecords = canUpdate || canDelete || canAccess;
 
@@ -176,8 +183,9 @@ const HR = () => {
       });
       setAttendanceStatus((prev) => ({ ...prev, [statusKey]: "Checked In" }));
       toast.success("Checked In");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Error checking in");
+    } catch (error) {
+      const apiError = error as AxiosError<ApiErrorResponse>;
+      toast.error(apiError.response?.data?.message || "Error checking in");
     }
   };
 
@@ -193,8 +201,9 @@ const HR = () => {
       });
       setAttendanceStatus((prev) => ({ ...prev, [statusKey]: "Checked Out" }));
       toast.success("Checked Out");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Error checking out");
+    } catch (error) {
+      const apiError = error as AxiosError<ApiErrorResponse>;
+      toast.error(apiError.response?.data?.message || "Error checking out");
     }
   };
 
@@ -206,8 +215,11 @@ const HR = () => {
       });
       fetchPayroll();
       toast.success("Payroll generated successfully.");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to generate payroll");
+    } catch (error) {
+      const apiError = error as AxiosError<ApiErrorResponse>;
+      toast.error(
+        apiError.response?.data?.message || "Failed to generate payroll",
+      );
     }
   };
 
@@ -216,8 +228,11 @@ const HR = () => {
       await api.patch(`/hr/payroll/${payrollId}/pay`);
       fetchPayroll();
       toast.success("Payroll marked as paid.");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update payroll");
+    } catch (error) {
+      const apiError = error as AxiosError<ApiErrorResponse>;
+      toast.error(
+        apiError.response?.data?.message || "Failed to update payroll",
+      );
     }
   };
 
@@ -251,8 +266,11 @@ const HR = () => {
       setEditingStaff(null);
       await refreshHrData();
       toast.success("Staff updated successfully.");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update staff.");
+    } catch (error) {
+      const apiError = error as AxiosError<ApiErrorResponse>;
+      toast.error(
+        apiError.response?.data?.message || "Failed to update staff.",
+      );
     }
   };
 
@@ -298,9 +316,10 @@ const HR = () => {
       setEditingPayroll(null);
       await refreshHrData();
       toast.success("Payroll updated successfully.");
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = error as AxiosError<ApiErrorResponse>;
       toast.error(
-        error.response?.data?.message || "Failed to update payroll.",
+        apiError.response?.data?.message || "Failed to update payroll.",
       );
     }
   };
@@ -397,6 +416,12 @@ const HR = () => {
     payrollPage * itemsPerPage,
   );
 
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="HR records are hidden because VIEW_EMPLOYEE is disabled for your role." />
+    );
+  }
+
   if (loading && staff.length === 0) {
     return (
       <div className="hr-root animate-fade-in">
@@ -457,29 +482,34 @@ const HR = () => {
 
           <div className="hr-invite-grid">
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Full Name</label>
+              <label className="hr-invite-label" htmlFor="invite-full-name">Full Name</label>
               <input
+                id="invite-full-name"
                 className="luxury-input"
                 value={inviteName}
                 onChange={(e) => setInviteName(e.target.value)}
                 placeholder="e.g. John Doe"
+                title="Full Name"
               />
             </div>
 
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Email Address</label>
+              <label className="hr-invite-label" htmlFor="invite-email">Email Address</label>
               <input
+                id="invite-email"
                 className="luxury-input"
                 type="email"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="e.g. john@example.com"
+                title="Email Address"
               />
             </div>
 
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Assign Role</label>
+              <label className="hr-invite-label" htmlFor="invite-role">Assign Role</label>
               <select
+                id="invite-role"
                 className="luxury-input"
                 value={inviteRole}
                 title="Assign Role"
@@ -489,30 +519,34 @@ const HR = () => {
                 <option value="RECEPTIONIST">Receptionist</option>
                 <option value="CHEF">Chef</option>
                 <option value="ACCOUNTANT">Accountant</option>
-                <option value="HR">Branch HR </option>
+                <option value="HR">HR Manager </option>
                 <option value="RESTAURANT">Restaurant Manager</option>
                 <option value="HOUSEKEEPING">Housekeeping</option>
               </select>
             </div>
 
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Joined Date</label>
+              <label className="hr-invite-label" htmlFor="invite-joined-date">Joined Date</label>
               <input
+                id="invite-joined-date"
                 className="luxury-input"
                 type="date"
                 value={inviteJoinedDate}
                 onChange={(e) => setInviteJoinedDate(e.target.value)}
+                title="Joined Date"
               />
             </div>
 
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Monthly Salary ($)</label>
+              <label className="hr-invite-label" htmlFor="invite-salary">Monthly Salary ($)</label>
               <input
+                id="invite-salary"
                 className="luxury-input"
                 type="number"
                 value={inviteSalary}
                 onChange={(e) => setInviteSalary(e.target.value)}
                 placeholder="e.g. 3000"
+                title="Monthly Salary"
               />
             </div>
           </div>
@@ -556,54 +590,64 @@ const HR = () => {
           <h3 className="hr-invite-title">Edit Staff</h3>
           <div className="hr-invite-grid">
             <div className="hr-invite-field">
-              <label className="hr-invite-label">First Name</label>
+              <label className="hr-invite-label" htmlFor="edit-staff-first-name">First Name</label>
               <input
+                id="edit-staff-first-name"
                 className="luxury-input"
                 value={staffForm.firstName}
                 onChange={(e) =>
                   setStaffForm((prev) => ({ ...prev, firstName: e.target.value }))
                 }
+                title="First Name"
               />
             </div>
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Last Name</label>
+              <label className="hr-invite-label" htmlFor="edit-staff-last-name">Last Name</label>
               <input
+                id="edit-staff-last-name"
                 className="luxury-input"
                 value={staffForm.lastName}
                 onChange={(e) =>
                   setStaffForm((prev) => ({ ...prev, lastName: e.target.value }))
                 }
+                title="Last Name"
               />
             </div>
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Department</label>
+              <label className="hr-invite-label" htmlFor="edit-staff-department">Department</label>
               <input
+                id="edit-staff-department"
                 className="luxury-input"
                 value={staffForm.department}
                 onChange={(e) =>
                   setStaffForm((prev) => ({ ...prev, department: e.target.value }))
                 }
+                title="Department"
               />
             </div>
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Designation</label>
+              <label className="hr-invite-label" htmlFor="edit-staff-designation">Designation</label>
               <input
+                id="edit-staff-designation"
                 className="luxury-input"
                 value={staffForm.designation}
                 onChange={(e) =>
                   setStaffForm((prev) => ({ ...prev, designation: e.target.value }))
                 }
+                title="Designation"
               />
             </div>
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Salary</label>
+              <label className="hr-invite-label" htmlFor="edit-staff-salary">Salary</label>
               <input
+                id="edit-staff-salary"
                 className="luxury-input"
                 type="number"
                 value={staffForm.salary}
                 onChange={(e) =>
                   setStaffForm((prev) => ({ ...prev, salary: e.target.value }))
                 }
+                title="Salary"
               />
             </div>
           </div>
@@ -637,8 +681,9 @@ const HR = () => {
           <h3 className="hr-invite-title">Edit Payroll</h3>
           <div className="hr-invite-grid">
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Month</label>
+              <label className="hr-invite-label" htmlFor="edit-payroll-month">Month</label>
               <input
+                id="edit-payroll-month"
                 className="luxury-input"
                 type="number"
                 min="1"
@@ -647,24 +692,30 @@ const HR = () => {
                 onChange={(e) =>
                   setPayrollForm((prev) => ({ ...prev, month: e.target.value }))
                 }
+                title="Month"
               />
             </div>
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Year</label>
+              <label className="hr-invite-label" htmlFor="edit-payroll-year">Year</label>
               <input
+                id="edit-payroll-year"
                 className="luxury-input"
                 type="number"
                 value={payrollForm.year}
                 onChange={(e) =>
                   setPayrollForm((prev) => ({ ...prev, year: e.target.value }))
                 }
+                title="Year"
               />
             </div>
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Net Salary</label>
+              <label className="hr-invite-label" htmlFor="edit-payroll-net-salary">Net Salary</label>
               <input
+                id="edit-payroll-net-salary"
                 className="luxury-input"
                 type="number"
+                placeholder="e.g. 3000"
+                title="Net Salary"
                 value={payrollForm.netSalary}
                 onChange={(e) =>
                   setPayrollForm((prev) => ({ ...prev, netSalary: e.target.value }))
@@ -672,9 +723,11 @@ const HR = () => {
               />
             </div>
             <div className="hr-invite-field">
-              <label className="hr-invite-label">Status</label>
+              <label className="hr-invite-label" htmlFor="edit-payroll-status">Status</label>
               <select
+                id="edit-payroll-status"
                 className="luxury-input"
+                title="Select Payroll Status"
                 value={payrollForm.status}
                 onChange={(e) =>
                   setPayrollForm((prev) => ({ ...prev, status: e.target.value }))

@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useConfirm } from "@/components/confirm/ConfirmProvider";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 import {
   DollarSign,
   ArrowLeft,
@@ -109,11 +110,13 @@ const Finance = () => {
   const { user } = useAuth();
   const { formatCurrency, currencySymbol } = useSystemSettings();
   const confirm = useConfirm();
-  const { canAccess, canUpdate, canDelete } = useModulePermissions("FINANCE");
-
+  const { canAccess, canView, canUpdate, canDelete } =
+    useModulePermissions("FINANCE");
   if (user && !canAccess) {
     window.location.href = "/unauthorized";
   }
+
+  const shouldHideContent = !!user && canAccess && !canView;
 
   const canRecordPayment = canUpdate;
   const canEditInvoices = canAccess;
@@ -255,6 +258,12 @@ const Finance = () => {
     (restaurantCurrentPage - 1) * itemsPerPage,
     restaurantCurrentPage * itemsPerPage,
   );
+
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="Finance data is hidden because the module view permission is disabled for your role." />
+    );
+  }
 
   const renderActionMenu = (invoice: Invoice) => (
     <div className="bk-action-wrapper">

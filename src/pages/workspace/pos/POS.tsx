@@ -7,6 +7,7 @@ import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useConfirm, useToast } from "@/components/confirm/ConfirmProvider";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 import {
   Plus,
   Minus,
@@ -60,12 +61,13 @@ const POS = () => {
   const { user } = useAuth();
   const { activeBranch } = useBranchWorkspace();
   const { formatCurrency } = useSystemSettings();
-  const { canAccess, canCreate, canUpdate, canDelete } =
+  const { canAccess, canView, canCreate, canUpdate, canDelete } =
     useModulePermissions("POS");
-
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
+
+  const shouldHideContent = !!user && canAccess && !canView;
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [menu, setMenu] = useState<POSItem[]>([]);
@@ -296,6 +298,12 @@ const POS = () => {
     }
   };
 
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="POS menu data is hidden because VIEW_POS_MENU is disabled for your role." />
+    );
+  }
+
   return (
     <div className="pos-layout">
       {/* LEFT SIDE: MENU SECTION */}
@@ -413,6 +421,7 @@ const POS = () => {
                     <button
                       className="pos-item-action-btn-refined"
                       onClick={(e) => { e.stopPropagation(); editItem(item.itemId); }}
+                      title="Edit Menu Item"
                     >
                       <Pencil size={14} />
                     </button>
@@ -421,6 +430,7 @@ const POS = () => {
                     <button
                       className="pos-item-action-btn-refined text-destructive"
                       onClick={(e) => { e.stopPropagation(); deleteItem(item); }}
+                      title="Delete Menu Item"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -442,7 +452,7 @@ const POS = () => {
                 Clear All
               </button>
             )}
-            <button className="pos-panel-close lg:hidden" onClick={() => setShowCart(false)}>
+            <button className="pos-panel-close lg:hidden" onClick={() => setShowCart(false)} title="Close cart">
               <X size={20} />
             </button>
           </div>
@@ -461,6 +471,7 @@ const POS = () => {
               value={tableNumber}
               onChange={(e) => setTableNumber(e.target.value)}
               className="pos-select-input-refined"
+              title="Select a table for the order"
             >
               <option value="">Select Table</option>
               {tables.map((tbl) => (
@@ -489,13 +500,14 @@ const POS = () => {
                   </div>
                   <div className="pos-order-card-footer mt-3">
                     <div className="pos-qty-refiner">
-                      <button onClick={() => updateQty(item.itemId, -1)}>-</button>
+                      <button onClick={() => updateQty(item.itemId, -1)} title="Decrease quantity">-</button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => updateQty(item.itemId, 1)}>+</button>
+                      <button onClick={() => updateQty(item.itemId, 1)} title="Increase quantity">+</button>
                     </div>
                     <button 
                       className="pos-order-remove-refined"
                       onClick={() => setCart(cart.filter((c) => c.itemId !== item.itemId))}
+                      title="Remove item from cart"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -585,6 +597,7 @@ const POS = () => {
               <button 
                 className="pos-modal-close" 
                 onClick={() => setShowPayment(false)}
+                title="Close payment modal"
               >
                 <X size={20} />
               </button>
@@ -636,6 +649,8 @@ const POS = () => {
                   value={amountReceived}
                   onChange={(e) => setAmountReceived(e.target.value)}
                   onFocus={(e) => e.target.select()}
+                  title="Enter the amount received from customer"
+                  placeholder="0.00"
                 />
               </div>
 

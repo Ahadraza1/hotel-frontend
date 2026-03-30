@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 
 interface Item {
   itemId: string;
@@ -48,11 +49,13 @@ const Inventory = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { formatCurrency } = useSystemSettings();
-  const { canAccess, canCreate, canUpdate } = useModulePermissions("INVENTORY");
-
+  const { canAccess, canView, canCreate, canUpdate } =
+    useModulePermissions("INVENTORY");
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
+
+  const shouldHideContent = !!user && canAccess && !canView;
 
   const canManageInventory = canUpdate || canCreate;
 
@@ -149,6 +152,12 @@ const Inventory = () => {
       (i) => i.stockStatus === "LOW_STOCK" || i.stockStatus === "OUT_OF_STOCK",
     );
   }, [items]);
+
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="Inventory data is hidden because VIEW_INVENTORY_ITEM is disabled for your role." />
+    );
+  }
 
   if (loading && items.length === 0) {
     return (

@@ -201,19 +201,13 @@ export const BranchWorkspaceProvider = ({
     (permissionKey: string) => {
       if (!activeBranch) return false;
 
-      const role = user?.role?.toUpperCase();
-
-      if (role === "SUPER_ADMIN") {
-        return false;
-      }
-
       if (!permissions || permissions.length === 0) {
-        return false;
+        return true;
       }
 
       return !permissions.includes(permissionKey);
     },
-    [activeBranch, permissions, user],
+    [activeBranch, permissions],
   );
 
   return (

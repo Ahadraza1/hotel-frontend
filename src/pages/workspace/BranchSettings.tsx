@@ -5,6 +5,7 @@ import { Settings, RefreshCcw, Save } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useToast } from "@/components/confirm/ConfirmProvider";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 
 const tabs = [
   "general",
@@ -34,11 +35,13 @@ const BranchSettings = () => {
   const toast = useToast();
 
   const { user } = useAuth();
-  const { canAccess, canUpdate } = useModulePermissions("BRANCH_SETTINGS");
-
+  const { canAccess, canView, canUpdate } =
+    useModulePermissions("BRANCH_SETTINGS");
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
+
+  const shouldHideContent = !!user && canAccess && !canView;
 
   const [activeTab, setActiveTab] = useState("general");
   const [settings, setSettings] = useState<Record<
@@ -89,6 +92,12 @@ const BranchSettings = () => {
       toast.error("Failed to reset settings.");
     }
   };
+
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="Branch settings are hidden because VIEW_BRANCH_SETTINGS is disabled for your role." />
+    );
+  }
 
   if (!settings) {
     return (

@@ -140,6 +140,9 @@ const RolePermissionEditor = () => {
   const [isSubmittingRole, setIsSubmittingRole] = useState(false);
   const [isSubmittingPermission, setIsSubmittingPermission] = useState(false);
   const [deletingRoleId, setDeletingRoleId] = useState<string | null>(null);
+  const [deletingPermissionId, setDeletingPermissionId] = useState<string | null>(
+    null,
+  );
 
   const loadEditorData = async (preferredRoleId?: string) => {
     const [rolesRes, permsRes] = await Promise.all([
@@ -458,6 +461,50 @@ const RolePermissionEditor = () => {
     setDeletingRoleId(null);
   };
 
+  const handleDeletePermission = async (permission: Permission) => {
+    setDeletingPermissionId(permission._id);
+
+    const confirmed = await confirm({
+      title: "Delete Permission",
+      message: `Are you sure you want to delete ${permission.key || permission.name}?`,
+      confirmLabel: "Delete",
+      processingLabel: "Deleting...",
+      successMessage: "Permission deleted successfully",
+      errorMessage: "Failed to delete permission",
+      onConfirm: async () => {
+        await api.delete(`/permissions/${permission._id}`);
+
+        setCategories((prev) =>
+          prev
+            .map((category) => ({
+              ...category,
+              permissions: category.permissions.filter(
+                (item) => item._id !== permission._id,
+              ),
+            }))
+            .filter((category) => category.permissions.length > 0),
+        );
+
+        setPermissionsState((prev) => {
+          const next = { ...prev };
+          delete next[permission.key || permission.name];
+          return next;
+        });
+
+        if (selectedRole) {
+          await loadEditorData(selectedRole._id);
+        }
+      },
+    });
+
+    if (!confirmed) {
+      setDeletingPermissionId(null);
+      return;
+    }
+
+    setDeletingPermissionId(null);
+  };
+
   const filteredCategories = categories
     .map((category) => ({
       ...category,
@@ -711,6 +758,21 @@ const RolePermissionEditor = () => {
                             </span>
 
                             <span className="rpe-perm-code">{permissionKey}</span>
+
+                            <button
+                              type="button"
+                              className="rpe-perm-delete"
+                              aria-label={`Delete ${permissionKey}`}
+                              title={`Delete ${permissionKey}`}
+                              disabled={deletingPermissionId === permission._id}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                handleDeletePermission(permission);
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
                           </label>
                         );
                       })}

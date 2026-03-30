@@ -515,6 +515,7 @@ const BranchOverview = () => {
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
                   className="year-filter"
+                  aria-label="Select year for room revenue chart"
                 >
                   {years.map((item) => (
                     <option key={item.year} value={item.year}>
@@ -638,6 +639,7 @@ const BranchOverview = () => {
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
                   className="year-filter"
+                  aria-label="Select year for restaurant revenue chart"
                 >
                   {years.map((item) => (
                     <option key={item.year} value={item.year}>

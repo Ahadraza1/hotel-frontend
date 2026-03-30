@@ -21,6 +21,7 @@ import { useToast, useConfirm } from "@/components/confirm/ConfirmProvider";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useAuth } from "@/contexts/AuthContext";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 
 type BookingStatus = "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
 type PaymentStatus = "PENDING" | "PARTIAL" | "PAID";
@@ -172,7 +173,7 @@ const ViewBooking = () => {
   const toast = useToast();
   const confirm = useConfirm();
   const { formatCurrency } = useSystemSettings();
-  const { canAccess, canUpdate } = useModulePermissions("BOOKINGS");
+  const { canAccess, canView, canUpdate } = useModulePermissions("BOOKINGS");
   const { hasPermission } = useAuth();
 
   const [booking, setBooking] = useState<BookingDetail | null>(null);
@@ -184,6 +185,7 @@ const ViewBooking = () => {
   const [serviceForm, setServiceForm] = useState<ServiceFormState>(emptyServiceForm);
 
   const canProcessPayment = hasPermission("RECORD_PAYMENT") || canUpdate;
+  const shouldHideContent = canAccess && !canView;
 
   const loadBooking = async () => {
     if (!bookingId) return;
@@ -431,6 +433,12 @@ const ViewBooking = () => {
       setBusyAction(null);
     }
   };
+
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="Booking details are hidden because VIEW_BOOKING is disabled for your role." />
+    );
+  }
 
   if (loading || !booking) {
     return (

@@ -12,6 +12,7 @@ import api from "@/api/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useToast } from "@/components/confirm/ConfirmProvider";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 
 interface Room {
   _id: string;
@@ -55,12 +56,13 @@ const Housekeeping = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
-  const { canAccess, canCreate, canUpdate } =
+  const { canAccess, canView, canCreate, canUpdate } =
     useModulePermissions("HOUSEKEEPING");
-
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
+
+  const shouldHideContent = !!user && canAccess && !canView;
 
   const canManageHousekeeping = canCreate || canUpdate;
 
@@ -114,6 +116,12 @@ const Housekeeping = () => {
       ).length,
     };
   }, [tasks]);
+
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="Housekeeping tasks are hidden because VIEW_TASK is disabled for your role." />
+    );
+  }
 
   if (loading) {
     return (

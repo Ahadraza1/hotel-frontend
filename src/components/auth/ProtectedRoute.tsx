@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: string[];
-  permission?: string; // ✅ NEW
+  permission?: string; // âœ… NEW
 }
 
 const ProtectedRoute = ({
@@ -42,7 +42,7 @@ const ProtectedRoute = ({
   const role = user.role?.toUpperCase();
 
   /*
-  BRANCH USERS → Always workspace
+  BRANCH USERS â†’ Always workspace
   */
   const branchRoles = [
     "BRANCH_MANAGER",

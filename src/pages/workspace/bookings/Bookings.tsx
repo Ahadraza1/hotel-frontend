@@ -20,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useConfirm, useToast } from "@/components/confirm/ConfirmProvider";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 
 interface Booking {
   _id: string;
@@ -79,12 +80,13 @@ const Bookings = () => {
   const { formatCurrency } = useSystemSettings();
   const confirm = useConfirm();
   const toast = useToast();
-  const { canAccess, canCreate, canUpdate, canDelete } =
+  const { canAccess, canView, canCreate, canUpdate, canDelete } =
     useModulePermissions("BOOKINGS");
-
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
+
+  const shouldHideContent = !!user && canAccess && !canView;
 
   const canManageBookings = canCreate || canUpdate;
   const canShowActions = canManageBookings || canDelete;
@@ -200,6 +202,12 @@ const Bookings = () => {
     }
     return result;
   }, [bookings, search, filterCheckIn, filterCheckOut]);
+
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="Booking data is hidden because VIEW_BOOKING is disabled for your role." />
+    );
+  }
 
   /* ── loading state ── */
   if (loading) {

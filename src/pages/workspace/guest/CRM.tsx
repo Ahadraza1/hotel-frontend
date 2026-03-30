@@ -5,6 +5,7 @@ import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import api from "@/api/axios";
 import { useConfirm } from "@/components/confirm/ConfirmProvider";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 import {
   Star,
   Ban,
@@ -65,12 +66,13 @@ const CRM = () => {
   const confirm = useConfirm();
   const { formatCurrency } = useSystemSettings();
   const { user } = useAuth();
-  const { canAccess, canCreate, canUpdate, canDelete } =
+  const { canAccess, canView, canCreate, canUpdate, canDelete } =
     useModulePermissions("CRM");
-
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
+
+  const shouldHideContent = !!user && canAccess && !canView;
 
   const canManageGuests = canCreate || canUpdate;
   const canShowActions = canManageGuests || canDelete;
@@ -241,6 +243,12 @@ const CRM = () => {
             totalGuests,
         )
       : 0;
+
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="Guest records are hidden because VIEW_GUEST is disabled for your role." />
+    );
+  }
 
   if (loading && guests.length === 0) {
     return (

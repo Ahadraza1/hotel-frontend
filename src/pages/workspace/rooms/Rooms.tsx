@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useToast } from "@/components/confirm/ConfirmProvider";
+import PermissionNotice from "@/components/auth/PermissionNotice";
 
 export interface Room {
   _id: string;
@@ -63,13 +64,15 @@ const Rooms = () => {
   const toast = useToast();
   const { user } = useAuth();
   const { formatCurrency } = useSystemSettings();
-  const { canAccess, canCreate, canUpdate } = useModulePermissions("ROOMS");
-
+  const { canAccess, canView, canCreate, canUpdate } =
+    useModulePermissions("ROOMS");
   const navigateGuard = useNavigate();
 
   if (user && !canAccess) {
     navigate("/unauthorized");
   }
+
+  const shouldHideContent = !!user && canAccess && !canView;
 
   const canManageRooms = canCreate || canUpdate;
 
@@ -183,6 +186,12 @@ const Rooms = () => {
     }
   };
 
+  if (shouldHideContent) {
+    return (
+      <PermissionNotice message="Room records are hidden because VIEW_ROOM is disabled for your role." />
+    );
+  }
+
   if (loading) {
     return (
       <div className="rm-root animate-fade-in">
@@ -265,6 +274,7 @@ const Rooms = () => {
               className="luxury-input !py-1.5 !text-sm"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
+              aria-label="Filter rooms by status"
             >
               <option value="ALL">All Statuses</option>
               {statusOptions.map((s) => (

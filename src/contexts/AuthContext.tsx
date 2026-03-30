@@ -52,6 +52,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const normalizePermissions = (perms?: string[]) =>
     [...new Set(perms?.map((p) => p.trim().toUpperCase()) || [])];
 
+  const persistBranchContext = (branchId?: string | null) => {
+    if (branchId) {
+      localStorage.setItem("activeBranchId", branchId);
+      localStorage.setItem("userBranchId", branchId);
+      return;
+    }
+
+    localStorage.removeItem("activeBranchId");
+    localStorage.removeItem("userBranchId");
+  };
+
   useEffect(() => {
     const bootstrapAuth = async () => {
       const token = localStorage.getItem("token");
@@ -60,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!token) {
         localStorage.removeItem("auth_user");
         localStorage.removeItem("activeBranchId");
+        localStorage.removeItem("userBranchId");
         setUser(null);
         setLoading(false);
         return;
@@ -79,9 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             parsedUser.permissions || [],
           );
 
-          if (parsedUser.branchId) {
-            localStorage.setItem("activeBranchId", parsedUser.branchId);
-          }
+          persistBranchContext(parsedUser.branchId);
 
           setUser(parsedUser);
         } catch (error) {
@@ -100,18 +110,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             : res.data.role,
         permissions: normalizePermissions(res.data.permissions || []),
       };
+      console.log(res.data);
 
         localStorage.setItem("auth_user", JSON.stringify(normalizedUser));
 
-        if (normalizedUser.branchId) {
-          localStorage.setItem("activeBranchId", normalizedUser.branchId);
-        }
+
+        persistBranchContext(normalizedUser.branchId);
 
         setUser(normalizedUser);
       } catch (error) {
         localStorage.removeItem("token");
         localStorage.removeItem("auth_user");
         localStorage.removeItem("activeBranchId");
+        localStorage.removeItem("userBranchId");
         setUser(null);
       } finally {
         setLoading(false);
@@ -133,9 +144,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("token", token);
     localStorage.setItem("auth_user", JSON.stringify(normalizedUser));
 
-    if (normalizedUser.branchId) {
-      localStorage.setItem("activeBranchId", normalizedUser.branchId);
-    }
+    persistBranchContext(normalizedUser.branchId);
 
     setUser(normalizedUser);
   };
@@ -144,6 +153,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("auth_user");
     localStorage.removeItem("activeBranchId");
+    localStorage.removeItem("userBranchId");
     setUser(null);
   };
 
@@ -165,9 +175,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       localStorage.setItem("auth_user", JSON.stringify(normalizedUser));
 
-      if (normalizedUser.branchId) {
-        localStorage.setItem("activeBranchId", normalizedUser.branchId);
-      }
+      persistBranchContext(normalizedUser.branchId);
 
       setUser(normalizedUser);
     } catch (err) {
@@ -178,7 +186,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const hasPermission = (permission: string) => {
     if (!user) return false;
 
-    // Super Admin always allowed
     if (user.role === "SUPER_ADMIN") return true;
 
     const userPerms = normalizePermissions(user.permissions || []);

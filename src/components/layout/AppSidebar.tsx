@@ -52,7 +52,7 @@ const globalMenuItems = [
     path: "/organizations",
     icon: Building2,
     roles: ["SUPER_ADMIN"], // ❗ Corporate Admin removed
-    permission: null,
+    permission: "ACCESS_ORGANIZATION",
   },
 
   {
@@ -68,7 +68,7 @@ const globalMenuItems = [
     path: "/branches",
     icon: Hotel,
     roles: ["SUPER_ADMIN", "CORPORATE_ADMIN"],
-    permission: null,
+    permission: "ACCESS_BRANCH",
   },
 
   {
@@ -76,7 +76,7 @@ const globalMenuItems = [
     path: "/users",
     icon: Users,
     roles: ["SUPER_ADMIN", "CORPORATE_ADMIN"],
-    permission: null,
+    permission: "ACCESS_USERS",
   },
 
   {
@@ -92,7 +92,7 @@ const globalMenuItems = [
     path: "/financial-reports",
     icon: DollarSign,
     roles: ["SUPER_ADMIN", "ACCOUNTANT"],
-    permission: null,
+    permission: "ACCESS_REPORTS",
   },
 
   {
@@ -108,7 +108,7 @@ const globalMenuItems = [
     path: "/settings",
     icon: Settings,
     roles: ["SUPER_ADMIN"], // ❗ Corporate Admin removed
-    permission: null,
+    permission: "ACCESS_SETTINGS",
   },
 ];
 
@@ -190,7 +190,7 @@ export const AppSidebar = ({
 
   const { isWorkspaceMode, activeBranch, exitWorkspace } = useBranchWorkspace();
 
-  const { hasRole, hasPermission, user } = useAuth(); // ✅ user added
+  const { hasRole, hasPermission, user } = useAuth();
 
   const menuItems: MenuItem[] = isWorkspaceMode
     ? (workspaceMenuItems as MenuItem[])
@@ -258,12 +258,7 @@ export const AppSidebar = ({
           /*
            WORKSPACE PERMISSION CHECK (ROLE PERMISSIONS)
           */
-          if (
-            isWorkspaceMode &&
-            item.permissionKey &&
-            user?.role !== "SUPER_ADMIN" &&
-            !hasPermission(item.permissionKey)
-          ) {
+          if (isWorkspaceMode && item.permissionKey && !hasPermission(item.permissionKey)) {
             return null;
           }
 
