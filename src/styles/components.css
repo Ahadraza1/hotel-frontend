@@ -203,6 +203,120 @@
   filter: brightness(1.08);
 }
 
+.global-error-state {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  width: min(100%, 48rem);
+  margin: 2rem auto;
+  padding: 2rem;
+  overflow: hidden;
+  border-color: hsl(var(--destructive) / 0.18);
+  background:
+    radial-gradient(circle at top right, hsl(var(--primary) / 0.12), transparent 30%),
+    linear-gradient(180deg, hsl(var(--card)), hsl(var(--secondary) / 0.34));
+  box-shadow:
+    0 20px 48px hsl(var(--foreground) / 0.06),
+    0 10px 24px hsl(var(--destructive) / 0.08);
+}
+
+.global-error-state__glow {
+  position: absolute;
+  inset: auto -4rem -4rem auto;
+  width: 11rem;
+  height: 11rem;
+  border-radius: 999px;
+  background: hsl(var(--destructive) / 0.08);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.global-error-state__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1.25rem;
+  background: hsl(var(--destructive) / 0.08);
+  border: 1px solid hsl(var(--destructive) / 0.16);
+}
+
+.global-error-state__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: hsl(var(--destructive));
+}
+
+.global-error-state__copy {
+  position: relative;
+  z-index: 1;
+}
+
+.global-error-state__eyebrow {
+  display: inline-flex;
+  margin-bottom: 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--gold-dark));
+}
+
+.global-error-state__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2vw, 2.1rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: hsl(var(--foreground));
+}
+
+.global-error-state__description {
+  max-width: 40rem;
+  margin-top: 0.75rem;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+}
+
+.global-error-state__module-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border) / 0.8);
+  color: hsl(var(--foreground));
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.global-error-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .global-error-state {
+    margin: 1rem auto;
+    padding: 1.5rem;
+  }
+
+  .global-error-state__actions {
+    width: 100%;
+  }
+
+  .global-error-state__actions .luxury-btn {
+    width: 100%;
+  }
+}
+
 /* Avatars */
 .avatar {
   position: relative;

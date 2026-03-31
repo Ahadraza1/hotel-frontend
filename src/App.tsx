@@ -1,4 +1,4 @@
-import { useState } from "react";
+import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -8,6 +8,7 @@ import { SystemSettingsProvider } from "@/contexts/SystemSettingsContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ConfirmProvider } from "@/components/confirm/ConfirmProvider";
+import ModuleErrorBoundary from "@/components/routing/ModuleErrorBoundary";
 
 // SUPER ADMIN PAGES
 import Dashboard from "./pages/superadmin/Dashboard";
@@ -67,6 +68,10 @@ import PlatformUsers from "./pages/platform/PlatformUsers";
 
 const queryClient = new QueryClient();
 
+const withModuleErrorBoundary = (moduleName: string, element: ReactNode) => (
+  <ModuleErrorBoundary moduleName={moduleName}>{element}</ModuleErrorBoundary>
+);
+
 const App = () => {
   const handleLogin = () => {};
 
@@ -117,7 +122,7 @@ const App = () => {
                           path="/dashboard"
                           element={
                             <ProtectedRoute>
-                              <Dashboard />
+                              {withModuleErrorBoundary("Dashboard", <Dashboard />)}
                             </ProtectedRoute>
                           }
                         />
@@ -139,7 +144,7 @@ const App = () => {
                             <ProtectedRoute
                               allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
                             >
-                              <Organizations />
+                              {withModuleErrorBoundary("Organizations", <Organizations />)}
                             </ProtectedRoute>
                           }
                         />
@@ -148,7 +153,7 @@ const App = () => {
                           path="/organizations/add"
                           element={
                             <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
-                              <AddOrganization />
+                              {withModuleErrorBoundary("Add Organization", <AddOrganization />)}
                             </ProtectedRoute>
                           }
                         />
@@ -159,7 +164,7 @@ const App = () => {
                             <ProtectedRoute
                               allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
                             >
-                              <OrganizationView />
+                              {withModuleErrorBoundary("Organization Details", <OrganizationView />)}
                             </ProtectedRoute>
                           }
                         />
@@ -168,7 +173,7 @@ const App = () => {
                           path="/organizations/edit/:id"
                           element={
                             <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
-                              <OrganizationEdit />
+                              {withModuleErrorBoundary("Edit Organization", <OrganizationEdit />)}
                             </ProtectedRoute>
                           }
                         />
@@ -179,7 +184,7 @@ const App = () => {
                             <ProtectedRoute
                               allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
                             >
-                              <SubscriptionPlans />
+                              {withModuleErrorBoundary("Subscription Plans", <SubscriptionPlans />)}
                             </ProtectedRoute>
                           }
                         />
@@ -188,7 +193,7 @@ const App = () => {
                           path="/subscription-access"
                           element={
                             <ProtectedRoute>
-                              <SubscriptionAccess />
+                              {withModuleErrorBoundary("Subscription Access", <SubscriptionAccess />)}
                             </ProtectedRoute>
                           }
                         />
@@ -199,7 +204,7 @@ const App = () => {
                             <ProtectedRoute
                               allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
                             >
-                              <BranchManagement />
+                              {withModuleErrorBoundary("Branch Management", <BranchManagement />)}
                             </ProtectedRoute>
                           }
                         />
@@ -210,7 +215,7 @@ const App = () => {
                             <ProtectedRoute
                               allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
                             >
-                              <AddBranch />
+                              {withModuleErrorBoundary("Add Branch", <AddBranch />)}
                             </ProtectedRoute>
                           }
                         />
@@ -221,7 +226,7 @@ const App = () => {
                             <ProtectedRoute
                               allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
                             >
-                              <EditBranch />
+                              {withModuleErrorBoundary("Edit Branch", <EditBranch />)}
                             </ProtectedRoute>
                           }
                         />
@@ -232,7 +237,7 @@ const App = () => {
                             <ProtectedRoute
                               allowedRoles={["SUPER_ADMIN", "ACCOUNTANT"]}
                             >
-                              <GlobalFinance />
+                              {withModuleErrorBoundary("Financial Reports", <GlobalFinance />)}
                             </ProtectedRoute>
                           }
                         />
@@ -243,7 +248,7 @@ const App = () => {
                             <ProtectedRoute
                               allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
                             >
-                              <UsersRoles />
+                              {withModuleErrorBoundary("Users & Roles", <UsersRoles />)}
                             </ProtectedRoute>
                           }
                         />
@@ -252,7 +257,7 @@ const App = () => {
                           path="/platform/users"
                           element={
                             <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
-                              <PlatformUsers />
+                              {withModuleErrorBoundary("Platform Users", <PlatformUsers />)}
                             </ProtectedRoute>
                           }
                         />
@@ -261,22 +266,28 @@ const App = () => {
                           path="/permissions"
                           element={
                             <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
-                              <RolePermissionEditor />
+                              {withModuleErrorBoundary("Role Permissions", <RolePermissionEditor />)}
                             </ProtectedRoute>
                           }
                         />
 
-                        <Route path="/analytics" element={<Analytics />} />
-                        <Route path="/security" element={<SecurityAudit />} />
+                        <Route
+                          path="/analytics"
+                          element={withModuleErrorBoundary("Analytics", <Analytics />)}
+                        />
+                        <Route
+                          path="/security"
+                          element={withModuleErrorBoundary("Security Audit", <SecurityAudit />)}
+                        />
                         <Route
                           path="/integrations"
-                          element={<Integrations />}
+                          element={withModuleErrorBoundary("Integrations", <Integrations />)}
                         />
                         <Route
                           path="/settings"
                           element={
                             <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
-                              <SystemSettings />
+                              {withModuleErrorBoundary("System Settings", <SystemSettings />)}
                             </ProtectedRoute>
                           }
                         />
@@ -284,7 +295,7 @@ const App = () => {
                           path="/notifications"
                           element={
                             <ProtectedRoute>
-                              <Notifications />
+                              {withModuleErrorBoundary("Notifications", <Notifications />)}
                             </ProtectedRoute>
                           }
                         />
@@ -297,14 +308,20 @@ const App = () => {
                             </ProtectedRoute>
                           }
                         >
-                          <Route index element={<BranchOverview />} />
-                          <Route path="overview" element={<BranchOverview />} />
+                          <Route
+                            index
+                            element={withModuleErrorBoundary("Branch Overview", <BranchOverview />)}
+                          />
+                          <Route
+                            path="overview"
+                            element={withModuleErrorBoundary("Branch Overview", <BranchOverview />)}
+                          />
 
                           <Route
                             path="rooms"
                             element={
                               <ProtectedRoute permission="ACCESS_ROOMS">
-                                <Rooms />
+                                {withModuleErrorBoundary("Rooms", <Rooms />)}
                               </ProtectedRoute>
                             }
                           />
@@ -313,7 +330,7 @@ const App = () => {
                             path="rooms/add"
                             element={
                               <ProtectedRoute permission="ACCESS_ROOMS">
-                                <AddRoom />
+                                {withModuleErrorBoundary("Add Room", <AddRoom />)}
                               </ProtectedRoute>
                             }
                           />
@@ -322,7 +339,7 @@ const App = () => {
                             path="rooms/edit/:roomId"
                             element={
                               <ProtectedRoute permission="ACCESS_ROOMS">
-                                <EditRoom />
+                                {withModuleErrorBoundary("Edit Room", <EditRoom />)}
                               </ProtectedRoute>
                             }
                           />
@@ -331,7 +348,7 @@ const App = () => {
                             path="bookings"
                             element={
                               <ProtectedRoute permission="ACCESS_BOOKINGS">
-                                <Bookings />
+                                {withModuleErrorBoundary("Bookings", <Bookings />)}
                               </ProtectedRoute>
                             }
                           />
@@ -340,7 +357,7 @@ const App = () => {
                             path="bookings/add"
                             element={
                               <ProtectedRoute permission="ACCESS_BOOKINGS">
-                                <AddBooking />
+                                {withModuleErrorBoundary("Add Booking", <AddBooking />)}
                               </ProtectedRoute>
                             }
                           />
@@ -349,7 +366,7 @@ const App = () => {
                             path="bookings/edit/:bookingId"
                             element={
                               <ProtectedRoute permission="UPDATE_BOOKING">
-                                <EditBooking />
+                                {withModuleErrorBoundary("Edit Booking", <EditBooking />)}
                               </ProtectedRoute>
                             }
                           />
@@ -358,7 +375,7 @@ const App = () => {
                             path="bookings/:bookingId"
                             element={
                               <ProtectedRoute permission="ACCESS_BOOKINGS">
-                                <ViewBooking />
+                                {withModuleErrorBoundary("Booking Details", <ViewBooking />)}
                               </ProtectedRoute>
                             }
                           />
@@ -367,7 +384,7 @@ const App = () => {
                             path="crm"
                             element={
                               <ProtectedRoute permission="ACCESS_CRM">
-                                <CRM />
+                                {withModuleErrorBoundary("CRM", <CRM />)}
                               </ProtectedRoute>
                             }
                           />
@@ -376,7 +393,7 @@ const App = () => {
                             path="crm/add"
                             element={
                               <ProtectedRoute permission="ACCESS_CRM">
-                                <AddGuest />
+                                {withModuleErrorBoundary("Add Guest", <AddGuest />)}
                               </ProtectedRoute>
                             }
                           />
@@ -385,7 +402,7 @@ const App = () => {
                             path="crm/edit/:guestId"
                             element={
                               <ProtectedRoute permission="ACCESS_CRM">
-                                <AddGuest />
+                                {withModuleErrorBoundary("Edit Guest", <AddGuest />)}
                               </ProtectedRoute>
                             }
                           />
@@ -394,7 +411,7 @@ const App = () => {
                             path="housekeeping"
                             element={
                               <ProtectedRoute permission="ACCESS_HOUSEKEEPING">
-                                <Housekeeping />
+                                {withModuleErrorBoundary("Housekeeping", <Housekeeping />)}
                               </ProtectedRoute>
                             }
                           />
@@ -403,7 +420,7 @@ const App = () => {
                             path="housekeeping/add"
                             element={
                               <ProtectedRoute permission="ACCESS_HOUSEKEEPING">
-                                <CreateHousekeepingTask />
+                                {withModuleErrorBoundary("Create Housekeeping Task", <CreateHousekeepingTask />)}
                               </ProtectedRoute>
                             }
                           />
@@ -412,7 +429,7 @@ const App = () => {
                             path="pos"
                             element={
                               <ProtectedRoute permission="ACCESS_POS">
-                                <POS />
+                                {withModuleErrorBoundary("POS", <POS />)}
                               </ProtectedRoute>
                             }
                           />
@@ -421,7 +438,7 @@ const App = () => {
                             path="pos/category/add"
                             element={
                               <ProtectedRoute permission="ACCESS_POS">
-                                <AddPOSCategory />
+                                {withModuleErrorBoundary("Add POS Category", <AddPOSCategory />)}
                               </ProtectedRoute>
                             }
                           />
@@ -430,7 +447,7 @@ const App = () => {
                             path="pos/category/edit/:categoryId"
                             element={
                               <ProtectedRoute permission="ACCESS_POS">
-                                <AddPOSCategory />
+                                {withModuleErrorBoundary("Edit POS Category", <AddPOSCategory />)}
                               </ProtectedRoute>
                             }
                           />
@@ -439,7 +456,7 @@ const App = () => {
                             path="pos/menu/add"
                             element={
                               <ProtectedRoute permission="ACCESS_POS">
-                                <AddPOSMenu />
+                                {withModuleErrorBoundary("Add POS Menu", <AddPOSMenu />)}
                               </ProtectedRoute>
                             }
                           />
@@ -448,7 +465,7 @@ const App = () => {
                             path="pos/menu/edit/:itemId"
                             element={
                               <ProtectedRoute permission="ACCESS_POS">
-                                <AddPOSMenu />
+                                {withModuleErrorBoundary("Edit POS Menu", <AddPOSMenu />)}
                               </ProtectedRoute>
                             }
                           />
@@ -457,7 +474,7 @@ const App = () => {
                             path="kitchen"
                             element={
                               <ProtectedRoute permission="ACCESS_POS">
-                                <Kitchen />
+                                {withModuleErrorBoundary("Kitchen Display", <Kitchen />)}
                               </ProtectedRoute>
                             }
                           />
@@ -466,7 +483,7 @@ const App = () => {
                             path="inventory"
                             element={
                               <ProtectedRoute permission="ACCESS_INVENTORY">
-                                <Inventory />
+                                {withModuleErrorBoundary("Inventory", <Inventory />)}
                               </ProtectedRoute>
                             }
                           />
@@ -475,7 +492,7 @@ const App = () => {
                             path="inventory/add"
                             element={
                               <ProtectedRoute permission="ACCESS_INVENTORY">
-                                <CreatePurchaseOrder />
+                                {withModuleErrorBoundary("Create Purchase Order", <CreatePurchaseOrder />)}
                               </ProtectedRoute>
                             }
                           />
@@ -484,7 +501,7 @@ const App = () => {
                             path="hr"
                             element={
                               <ProtectedRoute permission="ACCESS_HR">
-                                <HR />
+                                {withModuleErrorBoundary("HR", <HR />)}
                               </ProtectedRoute>
                             }
                           />
@@ -493,7 +510,7 @@ const App = () => {
                             path="hr/add"
                             element={
                               <ProtectedRoute permission="ACCESS_HR">
-                                <AddStaff />
+                                {withModuleErrorBoundary("Add Staff", <AddStaff />)}
                               </ProtectedRoute>
                             }
                           />
@@ -502,7 +519,7 @@ const App = () => {
                             path="finance"
                             element={
                               <ProtectedRoute permission="ACCESS_FINANCE">
-                                <Finance />
+                                {withModuleErrorBoundary("Finance", <Finance />)}
                               </ProtectedRoute>
                             }
                           />
@@ -511,7 +528,7 @@ const App = () => {
                             path="settings"
                             element={
                               <ProtectedRoute permission="ACCESS_BRANCH_SETTINGS">
-                                <BranchSettings />
+                                {withModuleErrorBoundary("Branch Settings", <BranchSettings />)}
                               </ProtectedRoute>
                             }
                           />
@@ -520,16 +537,19 @@ const App = () => {
                             path="notifications"
                             element={
                               <ProtectedRoute>
-                                <Notifications />
+                                {withModuleErrorBoundary("Notifications", <Notifications />)}
                               </ProtectedRoute>
                             }
                           />
                         </Route>
 
-                        <Route path="/profile" element={<Profile />} />
+                        <Route
+                          path="/profile"
+                          element={withModuleErrorBoundary("Profile", <Profile />)}
+                        />
                         <Route
                           path="/update-password"
-                          element={<UpdatePassword />}
+                          element={withModuleErrorBoundary("Update Password", <UpdatePassword />)}
                         />
 
                         <Route path="*" element={<NotFound />} />

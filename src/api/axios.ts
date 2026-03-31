@@ -1,4 +1,5 @@
 import axios from "axios";
+import { dispatchServerError, isServerRequestFailure } from "@/lib/serverErrors";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -44,5 +45,23 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (isServerRequestFailure(error)) {
+      dispatchServerError({
+        message: error.message || "A server error occurred.",
+        method: error.config?.method?.toUpperCase(),
+        pathname:
+          typeof window === "undefined" ? "" : window.location.pathname,
+        status: error.response?.status,
+        url: error.config?.url,
+      });
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 export default api;
