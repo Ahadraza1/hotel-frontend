@@ -296,6 +296,9 @@
 }
 
 .finance-table-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   height: clamp(24rem, 62vh, 38rem);
   max-height: clamp(24rem, 62vh, 38rem);
   min-height: clamp(24rem, 62vh, 38rem);
@@ -311,6 +314,12 @@
     height: 26rem;
     max-height: 26rem;
     min-height: 26rem;
+  }
+
+  .room-invoices-card {
+    height: 32rem;
+    max-height: 32rem;
+    min-height: 32rem;
   }
 
   .luxury-table {

@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Clock, ChefHat, CheckSquare } from "lucide-react";
 import api from "@/api/axios";
 import { useConfirmModal } from "@/hooks/useConfirmModal";
-import { io, Socket } from "socket.io-client";
+import socket from "@/socket";
 
 type FilterType = "all" | "pending" | "preparing" | "ready";
 
@@ -24,6 +23,38 @@ interface Order {
   createdAt: string;
   items: OrderItem[];
 }
+
+const ACTIVE_KITCHEN_STATUSES = new Set(["PENDING", "PREPARING", "READY"]);
+
+const normalizeKitchenOrder = (order: Order): Order | null => {
+  const activeItems = (order.items || []).filter((item) =>
+    ACTIVE_KITCHEN_STATUSES.has(item.kitchenStatus),
+  );
+
+  if (activeItems.length === 0) {
+    return null;
+  }
+
+  return {
+    ...order,
+    items: activeItems,
+  };
+};
+
+const isKitchenOrder = (order: Order | null): order is Order => order !== null;
+
+const upsertKitchenOrder = (orders: Order[], incomingOrder: Order): Order[] => {
+  const normalizedOrder = normalizeKitchenOrder(incomingOrder);
+  const remainingOrders = orders.filter(
+    (order) => order.orderId !== incomingOrder.orderId,
+  );
+
+  if (!normalizedOrder) {
+    return remainingOrders;
+  }
+
+  return [normalizedOrder, ...remainingOrders];
+};
 
 function formatElapsed(date: Date, now: Date): string {
   const diffMs = now.getTime() - date.getTime();
@@ -62,8 +93,6 @@ const Kitchen = () => {
   const [now, setNow] = useState(new Date());
   const { openConfirmModal } = useConfirmModal();
 
-  const socketRef = useRef<Socket | null>(null);
-
   /*
   FETCH KITCHEN ORDERS
   */
@@ -75,7 +104,7 @@ const Kitchen = () => {
         },
       });
 
-      setOrders(res.data.data || []);
+      setOrders((res.data.data || []).map(normalizeKitchenOrder).filter(isKitchenOrder));
     } catch (err) {
       console.error("Kitchen fetch error", err);
     }
@@ -87,24 +116,28 @@ const Kitchen = () => {
   useEffect(() => {
     if (!branchId) return;
 
-    fetchOrders(branchId);
+    void fetchOrders(branchId);
 
-    socketRef.current = io(import.meta.env.VITE_API_URL);
+    socket.emit("join-branch", branchId);
 
-    socketRef.current.emit("join-branch", branchId);
+    const handleOrderCreated = (order: Order) => {
+      setOrders((prev) => upsertKitchenOrder(prev, order));
+    };
 
-    socketRef.current.on("new-order", (order: Order) => {
-      setOrders((prev) => [order, ...prev]);
-    });
+    const handleOrderUpdated = (order: Order) => {
+      setOrders((prev) => upsertKitchenOrder(prev, order));
+    };
 
-    socketRef.current.on("order-updated", (updated: Order) => {
-      setOrders((prev) =>
-        prev.map((o) => (o.orderId === updated.orderId ? updated : o)),
-      );
-    });
+    socket.on("new-order", handleOrderCreated);
+    socket.on("order-updated", handleOrderUpdated);
+    socket.on("ORDER_CREATED", handleOrderCreated);
+    socket.on("ORDER_UPDATED", handleOrderUpdated);
 
     return () => {
-      socketRef.current?.disconnect();
+      socket.off("new-order", handleOrderCreated);
+      socket.off("order-updated", handleOrderUpdated);
+      socket.off("ORDER_CREATED", handleOrderCreated);
+      socket.off("ORDER_UPDATED", handleOrderUpdated);
     };
   }, [branchId]);
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from "@/api/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
@@ -417,7 +417,7 @@ const Finance = () => {
             </div>
           </div>
 
-          <div className="luxury-card finance-table-card">
+          <div className="luxury-card finance-table-card room-invoices-card">
             <h2 className="text-lg font-semibold mb-3">Rooms Invoices</h2>
             <div className="p-4 pb-0">
               <input
@@ -523,7 +523,7 @@ const Finance = () => {
               Restaurant POS Invoices
             </h2>
 
-            <div className="mb-4">
+            <div className="p-4 pb-0">
               <input
                 type="text"
                 className="luxury-input w-full"
@@ -664,6 +664,8 @@ const Finance = () => {
                       <input
                         type="number"
                         className="luxury-input w-full"
+                        placeholder="0.00"
+                        title="Enter total amount"
                         value={editForm.totalAmount}
                         onChange={(e) =>
                           setEditForm((prev) => ({
@@ -687,6 +689,7 @@ const Finance = () => {
                             taxAmount: e.target.value,
                           }))
                         }
+                        title="Enter tax amount"
                       />
                     </div>
 
@@ -696,6 +699,8 @@ const Finance = () => {
                       <input
                         type="number"
                         className="luxury-input w-full"
+                        placeholder="0.00"
+                        title="Enter final amount"
                         value={editForm.finalAmount}
                         onChange={(e) =>
                           setEditForm((prev) => ({
@@ -712,6 +717,8 @@ const Finance = () => {
                       <input
                         type="number"
                         className="luxury-input w-full"
+                        placeholder="0.00"
+                        title="Enter paid amount"
                         value={editForm.paidAmount}
                         onChange={(e) =>
                           setEditForm((prev) => ({
@@ -728,6 +735,8 @@ const Finance = () => {
                       <input
                         type="number"
                         className="luxury-input w-full"
+                        placeholder="0.00"
+                        title="Enter due amount"
                         value={editForm.dueAmount}
                         onChange={(e) =>
                           setEditForm((prev) => ({
@@ -742,6 +751,7 @@ const Finance = () => {
                       <label className="as-label pb-2">Status</label>
                       <select
                         className="luxury-input w-full mt-[1.2rem]"
+                        title="Select invoice status"
                         value={editForm.status}
                         onChange={(e) =>
                           setEditForm((prev) => ({
@@ -776,16 +786,18 @@ const Finance = () => {
                 <>
                   <div className="as-grid-2">
                     <div className="as-field">
-                      <label className="as-label pb-2">Payment Amount</label>
+                      <label htmlFor="payment-amount" className="as-label pb-2">Payment Amount</label>
                       <label className="as-label -mb-1">{currencySymbol}</label>
                       <div className="relative">
                         <input
+                          id="payment-amount"
                           type="number"
                           placeholder="0.00"
                           className="luxury-input w-full"
                           step="0.01"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
+                          title="Enter payment amount"
                         />
                       </div>
                     </div>
@@ -795,6 +807,7 @@ const Finance = () => {
                       <select
                         className="luxury-input w-full mt-[1.2rem]"
                         aria-label="Payment method"
+                        title="Select payment method"
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                       >
