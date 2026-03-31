@@ -268,8 +268,45 @@
   transition: padding 0.3s;
 }
 
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-group + .sidebar-group {
+  margin-top: 0.75rem;
+}
+
+.sidebar-group-title {
+  padding: 0 1rem;
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 700;
+  white-space: nowrap;
+  transition: opacity 0.3s, visibility 0.3s, height 0.3s, margin 0.3s, padding 0.3s;
+}
+
 .sidebar-collapsed .sidebar-nav {
   padding: 0.5rem;
+}
+
+.sidebar-collapsed .sidebar-group {
+  gap: 0.25rem;
+}
+
+.sidebar-collapsed .sidebar-group + .sidebar-group {
+  margin-top: 0.25rem;
+}
+
+.sidebar-collapsed .sidebar-group-title {
+  opacity: 0;
+  visibility: hidden;
+  height: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .sidebar-item {

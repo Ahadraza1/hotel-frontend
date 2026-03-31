@@ -30,6 +30,12 @@ interface MenuItem {
   permission?: string | null;
   permissionKey?: string | null;
 }
+
+interface MenuGroup {
+  title: string;
+  items: MenuItem[];
+}
+
 const globalMenuItems = [
   {
     title: "Dashboard",
@@ -113,63 +119,93 @@ const globalMenuItems = [
 ];
 
 // ================= WORKSPACE MENU =================
-const workspaceMenuItems = [
-  { title: "Branch Overview", route: "", icon: Home, permissionKey: null },
+const workspaceMenuGroups: MenuGroup[] = [
   {
-    title: "Rooms",
-    route: "rooms",
-    icon: Hotel,
-    permissionKey: "ACCESS_ROOMS",
+    title: "Main",
+    items: [{ title: "Branch Overview", route: "", icon: Home, permissionKey: null }],
   },
   {
-    title: "Bookings",
-    route: "bookings",
-    icon: LayoutDashboard,
-    permissionKey: "ACCESS_BOOKINGS",
+    title: "Hotel",
+    items: [
+      {
+        title: "Rooms",
+        route: "rooms",
+        icon: Hotel,
+        permissionKey: "ACCESS_ROOMS",
+      },
+      {
+        title: "Bookings",
+        route: "bookings",
+        icon: LayoutDashboard,
+        permissionKey: "ACCESS_BOOKINGS",
+      },
+      {
+        title: "Guests (CRM)",
+        route: "crm",
+        icon: Building2,
+        permissionKey: "ACCESS_CRM",
+      },
+    ],
   },
   {
-    title: "Guests (CRM)",
-    route: "crm",
-    icon: Building2,
-    permissionKey: "ACCESS_CRM",
+    title: "Restaurant",
+    items: [
+      { title: "POS", route: "pos", icon: Plug, permissionKey: "ACCESS_POS" },
+      {
+        title: "Kitchen Display",
+        route: "kitchen",
+        icon: AlertTriangle,
+        permissionKey: "ACCESS_POS",
+      },
+    ],
   },
   {
     title: "Housekeeping",
-    route: "housekeeping",
-    icon: Shield,
-    permissionKey: "ACCESS_HOUSEKEEPING",
+    items: [
+      {
+        title: "Housekeeping",
+        route: "housekeeping",
+        icon: Shield,
+        permissionKey: "ACCESS_HOUSEKEEPING",
+      },
+    ],
   },
-  { title: "POS", route: "pos", icon: Plug, permissionKey: "ACCESS_POS" },
   {
-    title: "Kitchen Display",
-    route: "kitchen",
-    icon: AlertTriangle,
-    permissionKey: "ACCESS_POS",
+    title: "HR",
+    items: [{ title: "HR", route: "hr", icon: Users, permissionKey: "ACCESS_HR" }],
   },
   {
     title: "Inventory",
-    route: "inventory",
-    icon: Plug,
-    permissionKey: "ACCESS_INVENTORY",
+    items: [
+      {
+        title: "Inventory",
+        route: "inventory",
+        icon: Plug,
+        permissionKey: "ACCESS_INVENTORY",
+      },
+    ],
   },
-  { title: "HR", route: "hr", icon: Users, permissionKey: "ACCESS_HR" },
   {
-    title: "Finance",
-    route: "finance",
-    icon: DollarSign,
-    permissionKey: "ACCESS_FINANCE",
+    title: "Invoices",
+    items: [
+      {
+        title: "Finance",
+        route: "finance",
+        icon: DollarSign,
+        permissionKey: "ACCESS_FINANCE",
+      },
+    ],
   },
-  // {
-  //   title: "Reports",
-  //   route: "reports",
-  //   icon: BarChart3,
-  //   permissionKey: "ACCESS_REPORTS",
-  // },
   {
-    title: "Branch Settings",
-    route: "settings",
-    icon: Settings,
-    permissionKey: "ACCESS_BRANCH_SETTINGS",
+    title: "Settings",
+    items: [
+      {
+        title: "Branch Settings",
+        route: "settings",
+        icon: Settings,
+        permissionKey: "ACCESS_BRANCH_SETTINGS",
+      },
+    ],
   },
 ];
 
@@ -192,9 +228,7 @@ export const AppSidebar = ({
 
   const { hasRole, hasPermission, user } = useAuth();
 
-  const menuItems: MenuItem[] = isWorkspaceMode
-    ? (workspaceMenuItems as MenuItem[])
-    : (globalMenuItems as MenuItem[]);
+  const menuItems: MenuItem[] = isWorkspaceMode ? [] : (globalMenuItems as MenuItem[]);
 
   const canViewGlobalItem = (item: MenuItem) => {
     if (item.path === "/settings" && user?.role !== "SUPER_ADMIN") {
@@ -249,45 +283,65 @@ export const AppSidebar = ({
       </div>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item: MenuItem, index: number) => {
-          /*
-           GLOBAL MENU PERMISSION CHECK
-          */
-          if (!isWorkspaceMode && !canViewGlobalItem(item)) return null;
+        {isWorkspaceMode
+          ? workspaceMenuGroups.map((group: MenuGroup) => {
+              const visibleItems = group.items.filter(
+                (item) => !item.permissionKey || hasPermission(item.permissionKey),
+              );
 
-          /*
-           WORKSPACE PERMISSION CHECK (ROLE PERMISSIONS)
-          */
-          if (isWorkspaceMode && item.permissionKey && !hasPermission(item.permissionKey)) {
-            return null;
-          }
+              if (visibleItems.length === 0) return null;
 
-          const itemPath = isWorkspaceMode
-            ? item.route
-              ? `/workspace/${activeBranch?._id}/${item.route}`
-              : `/workspace/${activeBranch?._id}`
-            : item.path;
+              return (
+                <div key={group.title} className="sidebar-group">
+                  <div className="sidebar-group-title">{group.title}</div>
 
-          const isActive = isWorkspaceMode
-            ? location.pathname === itemPath
-            : location.pathname === item.path;
+                  {visibleItems.map((item: MenuItem, index: number) => {
+                    const itemPath = item.route
+                      ? `/workspace/${activeBranch?._id}/${item.route}`
+                      : `/workspace/${activeBranch?._id}`;
 
-          return (
-            <Link
-              key={`${item.title}-${index}`}
-              to={itemPath}
-              className={`sidebar-item ${isActive ? "active" : ""}`}
-              onClick={() => {
-                if (isOpen) {
-                  onClose();
-                }
-              }}
-            >
-              <item.icon className="sidebar-item-icon" />
-              <span className="sidebar-item-text">{item.title}</span>
-            </Link>
-          );
-        })}
+                    const isActive = location.pathname === itemPath;
+
+                    return (
+                      <Link
+                        key={`${group.title}-${item.title}-${index}`}
+                        to={itemPath}
+                        className={`sidebar-item ${isActive ? "active" : ""}`}
+                        onClick={() => {
+                          if (isOpen) {
+                            onClose();
+                          }
+                        }}
+                      >
+                        <item.icon className="sidebar-item-icon" />
+                        <span className="sidebar-item-text">{item.title}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })
+          : menuItems.map((item: MenuItem, index: number) => {
+              if (!canViewGlobalItem(item)) return null;
+
+              const isActive = location.pathname === item.path;
+
+              return (
+                <Link
+                  key={`${item.title}-${index}`}
+                  to={item.path!}
+                  className={`sidebar-item ${isActive ? "active" : ""}`}
+                  onClick={() => {
+                    if (isOpen) {
+                      onClose();
+                    }
+                  }}
+                >
+                  <item.icon className="sidebar-item-icon" />
+                  <span className="sidebar-item-text">{item.title}</span>
+                </Link>
+              );
+            })}
       </nav>
 
       <div className="sidebar-footer">
