@@ -50,21 +50,26 @@ interface ApiErrorResponse {
   message?: string;
 }
 
+interface RoleOption {
+  _id: string;
+  name: string;
+  normalizedName: string;
+  type?: string;
+}
+
+const HIDDEN_HR_ROLES = new Set([
+  "SUPER_ADMIN",
+  "CORPORATE_ADMIN",
+  "Super Admin",
+  "Corporate Admin",
+]);
+
 const departmentOptions = [
   "FRONT_OFFICE",
   "HOUSEKEEPING",
   "RESTAURANT",
   "HR",
   "ACCOUNTS",
-];
-
-const designationOptions = [
-  "RECEPTIONIST",
-  "HOUSEKEEPING",
-  "ACCOUNTANT",
-  "HR_MANAGER",
-  "RESTAURANT_MANAGER",
-  "BRANCH_MANAGER",
 ];
 
 const HR = () => {
@@ -88,12 +93,13 @@ const HR = () => {
 
   const [staff, setStaff] = useState<Staff[]>([]);
   const [payrolls, setPayrolls] = useState<Payroll[]>([]);
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>([]);
   const [loading, setLoading] = useState(true);
   // ✅ Invite Staff State
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteName, setInviteName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState("RECEPTIONIST");
+  const [inviteRole, setInviteRole] = useState("");
   const [inviteJoinedDate, setInviteJoinedDate] = useState("");
   const [inviteSalary, setInviteSalary] = useState("");
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
@@ -123,6 +129,15 @@ const HR = () => {
   // Default generating parameters for Payroll
   const [selectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear] = useState<number>(new Date().getFullYear());
+  const visibleRoleOptions = useMemo(
+    () =>
+      roleOptions.filter(
+        (role) =>
+          !HIDDEN_HR_ROLES.has(role.normalizedName) &&
+          !HIDDEN_HR_ROLES.has(role.name),
+      ),
+    [roleOptions],
+  );
 
   const fetchStaff = useCallback(async () => {
     if (!branchId) return;
@@ -163,6 +178,15 @@ const HR = () => {
     }
   }, [branchId]);
 
+  const fetchRoleOptions = useCallback(async () => {
+    try {
+      const res = await api.get<{ data: RoleOption[] }>("/hr/roles");
+      setRoleOptions(res.data.data || []);
+    } catch {
+      console.error("Failed to load HR roles");
+    }
+  }, []);
+
   const refreshHrData = useCallback(async () => {
     await Promise.all([fetchStaff(), fetchPayroll()]);
   }, [fetchPayroll, fetchStaff]);
@@ -187,7 +211,8 @@ const HR = () => {
 
     fetchStaff();
     fetchPayroll();
-  }, [branchId, fetchPayroll, fetchStaff]);
+    fetchRoleOptions();
+  }, [branchId, fetchPayroll, fetchStaff, fetchRoleOptions]);
 
   /* ── Actions ── */
   const checkIn = async (staffId: string, statusKey: string) => {
@@ -257,6 +282,7 @@ const HR = () => {
 
   // ✅ Invite Staff Function
   const handleOpenStaffEdit = (member: Staff) => {
+    void fetchRoleOptions();
     setEditingStaff(member);
     setStaffForm({
       firstName: member.firstName || "",
@@ -502,7 +528,10 @@ const HR = () => {
         {canCreate && (
           <button
             className="luxury-btn luxury-btn-primary hr-add-btn"
-            onClick={() => setShowInviteForm(true)}
+            onClick={() => {
+              void fetchRoleOptions();
+              setShowInviteForm(true);
+            }}
           >
             <Plus size={15} />
             Add Staff
@@ -520,7 +549,7 @@ const HR = () => {
               setShowInviteForm(false);
               setInviteName("");
               setInviteEmail("");
-              setInviteRole("RECEPTIONIST");
+              setInviteRole("");
               setInviteJoinedDate("");
               setInviteSalary("");
             }}
@@ -566,12 +595,11 @@ const HR = () => {
                 onChange={(e) => setInviteRole(e.target.value)}
               >
                 <option value="">Select Role</option>
-                <option value="RECEPTIONIST">Receptionist</option>
-                <option value="CHEF">Chef</option>
-                <option value="ACCOUNTANT">Accountant</option>
-                <option value="HR">HR Manager </option>
-                <option value="RESTAURANT">Restaurant Manager</option>
-                <option value="HOUSEKEEPING">Housekeeping</option>
+                {visibleRoleOptions.map((role) => (
+                  <option key={role._id} value={role.normalizedName || role.name}>
+                    {role.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -698,9 +726,12 @@ const HR = () => {
                 title="Designation"
               >
                 <option value="">Select Designation</option>
-                {designationOptions.map((designation) => (
-                  <option key={designation} value={designation}>
-                    {designation}
+                {visibleRoleOptions.map((role) => (
+                  <option
+                    key={role._id}
+                    value={role.normalizedName || role.name}
+                  >
+                    {role.name}
                   </option>
                 ))}
               </select>
