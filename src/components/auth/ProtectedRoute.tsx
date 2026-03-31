@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: string[];
-  permission?: string; // âœ… NEW
+  permission?: string;
 }
 
 const ProtectedRoute = ({
@@ -16,16 +16,10 @@ const ProtectedRoute = ({
     useAuth();
   const location = useLocation();
 
-  /*
-  Wait for auth
-  */
   if (loading) {
     return null;
   }
 
-  /*
-  Not logged in
-  */
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -40,31 +34,13 @@ const ProtectedRoute = ({
   }
 
   const role = user.role?.toUpperCase();
+  const isDashboardRole =
+    role === "SUPER_ADMIN" || role === "CORPORATE_ADMIN";
 
-  /*
-  BRANCH USERS â†’ Always workspace
-  */
-  const branchRoles = [
-    "BRANCH_MANAGER",
-    "RECEPTIONIST",
-    "CHEF",
-    "ACCOUNTANT",
-    "HR_MANAGER",
-    "HOUSEKEEPING",
-    "RESTAURANT_MANAGER",
-  ];
-
-  if (
-    branchRoles.includes(role) &&
-    user.branchId &&
-    !location.pathname.startsWith("/workspace")
-  ) {
+  if (user.branchId && !isDashboardRole && !location.pathname.startsWith("/workspace")) {
     return <Navigate to={`/workspace/${user.branchId}/overview`} replace />;
   }
 
-  /*
-  ROLE BASED ACCESS
-  */
   if (allowedRoles && allowedRoles.length > 0) {
     const isAllowed = hasRole(allowedRoles);
 
@@ -73,9 +49,6 @@ const ProtectedRoute = ({
     }
   }
 
-  /*
-  PERMISSION BASED ACCESS
-  */
   if (permission) {
     const isAllowed = hasPermission(permission);
 

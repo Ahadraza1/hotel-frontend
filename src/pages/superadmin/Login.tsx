@@ -75,18 +75,8 @@ const Login = ({ onLogin }: LoginProps) => {
         localStorage.setItem("activeBranchId", user.branchId);
       }
 
-      /*
-     ROLE BASED REDIRECT
-     */
-      const branchRoles = [
-        "BRANCH_MANAGER",
-        "RECEPTIONIST",
-        "CHEF",
-        "ACCOUNTANT",
-        "HR_MANAGER",
-        "HOUSEKEEPING",
-        "RESTAURANT_MANAGER",
-      ];
+      const isDashboardRole =
+        role === "SUPER_ADMIN" || role === "CORPORATE_ADMIN";
 
       if (role === "SUPER_ADMIN") {
         onLogin();
@@ -109,7 +99,7 @@ const Login = ({ onLogin }: LoginProps) => {
       /*
      BRANCH USERS
      */
-      if (branchRoles.includes(role) && user.branchId) {
+      if (!isDashboardRole && user.branchId) {
         localStorage.setItem("activeBranchId", user.branchId);
 
         // reload app with branch context
