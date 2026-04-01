@@ -293,6 +293,30 @@ const OrderSessionDetail = () => {
         : session.guestName?.trim() || "Takeaway"
     : "New Session";
 
+  const sessionOrders = session ? [...session.orders].reverse() : [];
+  const sessionTypeLabel = session
+    ? session.type === "DINE_IN"
+      ? "Table"
+      : session.type === "ROOM_SERVICE"
+        ? "Room"
+        : "Takeaway"
+    : "";
+  const sessionLocationTitle = session
+    ? session.type === "DINE_IN"
+      ? "Table No"
+      : session.type === "ROOM_SERVICE"
+        ? "Room No"
+        : "Order Type"
+    : "";
+  const sessionLocationValue = session
+    ? session.type === "DINE_IN"
+      ? session.tableNo || "-"
+      : session.type === "ROOM_SERVICE"
+        ? session.roomNo || "-"
+        : "Pickup Order"
+    : "";
+  const sessionGuestLabel = session?.guestName?.trim() || "Walk-in Guest";
+
   const sessionTypeOptions: Array<{
     value: SessionType;
     label: string;
@@ -611,8 +635,35 @@ const OrderSessionDetail = () => {
                   <p className="osd-empty-text">Waiting for first order...</p>
                 </div>
               ) : (
-                [...session.orders].reverse().map((order) => (
-                  <div key={order.orderId} className="osd-order-card">
+                <div className="osd-order-card">
+                  <div className="osd-order-session-header">
+                    <div className="osd-order-session-info">
+                      <div>
+                        <span className="osd-order-num-label">Session Type</span>
+                        <h3 className="osd-order-num-val">{sessionTypeLabel}</h3>
+                      </div>
+                      <div>
+                        <span className="osd-order-time-label">{sessionLocationTitle}</span>
+                        <span className="osd-order-time-val">{sessionLocationValue}</span>
+                      </div>
+                      <div>
+                        <span className="osd-order-time-label">Guest Name</span>
+                        <span className="osd-order-time-val">{sessionGuestLabel}</span>
+                      </div>
+                    </div>
+                    <div className="osd-order-meta">
+                      <div className="osd-order-time-wrap">
+                        <span className="osd-order-time-label">Running Total</span>
+                        <span className="osd-order-time-val">
+                          {formatCurrency(session.runningTotal)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="osd-session-orders-container">
+                    {sessionOrders.map((order) => (
+                      <div key={order.orderId} className="osd-session-order-block">
                     <div className="osd-order-card-header">
                       <div>
                         <span className="osd-order-num-label">
@@ -637,7 +688,6 @@ const OrderSessionDetail = () => {
                     </div>
 
                     <div className="osd-order-body">
-                      {/* Scrollable item list here */}
                       <div className="osd-items-list">
                         {order.items.map((item) => (
                           <div key={`${order.orderId}-${item.itemId}`} className="osd-order-item-row flex justify-between items-center">
@@ -696,38 +746,67 @@ const OrderSessionDetail = () => {
                         </div>
                       )}
                     </div>
+                      </div>
+                    ))}
                   </div>
-                ))
+                </div>
               )}
             </div>
           </div>
 
           {/* ── Sidebar Actions ── */}
           <div className="flex flex-col gap-8">
-            <div className="luxury-card !p-0 border-[hsl(var(--grandeur-gold)/0.15)] shadow-[0_24px_50px_rgba(32,24,12,0.08)] sticky top-6 overflow-hidden">
-              <div className="px-6 py-5 border-b border-border/10 bg-muted/5">
-                <h2 className="text-2xl font-serif font-semibold text-foreground tracking-tight">Actions</h2>
+            <div className="luxury-card sticky top-6 !p-0 overflow-hidden border border-border/70 bg-white shadow-[0_20px_50px_rgba(32,24,12,0.06)]">
+              <div className="px-8 py-7">
+                <span className="block text-sm font-medium text-muted-foreground">
+                  Session Controls
+                </span>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Actions</h2>
               </div>
-              
-              <div className="p-6 space-y-6">
+
+              <div className="space-y-10 px-8 pb-8">
                 {/* ── Identity & Transfer ── */}
                 <div className="space-y-4">
+                  <div>
+                    <p className="text-[1.05rem] font-medium text-foreground">
+                      Guest & Transfer
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">Manage guest identity and move this active session.</p>
+                  </div>
+
                   <button 
-                    className="luxury-btn luxury-btn-outline w-full h-12 gap-3 text-sm font-bold border-border shadow-sm hover:border-[hsl(var(--grandeur-gold)/0.4)]"
+                    className="luxury-btn h-[76px] w-full justify-center rounded-xl border border-border/60 bg-muted/30 px-5 text-left shadow-none transition-colors hover:bg-muted/45"
                     onClick={openGuestNameEdit}
                   >
-                    <User size={18} className="text-muted-foreground mr-1" />
-                    Update Guest Name
+                    <span className="flex items-center gap-4">
+                      <User size={20} className="text-foreground" />
+                      <span className="flex flex-col items-start">
+                        <span className="text-sm font-semibold text-foreground">Update Guest Name</span>
+                        <span className="text-xs font-medium text-muted-foreground">Keep the session details accurate.</span>
+                      </span>
+                    </span>
                   </button>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-start gap-3">
+                      <ArrowRightLeft size={18} className="mt-1 text-foreground" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-foreground">
+                          {session.type === "DINE_IN" ? "Table Transfer" : "Room Transfer"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {session.type === "DINE_IN"
+                            ? "Shift this order session to another available table."
+                            : "Shift this order session to another room booking."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
                     {session.type === "DINE_IN" && (
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-center pt-2">
-                          <ArrowRightLeft size={16} className="text-muted-foreground opacity-50" />
-                        </div>
+                      <div className="flex flex-col gap-3">
                         <select 
-                          className="luxury-input w-full h-12 text-center text-sm font-bold bg-white dark:bg-background border-[hsl(var(--grandeur-gold)/0.25)] focus:border-[hsl(var(--grandeur-gold))]" 
+                          className="luxury-input h-12 w-full rounded-xl border-border/70 bg-white px-4 text-sm font-medium shadow-none" 
                           value={selectedTableId} 
                           onChange={(e) => setSelectedTableId(e.target.value)}
                           title="Move to Table"
@@ -740,7 +819,7 @@ const OrderSessionDetail = () => {
                           ))}
                         </select>
                         <button 
-                          className="luxury-btn luxury-btn-outline w-full h-11 text-[11px] font-black uppercase tracking-[0.2em] bg-muted/5"
+                          className="luxury-btn luxury-btn-outline h-12 w-full rounded-xl border border-border/60 bg-white text-sm font-semibold text-foreground shadow-none hover:bg-muted/25"
                           disabled={!selectedTableId}
                           onClick={() => void transferSession()}
                         >
@@ -750,12 +829,9 @@ const OrderSessionDetail = () => {
                     )}
 
                     {session.type === "ROOM_SERVICE" && (
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-center pt-2">
-                          <ArrowRightLeft size={16} className="text-muted-foreground opacity-50" />
-                        </div>
+                      <div className="flex flex-col gap-3">
                         <select
-                          className="luxury-input w-full h-12 text-center text-sm font-bold bg-white dark:bg-background border-[hsl(var(--grandeur-gold)/0.25)] focus:border-[hsl(var(--grandeur-gold))]"
+                          className="luxury-input h-12 w-full rounded-xl border-border/70 bg-white px-4 text-sm font-medium shadow-none"
                           value={selectedRoomId}
                           onChange={(event) => {
                             const room = rooms.find((entry) => entry._id === event.target.value);
@@ -772,7 +848,7 @@ const OrderSessionDetail = () => {
                           ))}
                         </select>
                         <button 
-                          className="luxury-btn luxury-btn-outline w-full h-11 text-[11px] font-black uppercase tracking-[0.2em] bg-muted/5"
+                          className="luxury-btn luxury-btn-outline h-12 w-full rounded-xl border border-border/60 bg-white text-sm font-semibold text-foreground shadow-none hover:bg-muted/25"
                           disabled={!selectedRoomId}
                           onClick={() => void transferSession()}
                         >
@@ -780,16 +856,22 @@ const OrderSessionDetail = () => {
                         </button>
                       </div>
                     )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
                 {/* ── Settlement ── */}
                 <div className="space-y-4">
+                  <div>
+                    <p className="text-[1.05rem] font-medium text-foreground">
+                      Settlement
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">Generate the bill, settle payment, or reopen the invoice.</p>
+                  </div>
+
                   {allOrdersServed && !session.invoice?.invoiceId && (
                     <button 
-                      className="luxury-btn w-full h-14 bg-[hsl(var(--grandeur-gold))] text-white shadow-[0_12px_24px_rgba(160,120,48,0.25)] hover:shadow-[0_16px_32px_rgba(160,120,48,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all font-bold gap-3"
+                      className="luxury-btn h-[62px] w-full rounded-xl border border-border/60 bg-muted/30 font-semibold text-foreground shadow-none transition-colors hover:bg-muted/45 gap-3"
                       onClick={() => void api.post(`/pos/sessions/${session.sessionId}/generate-bill`).then(fetchSession)}
                     >
                       <ReceiptText size={20} />
@@ -798,13 +880,16 @@ const OrderSessionDetail = () => {
                   )}
 
                   {canPay && (
-                    <div className="space-y-3 p-4 rounded-2xl bg-[hsl(var(--grandeur-gold)/0.05)] border border-[hsl(var(--grandeur-gold)/0.15)]">
-                      <div className="flex items-center justify-between px-1">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--grandeur-gold))]">Settlement</span>
-                        <span className="text-xs font-black text-foreground">{formatCurrency(session.runningTotal)}</span>
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <span className="text-[1.05rem] font-medium text-foreground">Amount Due</span>
+                          <p className="mt-1 text-xs text-muted-foreground">Select a payment method to complete settlement.</p>
+                        </div>
+                        <span className="text-[1.65rem] font-semibold text-foreground">{formatCurrency(session.runningTotal)}</span>
                       </div>
                       <select 
-                        className="luxury-input w-full h-11 text-xs font-bold bg-white dark:bg-black/40" 
+                        className="luxury-input h-12 w-full rounded-xl border-border/70 bg-white px-4 text-sm font-medium shadow-none" 
                         value={paymentMode} 
                         onChange={(e) => setPaymentMode(e.target.value as "CASH" | "CARD" | "UPI")}
                         title="Select Payment Method"
@@ -814,7 +899,7 @@ const OrderSessionDetail = () => {
                         <option value="UPI">UPI / Digital Payment</option>
                       </select>
                       <button 
-                        className="luxury-btn luxury-btn-primary w-full h-12 text-sm font-bold shadow-lg"
+                        className="luxury-btn luxury-btn-primary h-12 w-full rounded-xl text-sm font-semibold shadow-none"
                         onClick={() => void handlePayment()}
                       >
                         Proceed to Payment
@@ -824,7 +909,7 @@ const OrderSessionDetail = () => {
 
                   {session.invoice?.invoiceId && session.invoice.status === "PAID" && (
                     <button 
-                      className="luxury-btn luxury-btn-outline w-full h-12 text-xs font-bold gap-2 border-[hsl(var(--grandeur-gold)/0.2)] text-[hsl(var(--grandeur-gold))] hover:bg-[hsl(var(--grandeur-gold)/0.05)]"
+                      className="luxury-btn luxury-btn-outline h-12 w-full rounded-xl border border-border/60 bg-white text-sm font-semibold text-foreground shadow-none hover:bg-muted/25 gap-2"
                       onClick={() => void openInvoice()}
                     >
                       <ReceiptText size={16} />
