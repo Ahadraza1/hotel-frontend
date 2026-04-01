@@ -287,9 +287,9 @@ const OrderSessionDetail = () => {
 
   const locationTitle = session
     ? session.type === "DINE_IN"
-      ? `Table ${session.tableNo || "—"}`
+      ? `Table ${session.tableNo || "â€”"}`
       : session.type === "ROOM_SERVICE"
-        ? `Room ${session.roomNo || "—"}`
+        ? `Room ${session.roomNo || "â€”"}`
         : session.guestName?.trim() || "Takeaway"
     : "New Session";
 
@@ -345,7 +345,7 @@ const OrderSessionDetail = () => {
 
   return (
     <div className="flex flex-col gap-8 animate-fade-in pb-12">
-      {/* ── Page Header ── */}
+      {/* â”€â”€ Page Header â”€â”€ */}
       {!isCreating && (
         <div className="bk-page-header">
           <div className="bk-title-group">
@@ -360,7 +360,7 @@ const OrderSessionDetail = () => {
               <h1 className="page-title">{locationTitle}</h1>
               <p className="page-subtitle">
                 {session
-                  ? `${session.status.replace("_", " ")} • ID: ${session.sessionId}`
+                  ? `${session.status.replace("_", " ")} â€¢ ID: ${session.sessionId}`
                   : "Open a dine-in, room service, or takeaway session"}
               </p>
             </div>
@@ -492,7 +492,7 @@ const OrderSessionDetail = () => {
       ) : session ? (
         <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_360px]">
           <div className="flex flex-col gap-8">
-            {/* ── Order Submission ── */}
+            {/* â”€â”€ Order Submission â”€â”€ */}
             <div className="osd-menu-wrapper">
               <div className="osd-menu-header">
                 <div className="osd-menu-title-wrap">
@@ -563,7 +563,7 @@ const OrderSessionDetail = () => {
                               className="osd-qty-btn"
                               onClick={() => updateCartQty(item.itemId, -1)}
                             >
-                              −
+                              âˆ’
                             </button>
                             <span className="osd-qty-val">
                               {cartItem.quantity}
@@ -618,7 +618,7 @@ const OrderSessionDetail = () => {
               )}
             </div>
 
-            {/* ── Order History ── */}
+            {/* â”€â”€ Order History â”€â”€ */}
             <div className="osd-history-wrapper">
               <div className="osd-history-header">
                 <div className="osd-history-icon-box">
@@ -693,7 +693,7 @@ const OrderSessionDetail = () => {
                           <div key={`${order.orderId}-${item.itemId}`} className="osd-order-item-row flex justify-between items-center">
                             <div className="osd-item-row-left">
                               <span className="osd-item-qty-badge">
-                                {item.quantity}×
+                                {item.quantity}Ã—
                               </span>
                               <span className="osd-item-row-name">{item.nameSnapshot}</span>
                             </div>
@@ -754,143 +754,161 @@ const OrderSessionDetail = () => {
             </div>
           </div>
 
-          {/* ── Sidebar Actions ── */}
+          {/* â”€â”€ Sidebar Actions â”€â”€ */}
           <div className="flex flex-col gap-8">
-            <div className="luxury-card sticky top-6 !p-0 overflow-hidden border border-border/70 bg-white shadow-[0_20px_50px_rgba(32,24,12,0.06)]">
-              <div className="px-8 py-7">
-                <span className="block text-sm font-medium text-muted-foreground">
-                  Session Controls
-                </span>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Actions</h2>
+            <div className="luxury-card osd-actions-card sticky top-6">
+              <div className="osd-actions-header">
+                <span className="osd-actions-kicker">Session Controls</span>
+                <h2 className="osd-actions-title">Actions</h2>
               </div>
 
-              <div className="space-y-10 px-8 pb-8">
-                {/* ── Identity & Transfer ── */}
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-[1.05rem] font-medium text-foreground">
-                      Guest & Transfer
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">Manage guest identity and move this active session.</p>
+              <div className="osd-actions-sections">
+                <section className="osd-actions-section">
+                  <div className="osd-actions-section-head">
+                    <div className="osd-actions-icon-wrap">
+                      <ArrowRightLeft size={16} />
+                    </div>
+                    <div>
+                      <p className="osd-actions-section-title">
+                        {session.type === "DINE_IN" ? "Table Transfer" : "Room Transfer"}
+                      </p>
+                      <p className="osd-actions-section-subtitle">
+                        {session.type === "DINE_IN" ? "Select new table:" : "Select new room:"}
+                      </p>
+                    </div>
                   </div>
 
-                  <button 
-                    className="luxury-btn h-[76px] w-full justify-center rounded-xl border border-border/60 bg-muted/30 px-5 text-left shadow-none transition-colors hover:bg-muted/45"
+                  {session.type === "DINE_IN" && (
+                    <div className="osd-transfer-block">
+                      <div className="osd-transfer-grid" role="group" aria-label="Select new table">
+                        {tables.map((table) => (
+                          <button
+                            key={table._id}
+                            type="button"
+                            className={`osd-transfer-option ${selectedTableId === table._id ? "is-selected" : ""}`}
+                            disabled={table.status === "OCCUPIED"}
+                            onClick={() => setSelectedTableId(table._id)}
+                            title={table.status === "OCCUPIED" ? "Currently Occupied" : "Select Table"}
+                          >
+                            {(table.tableNumber || table.name).replace(/Table\s+/i, "")}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className="osd-transfer-cancel"
+                        onClick={() => setSelectedTableId("")}
+                        disabled={!selectedTableId}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="luxury-btn luxury-btn-outline osd-section-btn"
+                        disabled={!selectedTableId}
+                        onClick={() => void transferSession()}
+                      >
+                        Confirm Table Transfer
+                      </button>
+                    </div>
+                  )}
+
+                  {session.type === "ROOM_SERVICE" && (
+                    <div className="osd-transfer-block">
+                      <div className="osd-transfer-grid" role="group" aria-label="Select new room">
+                        {rooms.map((room) => (
+                          <button
+                            key={room._id}
+                            type="button"
+                            className={`osd-transfer-option ${selectedRoomId === room._id ? "is-selected" : ""}`}
+                            onClick={() => {
+                              setSelectedRoomId(room._id);
+                              setSelectedBookingId(room.currentBookingId || "");
+                            }}
+                            title={room.currentGuestName ? `${room.roomNumber} - ${room.currentGuestName}` : room.roomNumber}
+                          >
+                            {room.roomNumber}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className="osd-transfer-cancel"
+                        onClick={() => {
+                          setSelectedRoomId("");
+                          setSelectedBookingId("");
+                        }}
+                        disabled={!selectedRoomId}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="luxury-btn luxury-btn-outline osd-section-btn"
+                        disabled={!selectedRoomId}
+                        onClick={() => void transferSession()}
+                      >
+                        Confirm Room Transfer
+                      </button>
+                    </div>
+                  )}
+                </section>
+
+                <section className="osd-actions-section">
+                  <div className="osd-actions-section-head">
+                    <div className="osd-actions-icon-wrap">
+                      <User size={16} />
+                    </div>
+                    <div>
+                      <p className="osd-actions-section-title">Guest Action</p>
+                      <p className="osd-actions-section-subtitle">
+                        Keep the session guest details accurate.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    className="luxury-btn luxury-btn-outline osd-section-btn osd-section-btn-subtle"
                     onClick={openGuestNameEdit}
                   >
-                    <span className="flex items-center gap-4">
-                      <User size={20} className="text-foreground" />
-                      <span className="flex flex-col items-start">
-                        <span className="text-sm font-semibold text-foreground">Update Guest Name</span>
-                        <span className="text-xs font-medium text-muted-foreground">Keep the session details accurate.</span>
-                      </span>
-                    </span>
+                    <User size={16} />
+                    <span>Update Guest Name</span>
                   </button>
+                </section>
 
-                  <div className="space-y-3 pt-2">
-                    <div className="flex items-start gap-3">
-                      <ArrowRightLeft size={18} className="mt-1 text-foreground" />
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-foreground">
-                          {session.type === "DINE_IN" ? "Table Transfer" : "Room Transfer"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {session.type === "DINE_IN"
-                            ? "Shift this order session to another available table."
-                            : "Shift this order session to another room booking."}
-                        </p>
-                      </div>
+                <section className="osd-actions-section">
+                  <div className="osd-actions-section-head">
+                    <div className="osd-actions-icon-wrap">
+                      <ReceiptText size={16} />
                     </div>
-
-                    <div className="space-y-2">
-                    {session.type === "DINE_IN" && (
-                      <div className="flex flex-col gap-3">
-                        <select 
-                          className="luxury-input h-12 w-full rounded-xl border-border/70 bg-white px-4 text-sm font-medium shadow-none" 
-                          value={selectedTableId} 
-                          onChange={(e) => setSelectedTableId(e.target.value)}
-                          title="Move to Table"
-                        >
-                          <option value="">Move to Table...</option>
-                          {tables.map((table) => (
-                            <option key={table._id} value={table._id} disabled={table.status === "OCCUPIED"}>
-                              {table.tableNumber || table.name} {table.status === "OCCUPIED" ? "• OCCUPIED" : ""}
-                            </option>
-                          ))}
-                        </select>
-                        <button 
-                          className="luxury-btn luxury-btn-outline h-12 w-full rounded-xl border border-border/60 bg-white text-sm font-semibold text-foreground shadow-none hover:bg-muted/25"
-                          disabled={!selectedTableId}
-                          onClick={() => void transferSession()}
-                        >
-                          Confirm Table Transfer
-                        </button>
-                      </div>
-                    )}
-
-                    {session.type === "ROOM_SERVICE" && (
-                      <div className="flex flex-col gap-3">
-                        <select
-                          className="luxury-input h-12 w-full rounded-xl border-border/70 bg-white px-4 text-sm font-medium shadow-none"
-                          value={selectedRoomId}
-                          onChange={(event) => {
-                            const room = rooms.find((entry) => entry._id === event.target.value);
-                            setSelectedRoomId(event.target.value);
-                            setSelectedBookingId(room?.currentBookingId || "");
-                          }}
-                          title="Transfer to Room"
-                        >
-                          <option value="">Transfer to Room...</option>
-                          {rooms.map((room) => (
-                            <option key={room._id} value={room._id}>
-                              {room.roomNumber} - {room.currentGuestName}
-                            </option>
-                          ))}
-                        </select>
-                        <button 
-                          className="luxury-btn luxury-btn-outline h-12 w-full rounded-xl border border-border/60 bg-white text-sm font-semibold text-foreground shadow-none hover:bg-muted/25"
-                          disabled={!selectedRoomId}
-                          onClick={() => void transferSession()}
-                        >
-                          Confirm Room Transfer
-                        </button>
-                      </div>
-                    )}
+                    <div>
+                      <p className="osd-actions-section-title">Billing</p>
+                      <p className="osd-actions-section-subtitle">
+                        Generate the bill, settle payment, or reopen the invoice.
+                      </p>
                     </div>
-                  </div>
-                </div>
-
-                {/* ── Settlement ── */}
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-[1.05rem] font-medium text-foreground">
-                      Settlement
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">Generate the bill, settle payment, or reopen the invoice.</p>
                   </div>
 
                   {allOrdersServed && !session.invoice?.invoiceId && (
-                    <button 
-                      className="luxury-btn h-[62px] w-full rounded-xl border border-border/60 bg-muted/30 font-semibold text-foreground shadow-none transition-colors hover:bg-muted/45 gap-3"
+                    <button
+                      className="luxury-btn luxury-btn-primary osd-section-btn osd-billing-btn"
                       onClick={() => void api.post(`/pos/sessions/${session.sessionId}/generate-bill`).then(fetchSession)}
                     >
-                      <ReceiptText size={20} />
+                      <ReceiptText size={18} />
                       <span>Generate Bill</span>
                     </button>
                   )}
 
                   {canPay && (
-                    <div className="space-y-3 pt-2">
-                      <div className="flex items-center justify-between gap-3">
+                    <div className="osd-payment-block">
+                      <div className="osd-payment-summary">
                         <div>
-                          <span className="text-[1.05rem] font-medium text-foreground">Amount Due</span>
-                          <p className="mt-1 text-xs text-muted-foreground">Select a payment method to complete settlement.</p>
+                          <span className="osd-payment-label">Amount Due</span>
+                          <p className="osd-payment-help">Select a payment method to complete settlement.</p>
                         </div>
-                        <span className="text-[1.65rem] font-semibold text-foreground">{formatCurrency(session.runningTotal)}</span>
+                        <span className="osd-payment-amount">{formatCurrency(session.runningTotal)}</span>
                       </div>
-                      <select 
-                        className="luxury-input h-12 w-full rounded-xl border-border/70 bg-white px-4 text-sm font-medium shadow-none" 
-                        value={paymentMode} 
+                      <select
+                        className="luxury-input osd-payment-select"
+                        value={paymentMode}
                         onChange={(e) => setPaymentMode(e.target.value as "CASH" | "CARD" | "UPI")}
                         title="Select Payment Method"
                       >
@@ -898,8 +916,8 @@ const OrderSessionDetail = () => {
                         <option value="CARD">Debit / Credit Card</option>
                         <option value="UPI">UPI / Digital Payment</option>
                       </select>
-                      <button 
-                        className="luxury-btn luxury-btn-primary h-12 w-full rounded-xl text-sm font-semibold shadow-none"
+                      <button
+                        className="luxury-btn luxury-btn-primary osd-section-btn"
                         onClick={() => void handlePayment()}
                       >
                         Proceed to Payment
@@ -908,15 +926,15 @@ const OrderSessionDetail = () => {
                   )}
 
                   {session.invoice?.invoiceId && session.invoice.status === "PAID" && (
-                    <button 
-                      className="luxury-btn luxury-btn-outline h-12 w-full rounded-xl border border-border/60 bg-white text-sm font-semibold text-foreground shadow-none hover:bg-muted/25 gap-2"
+                    <button
+                      className="luxury-btn luxury-btn-outline osd-section-btn osd-section-btn-subtle"
                       onClick={() => void openInvoice()}
                     >
                       <ReceiptText size={16} />
                       <span>View Final Invoice</span>
                     </button>
                   )}
-                </div>
+                </section>
               </div>
             </div>
           </div>

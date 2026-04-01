@@ -229,7 +229,7 @@ const OrderSessions = () => {
         </div>
       </div>
 
-      <div className="luxury-card bk-table-card !p-0">
+      <div className="luxury-card !p-0 overflow-hidden">
         <div className="bk-toolbar">
           <div className="bk-search-wrap">
             <Search className="bk-search-icon" size={16} />
