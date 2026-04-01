@@ -302,7 +302,7 @@ const POS = () => {
     if (!cart.length) return;
 
     if (orderMode === "DINE_IN" && !selectedTable) {
-      toast.warning("Please select an available table before sending the order");
+      toast.warning("Please select a table before sending the order");
       return;
     }
 
@@ -349,12 +349,6 @@ const POS = () => {
       setCart([]);
       setShowPayment(false);
       setAmountReceived("0.00");
-
-      if (orderMode !== "TAKEAWAY") {
-        setSelectedTableId("");
-        setSelectedRoomId("");
-        setSelectedBookingId("");
-      }
 
       await fetchData();
 
@@ -659,7 +653,6 @@ const POS = () => {
                   <option
                     key={table._id}
                     value={table._id}
-                    disabled={table.status === "OCCUPIED"}
                   >
                     {(table.tableNumber || table.name) +
                       ` (${table.seats} seats) - ${table.status}`}

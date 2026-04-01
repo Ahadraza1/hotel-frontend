@@ -55,6 +55,8 @@ import Housekeeping from "./pages/workspace/houseKeeping/Housekeeping";
 import CreateHousekeepingTask from "./pages/workspace/houseKeeping/CreateHousekeepingTask";
 import POS from "./pages/workspace/pos/POS";
 import Kitchen from "./pages/workspace/Kitchen";
+import OrderSessions from "./pages/workspace/orderSession/OrderSessions";
+import OrderSessionDetail from "./pages/workspace/orderSession/OrderSessionDetail";
 import AddPOSCategory from "./pages/workspace/pos/AddPOSCategory";
 import AddPOSMenu from "./pages/workspace/pos/AddPOSMenu";
 import Inventory from "./pages/workspace/inventory/Inventory";
@@ -430,6 +432,33 @@ const App = () => {
                             element={
                               <ProtectedRoute permission="ACCESS_POS">
                                 {withModuleErrorBoundary("POS", <POS />)}
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          <Route
+                            path="order-sessions"
+                            element={
+                              <ProtectedRoute permission="ACCESS_POS">
+                                {withModuleErrorBoundary("Order Sessions", <OrderSessions />)}
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          <Route
+                            path="order-sessions/new"
+                            element={
+                              <ProtectedRoute permission="ACCESS_POS">
+                                {withModuleErrorBoundary("New Order Session", <OrderSessionDetail />)}
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          <Route
+                            path="order-sessions/:sessionId"
+                            element={
+                              <ProtectedRoute permission="ACCESS_POS">
+                                {withModuleErrorBoundary("Order Session Detail", <OrderSessionDetail />)}
                               </ProtectedRoute>
                             }
                           />

@@ -14,21 +14,40 @@ interface OrderItem {
   kitchenStatus: string;
 }
 
-interface Order {
+interface KitchenOrder {
   _id: string;
   orderId: string;
   orderNumber?: number;
-  tableNumber?: string;
+  createdAt: string;
+  status: string;
+  items: OrderItem[];
+  sessionId: string;
+  session: {
+    type: "DINE_IN" | "ROOM_SERVICE";
+    tableNo?: string | null;
+    roomNo?: string | null;
+  };
+}
+
+interface KitchenGroup {
+  groupType: "TABLE" | "ROOM" | "TAKEAWAY";
+  groupLabel: string;
+  sessionId: string;
   branchId: string;
   createdAt: string;
-  items: OrderItem[];
+  session: {
+    type: "DINE_IN" | "ROOM_SERVICE";
+    tableNo?: string | null;
+    roomNo?: string | null;
+  };
+  orders: KitchenOrder[];
 }
 
 const ACTIVE_KITCHEN_STATUSES = new Set(["PENDING", "PREPARING", "READY"]);
 
-const normalizeKitchenOrder = (order: Order): Order | null => {
+const normalizeKitchenOrder = (order: KitchenOrder): KitchenOrder | null => {
   const activeItems = (order.items || []).filter((item) =>
-    ACTIVE_KITCHEN_STATUSES.has(item.kitchenStatus),
+    ACTIVE_KITCHEN_STATUSES.has(String(item.kitchenStatus || "").toUpperCase()),
   );
 
   if (activeItems.length === 0) {
@@ -41,19 +60,19 @@ const normalizeKitchenOrder = (order: Order): Order | null => {
   };
 };
 
-const isKitchenOrder = (order: Order | null): order is Order => order !== null;
+const normalizeKitchenGroup = (group: KitchenGroup): KitchenGroup | null => {
+  const normalizedOrders = (group.orders || [])
+    .map(normalizeKitchenOrder)
+    .filter((order): order is KitchenOrder => order !== null);
 
-const upsertKitchenOrder = (orders: Order[], incomingOrder: Order): Order[] => {
-  const normalizedOrder = normalizeKitchenOrder(incomingOrder);
-  const remainingOrders = orders.filter(
-    (order) => order.orderId !== incomingOrder.orderId,
-  );
-
-  if (!normalizedOrder) {
-    return remainingOrders;
+  if (!normalizedOrders.length) {
+    return null;
   }
 
-  return [normalizedOrder, ...remainingOrders];
+  return {
+    ...group,
+    orders: normalizedOrders,
+  };
 };
 
 function formatElapsed(date: Date, now: Date): string {
@@ -65,93 +84,61 @@ function formatElapsed(date: Date, now: Date): string {
   return `${mins} min`;
 }
 
-const updateItemStatus = async (
-  orderId: string,
-  itemId: string,
-  currentStatus: string,
-) => {
-  let nextStatus = "PREPARING";
-
-  if (currentStatus === "PENDING") nextStatus = "PREPARING";
-  else if (currentStatus === "PREPARING") nextStatus = "READY";
-  else if (currentStatus === "READY") nextStatus = "SERVED";
-
-  try {
-    await api.patch(`/pos/orders/${orderId}/items/${itemId}/status`, {
-      status: nextStatus,
-    });
-  } catch (err) {
-    console.error("Status update failed", err);
-  }
-};
-
 const Kitchen = () => {
   const { branchId } = useParams();
 
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [groups, setGroups] = useState<KitchenGroup[]>([]);
   const [filter, setFilter] = useState<FilterType>("all");
   const [now, setNow] = useState(new Date());
   const { openConfirmModal } = useConfirmModal();
 
-  /*
-  FETCH KITCHEN ORDERS
-  */
-  const fetchOrders = async (branchId: string) => {
+  const fetchGroups = async (activeBranchId: string) => {
     try {
-      const res = await api.get<{ data: Order[] }>("/pos/kitchen", {
+      const res = await api.get<{ data: KitchenGroup[] }>("/pos/kitchen", {
         headers: {
-          "x-branch-id": branchId,
+          "x-branch-id": activeBranchId,
         },
       });
 
-      setOrders((res.data.data || []).map(normalizeKitchenOrder).filter(isKitchenOrder));
+      setGroups(
+        (res.data.data || [])
+          .map(normalizeKitchenGroup)
+          .filter((group): group is KitchenGroup => group !== null),
+      );
     } catch (err) {
       console.error("Kitchen fetch error", err);
     }
   };
 
-  /*
-  SOCKET + API LOAD
-  */
   useEffect(() => {
     if (!branchId) return;
 
-    void fetchOrders(branchId);
+    void fetchGroups(branchId);
 
     socket.emit("join-branch", branchId);
 
-    const handleOrderCreated = (order: Order) => {
-      setOrders((prev) => upsertKitchenOrder(prev, order));
+    const refreshGroups = () => {
+      void fetchGroups(branchId);
     };
 
-    const handleOrderUpdated = (order: Order) => {
-      setOrders((prev) => upsertKitchenOrder(prev, order));
-    };
-
-    socket.on("new-order", handleOrderCreated);
-    socket.on("order-updated", handleOrderUpdated);
-    socket.on("ORDER_CREATED", handleOrderCreated);
-    socket.on("ORDER_UPDATED", handleOrderUpdated);
+    socket.on("new-order", refreshGroups);
+    socket.on("order-updated", refreshGroups);
+    socket.on("ORDER_CREATED", refreshGroups);
+    socket.on("ORDER_UPDATED", refreshGroups);
 
     return () => {
-      socket.off("new-order", handleOrderCreated);
-      socket.off("order-updated", handleOrderUpdated);
-      socket.off("ORDER_CREATED", handleOrderCreated);
-      socket.off("ORDER_UPDATED", handleOrderUpdated);
+      socket.off("new-order", refreshGroups);
+      socket.off("order-updated", refreshGroups);
+      socket.off("ORDER_CREATED", refreshGroups);
+      socket.off("ORDER_UPDATED", refreshGroups);
     };
   }, [branchId]);
 
-  /*
-  TIMER UPDATE
-  */
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  /*
-  UPDATE STATUS
-  */
   const updateStatus = async (
     orderId: string,
     itemId: string,
@@ -162,22 +149,18 @@ const Kitchen = () => {
     });
   };
 
-  const markAllPreparing = (orderId: string) => {
-    const order = orders.find((o) => o.orderId === orderId);
-
-    order?.items.forEach((item) => {
+  const markAllPreparing = (order: KitchenOrder) => {
+    order.items.forEach((item) => {
       if (item.kitchenStatus === "PENDING") {
-        updateStatus(orderId, item.itemId, "PREPARING");
+        void updateStatus(order.orderId, item.itemId, "PREPARING");
       }
     });
   };
 
-  const markAllReady = (orderId: string) => {
-    const order = orders.find((o) => o.orderId === orderId);
-
-    order?.items.forEach((item) => {
+  const markAllReady = (order: KitchenOrder) => {
+    order.items.forEach((item) => {
       if (item.kitchenStatus === "PREPARING") {
-        updateStatus(orderId, item.itemId, "READY");
+        void updateStatus(order.orderId, item.itemId, "READY");
       }
     });
   };
@@ -194,26 +177,29 @@ const Kitchen = () => {
     });
   };
 
-  /*
-  FILTER
-  */
-  const filteredOrders = useMemo(() => {
-    let filtered = orders.filter((o) => o.branchId === branchId);
+  const filteredGroups = useMemo(() => {
+    let nextGroups = groups.filter((group) => group.branchId === branchId);
 
     if (filter !== "all") {
-      filtered = filtered.filter((o) =>
-        o.items.some((i) => i.kitchenStatus.toLowerCase() === filter),
-      );
+      nextGroups = nextGroups
+        .map((group) => ({
+          ...group,
+          orders: group.orders.filter((order) =>
+            order.items.some(
+              (item) => String(item.kitchenStatus || "").toLowerCase() === filter,
+            ),
+          ),
+        }))
+        .filter((group) => group.orders.length > 0);
     }
 
-    return filtered;
-  }, [filter, orders, branchId]);
+    return nextGroups;
+  }, [branchId, filter, groups]);
 
-  const activeCount = filteredOrders.length;
+  const activeCount = filteredGroups.length;
 
   return (
     <div className="kt-root animate-fade-in">
-      {/* ── Page Header ── */}
       <div className="kt-page-header">
         <div className="kt-title-group">
           <div className="add-branch-header-icon-wrap">
@@ -229,7 +215,6 @@ const Kitchen = () => {
         </div>
       </div>
 
-      {/* ── Toolbar (Filters) ── */}
       <div className="kt-toolbar">
         <div className="kt-filter-group">
           {(["all", "pending", "preparing", "ready"] as FilterType[]).map(
@@ -246,72 +231,93 @@ const Kitchen = () => {
         </div>
       </div>
 
-      {/* ── Orders Grid ── */}
       <div className="kt-grid">
-        {filteredOrders.length === 0 ? (
+        {filteredGroups.length === 0 ? (
           <div className="text-muted-foreground p-4">No active orders</div>
         ) : (
-          filteredOrders.map((order) => {
-            const elapsed = formatElapsed(new Date(order.createdAt), now);
+          filteredGroups.map((group) => {
+            const groupElapsed = formatElapsed(new Date(group.createdAt), now);
 
             return (
-              <div key={order.orderId} className="kt-card">
+              <div key={`${group.groupType}-${group.sessionId}`} className="kt-card">
                 <div className="kt-card-header">
                   <div className="kt-order-title">
-                    <span className="kt-order-text">Order </span>
-                    <span className="kt-order-number">#{String(order.orderNumber).padStart(3, "0")}</span>
+                    <span className="kt-order-number">{group.groupLabel}</span>
                   </div>
                   <span className="kt-order-time">
                     <Clock size={14} />
-                    {elapsed}
+                    {groupElapsed}
                   </span>
                 </div>
 
                 <div className="kt-items-list">
-                  {order.items.map((item) => {
+                  {group.orders.map((order) => {
+                    const orderElapsed = formatElapsed(new Date(order.createdAt), now);
+
                     return (
-                      <div key={item.itemId} className="kt-item">
-                        <span className="kt-item-name">
-                          <span className="kt-item-qty">{item.quantity}×</span>
-                          {item.nameSnapshot}
-                        </span>
-                        <button
-                          onClick={() =>
-                            updateItemStatus(
-                              order._id,
-                              item.itemId,
-                              item.kitchenStatus,
-                            )
-                          }
-                          className="kt-item-badge hover:bg-muted/50 cursor-pointer transition-colors"
-                        >
-                          {item.kitchenStatus}
-                        </button>
+                      <div key={order.orderId}>
+                        <div className="kt-card-header">
+                          <div className="kt-order-title">
+                            <span className="kt-order-text">Order </span>
+                            <span className="kt-order-number">
+                              {order.orderNumber
+                                ? `#${String(order.orderNumber).padStart(3, "0")}`
+                                : order.orderId}
+                            </span>
+                          </div>
+                          <span className="kt-order-time">
+                            <Clock size={14} />
+                            {orderElapsed}
+                          </span>
+                        </div>
+
+                        <div className="kt-items-list">
+                          {order.items.map((item) => (
+                            <div key={`${order.orderId}-${item.itemId}`} className="kt-item">
+                              <span className="kt-item-name">
+                                <span className="kt-item-qty">{item.quantity}×</span>
+                                {item.nameSnapshot}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  void updateStatus(
+                                    order.orderId,
+                                    item.itemId,
+                                    item.kitchenStatus,
+                                  )
+                                }
+                                className="kt-item-badge hover:bg-muted/50 cursor-pointer transition-colors"
+                              >
+                                {item.kitchenStatus}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="kt-card-actions">
+                          <button
+                            className="kt-action-btn kt-btn-start"
+                            onClick={() => markAllPreparing(order)}
+                          >
+                            Start All
+                          </button>
+                          <button
+                            className="kt-action-btn kt-btn-ready"
+                            onClick={() => markAllReady(order)}
+                          >
+                            Set Ready
+                          </button>
+                          <button
+                            className="kt-action-btn kt-btn-complete"
+                            onClick={() => completeOrder(order.orderId)}
+                          >
+                            <CheckSquare size={13} />
+                            Complete
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
-                </div>
-
-                <div className="kt-card-actions">
-                  <button
-                    className="kt-action-btn kt-btn-start"
-                    onClick={() => markAllPreparing(order.orderId)}
-                  >
-                    Start All
-                  </button>
-                  <button
-                    className="kt-action-btn kt-btn-ready"
-                    onClick={() => markAllReady(order.orderId)}
-                  >
-                    Set Ready
-                  </button>
-                  <button
-                    className="kt-action-btn kt-btn-complete"
-                    onClick={() => completeOrder(order.orderId)}
-                  >
-                    <CheckSquare size={13} />
-                    Complete
-                  </button>
                 </div>
               </div>
             );

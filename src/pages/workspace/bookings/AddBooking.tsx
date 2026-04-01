@@ -437,8 +437,9 @@ const AddBooking = () => {
               </div>
 
               <div className="ab-field">
-                <label className="ab-label">Identity Proof (Main Guest)</label>
+                <label htmlFor="ab-mainGuestIdentity" className="ab-label">Identity Proof (Main Guest) <span className="ab-required">*</span></label>
                 <input
+                  id="ab-mainGuestIdentity"
                   type="file"
                   onChange={(e) => {
                     const file = e.target.files?.[0] || null;
@@ -453,6 +454,8 @@ const AddBooking = () => {
                   }}
                   className="luxury-input"
                   style={fieldErrors.mainGuestIdentity ? { borderColor: "#dc2626" } : undefined}
+                  title="Upload identity proof document"
+                  aria-label="Identity proof for main guest"
                 />
                 {fieldErrors.mainGuestIdentity ? (
                   <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
@@ -559,6 +562,8 @@ const AddBooking = () => {
                     }
                     className="luxury-input"
                     style={fieldErrors[`guest-${index}-identity`] ? { borderColor: "#dc2626" } : undefined}
+                    title="Upload identity proof document for guest"
+                    aria-label="Identity proof for guest"
                   />
                   {fieldErrors[`guest-${index}-identity`] ? (
                     <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
