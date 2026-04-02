@@ -589,7 +589,7 @@ const LandingPage = () => {
               className="lnd-btn-ghost lnd-desktop-only"
               onClick={() => navigate("/login")}
             >
-              Sign In
+               In
             </button>
             <button
               className="lnd-btn-primary lnd-desktop-only"

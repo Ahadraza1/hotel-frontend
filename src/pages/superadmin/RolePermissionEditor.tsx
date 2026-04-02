@@ -231,7 +231,13 @@ const RolePermissionEditor = () => {
   }, [selectedOrg]);
 
   const loadEditorData = async (preferredRoleId?: string) => {
-    const rolesRes = await api.get<{ data: Role[] }>("/roles");
+    const scopeParams = {
+      ...(selectedOrg ? { organizationId: selectedOrg } : {}),
+      ...(selectedBranch ? { branchId: selectedBranch } : {}),
+    };
+    const rolesRes = await api.get<{ data: Role[] }>("/roles", {
+      params: scopeParams,
+    });
     const permsData = canViewPermissions
       ? (
           await api.get<{ data: PermissionCategory[] }>("/permissions")
@@ -272,7 +278,13 @@ const RolePermissionEditor = () => {
     if (canAccessRolePermissionsPage) {
       fetchData();
     }
-  }, [canAccessRolePermissionsPage, canViewPermissions, showWorkspaceFilters]);
+  }, [
+    canAccessRolePermissionsPage,
+    canViewPermissions,
+    selectedBranch,
+    selectedOrg,
+    showWorkspaceFilters,
+  ]);
 
   useEffect(() => {
     if (!selectedRole) return;
@@ -322,27 +334,26 @@ const RolePermissionEditor = () => {
     () =>
       roles.filter((role) => {
         const roleCategory = getRoleCategory(role);
+        const roleOrganizationId = getRoleOrganizationId(role);
+        const roleBranchId = getRoleBranchId(role);
 
-        if (!isViewerSuperAdmin && roleCategory === "MAIN") {
-          return false;
+        if (selectedBranch) {
+          return (
+            roleCategory === "BRANCH" &&
+            roleOrganizationId === selectedOrg &&
+            roleBranchId === selectedBranch
+          );
         }
 
         if (selectedOrg) {
-          if (roleCategory === "MAIN") {
-            return false;
-          }
-
-          const roleOrganizationId = getRoleOrganizationId(role);
-          if (roleOrganizationId && roleOrganizationId !== selectedOrg) {
-            return false;
-          }
+          return (
+            roleCategory === "ORGANIZATION" &&
+            roleOrganizationId === selectedOrg
+          );
         }
 
-        if (selectedBranch) {
-          const roleBranchId = getRoleBranchId(role);
-          if (roleBranchId && roleBranchId !== selectedBranch) {
-            return false;
-          }
+        if (!isViewerSuperAdmin && roleCategory === "MAIN") {
+          return false;
         }
 
         return true;
@@ -482,6 +493,8 @@ const RolePermissionEditor = () => {
         message?: string;
       }>(`/roles/${selectedRole._id}/permissions`, {
         permissions: selectedPermKeys,
+        organizationId: selectedOrg || getRoleOrganizationId(selectedRole) || undefined,
+        branchId: selectedBranch || getRoleBranchId(selectedRole) || undefined,
       });
 
       if (response.data?.status !== true && response.data?.success !== true) {
@@ -534,16 +547,17 @@ const RolePermissionEditor = () => {
       }>("/roles", {
         name: roleForm.name,
         description: roleForm.description,
-        category: roleForm.category,
+        category: selectedBranch
+          ? "BRANCH"
+          : selectedOrg
+            ? "ORGANIZATION"
+            : roleForm.category,
+        organizationId: selectedOrg || undefined,
+        branchId: selectedBranch || undefined,
       });
 
       const createdRole = response.data.data;
-      const nextRoles = [...roles, createdRole].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      );
-
-      setRoles(nextRoles);
-      setSelectedRole(createdRole);
+      await loadEditorData(createdRole._id);
       setRoleForm(INITIAL_ROLE_FORM);
       setIsAddRoleOpen(false);
       toast.success(response.data.message || "Role created successfully");
@@ -773,6 +787,40 @@ const RolePermissionEditor = () => {
         </div>
       </div>
 
+      {showWorkspaceFilters ? (
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <select
+            className="luxury-input luxury-select w-full sm:w-[13rem]"
+            value={selectedOrg}
+            onChange={(e) => setSelectedOrg(e.target.value)}
+            disabled={!isViewerSuperAdmin}
+            aria-label="Filter roles by organization"
+          >
+            <option value="">Select Organization</option>
+            {organizationOptions.map((organization) => (
+              <option key={organization.key} value={organization.value}>
+                {organization.label}
+              </option>
+            ))}
+          </select>
+
+          <select
+            className="luxury-input luxury-select w-full sm:w-[12rem]"
+            value={selectedBranch}
+            onChange={(e) => setSelectedBranch(e.target.value)}
+            disabled={!selectedOrg}
+            aria-label="Filter roles by branch"
+          >
+            <option value="">Select Branch</option>
+            {branchOptions.map((branch) => (
+              <option key={branch._id} value={branch._id}>
+                {branch.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+
       <div className="rpe-layout">
         <aside
           className="luxury-card rpe-sidebar"
@@ -907,40 +955,6 @@ const RolePermissionEditor = () => {
                     </button>
                   )}
                 </div>
-
-                {showWorkspaceFilters ? (
-                  <>
-                    <select
-                      className="luxury-input luxury-select w-full sm:w-[13rem]"
-                      value={selectedOrg}
-                      onChange={(e) => setSelectedOrg(e.target.value)}
-                      disabled={!isViewerSuperAdmin}
-                      aria-label="Filter roles by organization"
-                    >
-                      <option value="">Select Organization</option>
-                      {organizationOptions.map((organization) => (
-                        <option key={organization.key} value={organization.value}>
-                          {organization.label}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      className="luxury-input luxury-select w-full sm:w-[12rem]"
-                      value={selectedBranch}
-                      onChange={(e) => setSelectedBranch(e.target.value)}
-                      disabled={!selectedOrg}
-                      aria-label="Filter roles by branch"
-                    >
-                      <option value="">Select Branch</option>
-                      {branchOptions.map((branch) => (
-                        <option key={branch._id} value={branch._id}>
-                          {branch.name}
-                        </option>
-                      ))}
-                    </select>
-                  </>
-                ) : null}
               </div>
 
               {canAddPermission ? (
