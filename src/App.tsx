@@ -267,7 +267,10 @@ const App = () => {
                         <Route
                           path="/permissions"
                           element={
-                            <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
+                            <ProtectedRoute
+                              allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
+                              permission="ACCESS_ROLE_PERMISSIONS_PAGE"
+                            >
                               {withModuleErrorBoundary("Role Permissions", <RolePermissionEditor />)}
                             </ProtectedRoute>
                           }

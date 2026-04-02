@@ -46,6 +46,15 @@ interface HeaderUser {
   avatar?: string;
 }
 
+const formatRole = (role?: string) => {
+  if (!role?.trim()) return "User";
+
+  return role
+    .toLowerCase()
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
 const getPageTitle = (
   pathname: string,
 ): { title: string; subtitle: string } => {
@@ -155,6 +164,7 @@ export const AppHeader = ({
       ? `/workspace/${notificationBranchId}/notifications`
       : "/notifications";
   const avatarSrc = user?.avatar?.trim() || "";
+  const displayRole = formatRole(user?.role || authUser?.role);
   const shouldShowAvatarFallback = !avatarSrc || avatarLoadFailed;
 
   const getInitial = (name?: string) =>
@@ -504,9 +514,7 @@ export const AppHeader = ({
             )}
             <div className="user-avatar-info">
               <span className="user-avatar-name">{user?.name || "User"}</span>
-              <span className="user-avatar-role">
-                {user?.role || "Administrator"}
-              </span>
+              <span className="user-avatar-role">{displayRole}</span>
             </div>
             <span className="user-avatar-chevron">›</span>
           </button>

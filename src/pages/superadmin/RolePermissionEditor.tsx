@@ -28,6 +28,7 @@ interface Role {
   _id: string;
   name: string;
   normalizedName?: string;
+  category?: "MAIN" | "ORGANIZATION" | "BRANCH";
   description?: string;
   type?: "SYSTEM" | "CUSTOM";
   permissions: Permission[];
@@ -36,6 +37,12 @@ interface Role {
 interface PermissionCategory {
   category: string;
   permissions: Permission[];
+}
+
+interface RoleFormState {
+  name: string;
+  description: string;
+  category: "ORGANIZATION" | "BRANCH";
 }
 
 const DEFAULT_MODULES = [
@@ -51,6 +58,17 @@ const DEFAULT_MODULES = [
   "ORGANIZATION",
   "SYSTEM",
 ];
+const ROLE_CATEGORY_ORDER = ["MAIN", "ORGANIZATION", "BRANCH"] as const;
+const ROLE_CATEGORY_LABELS: Record<(typeof ROLE_CATEGORY_ORDER)[number], string> = {
+  MAIN: "Main",
+  ORGANIZATION: "Organization",
+  BRANCH: "Branch",
+};
+const INITIAL_ROLE_FORM: RoleFormState = {
+  name: "",
+  description: "",
+  category: "BRANCH",
+};
 
 const toTitleCase = (str: string) =>
   str
@@ -59,6 +77,27 @@ const toTitleCase = (str: string) =>
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
 const toPermissionKey = (value: string) => value.trim().toUpperCase();
+const getNormalizedRoleName = (role?: Pick<Role, "name" | "normalizedName"> | null) =>
+  String(role?.normalizedName || role?.name || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "_");
+
+const getRoleCategory = (
+  role?: Pick<Role, "name" | "normalizedName" | "category"> | null,
+): (typeof ROLE_CATEGORY_ORDER)[number] => {
+  const normalizedName = getNormalizedRoleName(role);
+
+  if (normalizedName === "SUPER_ADMIN") {
+    return "MAIN";
+  }
+
+  if (normalizedName === "CORPORATE_ADMIN") {
+    return "ORGANIZATION";
+  }
+
+  return role?.category || "BRANCH";
+};
 
 const EditorModal = ({
   title,
@@ -114,7 +153,7 @@ const EditorModal = ({
 };
 
 const RolePermissionEditor = () => {
-  const { refreshUser } = useAuth();
+  const { user, refreshUser, hasPermission } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
   const [roles, setRoles] = useState<Role[]>([]);
@@ -126,7 +165,7 @@ const RolePermissionEditor = () => {
   >({});
   const [isAddRoleOpen, setIsAddRoleOpen] = useState(false);
   const [isAddPermissionOpen, setIsAddPermissionOpen] = useState(false);
-  const [roleForm, setRoleForm] = useState({ name: "", description: "" });
+  const [roleForm, setRoleForm] = useState<RoleFormState>(INITIAL_ROLE_FORM);
   const [permissionForm, setPermissionForm] = useState({
     name: "",
     key: "",
@@ -139,14 +178,25 @@ const RolePermissionEditor = () => {
     null,
   );
 
+  const canAccessRolePermissionsPage = hasPermission(
+    "ACCESS_ROLE_PERMISSIONS_PAGE",
+  );
+  const canViewRoles = hasPermission("ACCESS_ROLES");
+  const canViewPermissions = hasPermission("ACCESS_PERMISSIONS");
+  const canAddRole = hasPermission("ADD_ROLE");
+  const canAddPermission = hasPermission("ADD_PERMISSION");
+  const canTogglePermissions = hasPermission("TOGGLE_PERMISSION");
+  const isViewerSuperAdmin = user?.role === "SUPER_ADMIN";
+
   const loadEditorData = async (preferredRoleId?: string) => {
-    const [rolesRes, permsRes] = await Promise.all([
-      api.get<{ data: Role[] }>("/roles"),
-      api.get<{ data: PermissionCategory[] }>("/permissions"),
-    ]);
+    const rolesRes = await api.get<{ data: Role[] }>("/roles");
+    const permsData = canViewPermissions
+      ? (
+          await api.get<{ data: PermissionCategory[] }>("/permissions")
+        ).data.data || []
+      : [];
 
     const rolesData = rolesRes.data.data || [];
-    const permsData = permsRes.data.data || [];
 
     setRoles(rolesData);
     setCategories(permsData);
@@ -164,8 +214,10 @@ const RolePermissionEditor = () => {
       }
     };
 
-    fetchData();
-  }, []);
+    if (canAccessRolePermissionsPage) {
+      fetchData();
+    }
+  }, [canAccessRolePermissionsPage, canViewPermissions]);
 
   useEffect(() => {
     if (!selectedRole) return;
@@ -187,6 +239,57 @@ const RolePermissionEditor = () => {
     return Array.from(modules);
   }, [categories]);
 
+  const visibleRoles = useMemo(
+    () =>
+      roles.filter((role) =>
+        isViewerSuperAdmin ? true : getRoleCategory(role) !== "MAIN",
+      ),
+    [isViewerSuperAdmin, roles],
+  );
+
+  const groupedRoles = useMemo(
+    () =>
+      ROLE_CATEGORY_ORDER.reduce(
+        (acc, category) => {
+          acc[category] = [...visibleRoles]
+            .filter((role) => getRoleCategory(role) === category)
+            .sort((a, b) => a.name.localeCompare(b.name));
+          return acc;
+        },
+        {} as Record<(typeof ROLE_CATEGORY_ORDER)[number], Role[]>,
+      ),
+    [visibleRoles],
+  );
+
+  const roleSections = useMemo(
+    () =>
+      ROLE_CATEGORY_ORDER.filter(
+        (category) => category !== "MAIN" || isViewerSuperAdmin,
+      )
+        .map((category) => ({
+          category,
+          label: ROLE_CATEGORY_LABELS[category],
+          roles: groupedRoles[category],
+        }))
+        .filter((section) => section.roles.length > 0),
+    [groupedRoles, isViewerSuperAdmin],
+  );
+
+  useEffect(() => {
+    if (selectedRole && visibleRoles.some((role) => role._id === selectedRole._id)) {
+      return;
+    }
+
+    if (visibleRoles.length > 0) {
+      setSelectedRole(visibleRoles[0]);
+      return;
+    }
+
+    if (selectedRole) {
+      setSelectedRole(null);
+    }
+  }, [selectedRole, visibleRoles]);
+
   const getCategoryAccessPermission = (cat: PermissionCategory) =>
     cat.permissions.find((permission) =>
       (permission.key || permission.name).startsWith("ACCESS_"),
@@ -205,7 +308,7 @@ const RolePermissionEditor = () => {
   };
 
   const handleToggle = (permKey: string) => {
-    if (!selectedRole || isSuperAdmin) return;
+    if (!selectedRole || isSuperAdmin || !canTogglePermissions) return;
 
     setPermissionsState((prev) => {
       const next = {
@@ -247,7 +350,7 @@ const RolePermissionEditor = () => {
   };
 
   const handleToggleCategory = (cat: PermissionCategory) => {
-    if (!selectedRole || isSuperAdmin) return;
+    if (!selectedRole || isSuperAdmin || !canTogglePermissions) return;
 
     const nextValue = !isCategoryEnabled(cat);
 
@@ -263,7 +366,7 @@ const RolePermissionEditor = () => {
   };
 
   const handleSave = async () => {
-    if (!selectedRole) return;
+    if (!selectedRole || !canViewPermissions || !canTogglePermissions) return;
 
     const selectedPermKeys = Object.keys(permissionsState).filter(
       (permission) => permissionsState[permission],
@@ -310,6 +413,10 @@ const RolePermissionEditor = () => {
   const handleCreateRole = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (!canAddRole) {
+      return;
+    }
+
     if (!roleForm.name.trim()) {
       toast.error("Role name is required");
       return;
@@ -324,6 +431,7 @@ const RolePermissionEditor = () => {
       }>("/roles", {
         name: roleForm.name,
         description: roleForm.description,
+        category: roleForm.category,
       });
 
       const createdRole = response.data.data;
@@ -333,7 +441,7 @@ const RolePermissionEditor = () => {
 
       setRoles(nextRoles);
       setSelectedRole(createdRole);
-      setRoleForm({ name: "", description: "" });
+      setRoleForm(INITIAL_ROLE_FORM);
       setIsAddRoleOpen(false);
       toast.success(response.data.message || "Role created successfully");
     } catch (error: unknown) {
@@ -349,6 +457,10 @@ const RolePermissionEditor = () => {
 
   const handleCreatePermission = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!canAddPermission) {
+      return;
+    }
 
     const payload = {
       name: permissionForm.name.trim(),
@@ -523,6 +635,8 @@ const RolePermissionEditor = () => {
     (sum, category) => sum + category.permissions.length,
     0,
   );
+  const arePermissionTogglesDisabled =
+    isSuperAdmin || !selectedRole || !canTogglePermissions;
 
   return (
     <div className="animate-fade-in rpe-root">
@@ -544,6 +658,12 @@ const RolePermissionEditor = () => {
             onClick={handleSave}
             className="luxury-btn luxury-btn-primary rpe-save-btn"
             aria-label="Save Changes"
+            disabled={
+              !canViewPermissions ||
+              !canTogglePermissions ||
+              !selectedRole ||
+              isSuperAdmin
+            }
           >
             Save Changes
           </button>
@@ -551,64 +671,90 @@ const RolePermissionEditor = () => {
       </div>
 
       <div className="rpe-layout">
-        <aside className="luxury-card rpe-sidebar">
+        <aside
+          className="luxury-card rpe-sidebar"
+          style={{ display: canViewRoles ? undefined : "none" }}
+        >
           <div className="rpe-sidebar-header">
             <p className="rpe-sidebar-title">Roles</p>
             <div className="rpe-sidebar-header-actions">
-              <span className="rpe-sidebar-count">{roles.length}</span>
-              <button
-                type="button"
-                className="luxury-btn luxury-btn-outline rpe-inline-action-btn"
-                onClick={() => setIsAddRoleOpen(true)}
-              >
-                <Plus className="rpe-action-icon" />
-                Add Role
-              </button>
+              <span className="rpe-sidebar-count">{visibleRoles.length}</span>
+              {canAddRole ? (
+                <button
+                  type="button"
+                  className="luxury-btn luxury-btn-outline rpe-inline-action-btn"
+                  onClick={() => setIsAddRoleOpen(true)}
+                >
+                  <Plus className="rpe-action-icon" />
+                  Add Role
+                </button>
+              ) : null}
             </div>
           </div>
           <nav className="rpe-sidebar-nav">
-            {roles.map((role) => {
-              const isActive = selectedRole?._id === role._id;
-              const isDeleteRestricted =
-                role.normalizedName === "SUPER_ADMIN" || role.type === "SYSTEM";
-
-              return (
+            {roleSections.map((section, sectionIndex) => (
+              <div key={section.category}>
                 <div
-                  key={role._id}
-                  className={`rpe-role-btn ${isActive ? "rpe-role-btn-active" : "rpe-role-btn-inactive"}`}
+                  className={`px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70 ${
+                    sectionIndex === 0 ? "pt-0" : "pt-4"
+                  }`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole(role)}
-                    className="rpe-role-main"
-                    aria-pressed={isActive ? "true" : "false"}
-                  >
-                    <span
-                      className={`rpe-role-dot ${isActive ? "rpe-role-dot-active" : ""}`}
-                    />
-                    <span className="rpe-role-name">{toTitleCase(role.name)}</span>
-                    {isActive && <Lock className="rpe-role-lock" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    className="rpe-role-delete"
-                    aria-label={`Delete ${role.name}`}
-                    title={
-                      isDeleteRestricted ? "This role cannot be deleted" : "Delete role"
-                    }
-                    disabled={isDeleteRestricted || deletingRoleId === role._id}
-                    onClick={() => handleDeleteRole(role)}
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {section.label}
                 </div>
-              );
-            })}
+
+                {section.roles.map((role) => {
+                  const isActive = selectedRole?._id === role._id;
+                  const isDeleteRestricted =
+                    getRoleCategory(role) === "MAIN" ||
+                    getNormalizedRoleName(role) === "SUPER_ADMIN" ||
+                    role.type === "SYSTEM";
+
+                  return (
+                    <div
+                      key={role._id}
+                      className={`rpe-role-btn ${isActive ? "rpe-role-btn-active" : "rpe-role-btn-inactive"}`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole(role)}
+                        className="rpe-role-main"
+                        aria-pressed={isActive ? "true" : "false"}
+                      >
+                        <span
+                          className={`rpe-role-dot ${isActive ? "rpe-role-dot-active" : ""}`}
+                        />
+                        <span className="rpe-role-name">
+                          {toTitleCase(role.name)}
+                        </span>
+                        {isActive && <Lock className="rpe-role-lock" />}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="rpe-role-delete"
+                        aria-label={`Delete ${role.name}`}
+                        title={
+                          isDeleteRestricted
+                            ? "This role cannot be deleted"
+                            : "Delete role"
+                        }
+                        disabled={isDeleteRestricted || deletingRoleId === role._id}
+                        onClick={() => handleDeleteRole(role)}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
         </aside>
 
-        <div className="luxury-card rpe-matrix">
+        <div
+          className="luxury-card rpe-matrix"
+          style={{ display: canViewPermissions ? undefined : "none" }}
+        >
           <div className="rpe-matrix-header flex-col items-start gap-4">
             <div className="w-full flex justify-between items-start flex-wrap gap-4">
               <div className="rpe-matrix-header-left">
@@ -658,14 +804,16 @@ const RolePermissionEditor = () => {
                 )}
               </div>
 
-              <button
-                type="button"
-                className="luxury-btn luxury-btn-outline rpe-inline-action-btn"
-                onClick={() => setIsAddPermissionOpen(true)}
-              >
-                <Plus className="rpe-action-icon" />
-                Add Permission
-              </button>
+              {canAddPermission ? (
+                <button
+                  type="button"
+                  className="luxury-btn luxury-btn-outline rpe-inline-action-btn"
+                  onClick={() => setIsAddPermissionOpen(true)}
+                >
+                  <Plus className="rpe-action-icon" />
+                  Add Permission
+                </button>
+              ) : null}
             </div>
           </div>
 
@@ -705,7 +853,7 @@ const RolePermissionEditor = () => {
                           aria-label={`Toggle ${toTitleCase(category.category)} permissions`}
                           title={`Toggle ${toTitleCase(category.category)} permissions`}
                           onClick={() => handleToggleCategory(category)}
-                          disabled={isSuperAdmin}
+                          disabled={arePermissionTogglesDisabled}
                           className={`rpe-toggle ${
                             categoryEnabled ? "rpe-toggle-on" : "rpe-toggle-off"
                           } scale-[0.85] origin-right opacity-90 transition-opacity hover:opacity-100 disabled:opacity-50`}
@@ -729,14 +877,14 @@ const RolePermissionEditor = () => {
                         return (
                           <label
                             key={permission._id}
-                            className={`rpe-perm-row ${isOn ? "rpe-perm-row-on" : ""} ${isSuperAdmin ? "rpe-perm-row-disabled" : ""}`}
+                            className={`rpe-perm-row ${isOn ? "rpe-perm-row-on" : ""} ${arePermissionTogglesDisabled ? "rpe-perm-row-disabled" : ""}`}
                           >
                             <button
                               type="button"
                               role="switch"
                               aria-checked={isOn ? "true" : "false"}
                               onClick={() => handleToggle(permissionKey)}
-                              disabled={isSuperAdmin}
+                              disabled={arePermissionTogglesDisabled}
                               className={`rpe-toggle ${isOn ? "rpe-toggle-on" : "rpe-toggle-off"}`}
                               aria-label={`Toggle ${toTitleCase(permission.name)}`}
                               title={`Toggle ${toTitleCase(permission.name)}`}
@@ -780,13 +928,14 @@ const RolePermissionEditor = () => {
         </div>
       </div>
 
-      {isAddRoleOpen && (
+      {isAddRoleOpen && canAddRole ? (
         <EditorModal
           title="Add Role"
           subtitle="Create a new role without affecting the existing editor behavior."
           onClose={() => {
             if (!isSubmittingRole) {
               setIsAddRoleOpen(false);
+              setRoleForm(INITIAL_ROLE_FORM);
             }
           }}
         >
@@ -802,6 +951,23 @@ const RolePermissionEditor = () => {
                 placeholder="e.g. Reservation Lead"
                 autoFocus
               />
+            </label>
+
+            <label className="rpe-modal-field">
+              <span className="rpe-modal-label">Category</span>
+              <select
+                className="luxury-input"
+                value={roleForm.category}
+                onChange={(e) =>
+                  setRoleForm((prev) => ({
+                    ...prev,
+                    category: e.target.value as RoleFormState["category"],
+                  }))
+                }
+              >
+                <option value="ORGANIZATION">Organization Role</option>
+                <option value="BRANCH">Branch Role</option>
+              </select>
             </label>
 
             <label className="rpe-modal-field">
@@ -824,7 +990,10 @@ const RolePermissionEditor = () => {
               <button
                 type="button"
                 className="luxury-btn luxury-btn-outline"
-                onClick={() => setIsAddRoleOpen(false)}
+                onClick={() => {
+                  setIsAddRoleOpen(false);
+                  setRoleForm(INITIAL_ROLE_FORM);
+                }}
                 disabled={isSubmittingRole}
               >
                 Cancel
@@ -839,9 +1008,9 @@ const RolePermissionEditor = () => {
             </div>
           </form>
         </EditorModal>
-      )}
+      ) : null}
 
-      {isAddPermissionOpen && (
+      {isAddPermissionOpen && canAddPermission ? (
         <EditorModal
           title="Add Permission"
           subtitle="Create a permission key and immediately expose it in the current editor."
@@ -923,7 +1092,7 @@ const RolePermissionEditor = () => {
             </div>
           </form>
         </EditorModal>
-      )}
+      ) : null}
     </div>
   );
 };

@@ -3208,6 +3208,7 @@
   inset: 0;
   border: none;
   background: rgba(15, 23, 42, 0.42);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
@@ -4713,6 +4714,7 @@
   position: absolute;
   inset: 0;
   background: hsl(var(--charcoal) / 0.42);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   animation: confirm-backdrop-in 0.18s ease-out forwards;
 }
@@ -5558,8 +5560,8 @@
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   animation: sb-modal-backdrop-in 0.24s ease-out;
 }
 
@@ -5670,6 +5672,7 @@
   margin-top: 1.25rem;
   padding: 1rem 1.25rem 1.25rem;
   background: linear-gradient(180deg, hsl(var(--card) / 0.88), hsl(var(--card)));
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 

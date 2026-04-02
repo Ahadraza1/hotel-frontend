@@ -530,8 +530,15 @@
   overflow-x: auto;
   padding-bottom: 0.75rem;
   margin-bottom: 1rem;
-  scrollbar-width: none;
+  -ms-overflow-style: none; /* IE and Edge */
 }
+
+@supports (scrollbar-width: none) {
+  .osd-category-nav {
+    scrollbar-width: none;
+  }
+}
+
 .osd-category-nav::-webkit-scrollbar {
   display: none;
 }
@@ -898,8 +905,13 @@
 .osd-session-orders-container {
   max-height: 400px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(196, 166, 106, 0.5) transparent;
+}
+
+@supports (scrollbar-width: thin) {
+  .osd-session-orders-container {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(196, 166, 106, 0.5) transparent;
+  }
 }
 
 .osd-session-orders-container::-webkit-scrollbar {
@@ -911,7 +923,7 @@
 }
 
 .osd-session-orders-container::-webkit-scrollbar-thumb {
-  background-color: rgba(196, 166, 106, 0.3);
+  background-color: rgba(196, 166, 106, 0.5);
   border-radius: 10px;
 }
 

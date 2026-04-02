@@ -87,7 +87,7 @@ const buildRoleDistribution = (usersData: User[]): RoleDistribution[] => {
 const UsersRoles = () => {
   const toast = useToast();
   const confirm = useConfirm();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, hasPermission } = useAuth();
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -146,6 +146,9 @@ const UsersRoles = () => {
 
     return false;
   };
+
+  const canEditUserRole = (targetUser: User) =>
+    canManageUser(targetUser) && hasPermission("UPDATE_USER");
 
   const syncUsers = (updater: (prev: User[]) => User[]) => {
     setUsers((prev) => {
@@ -218,6 +221,10 @@ const UsersRoles = () => {
   };
 
   const openRoleEditor = async (targetUser: User) => {
+    if (!canEditUserRole(targetUser)) {
+      return;
+    }
+
     try {
       const rolesData = await fetchRoles();
 
@@ -247,6 +254,10 @@ const UsersRoles = () => {
     if (!roleEditor) return;
 
     const { user: targetUser, selectedRole } = roleEditor;
+    if (!canEditUserRole(targetUser)) {
+      return;
+    }
+
     if (!selectedRole || selectedRole === targetUser.role) {
       setRoleEditor(null);
       return;
@@ -420,7 +431,7 @@ const UsersRoles = () => {
                         <td>
                           <div className="ur-role-cell">
                             <span className="ur-role-badge">{u.role}</span>
-                            {currentUser?.role === "SUPER_ADMIN" ? (
+                            {canEditUserRole(u) ? (
                               <button
                                 type="button"
                                 className="ur-role-edit-btn"
@@ -549,7 +560,7 @@ const UsersRoles = () => {
         </div>
       </div>
 
-      {roleEditor ? (
+      {roleEditor && canEditUserRole(roleEditor.user) ? (
         <div className="rpe-modal-layer" role="presentation">
           <div className="rpe-modal-backdrop" onClick={closeRoleEditor} />
           <div className="rpe-modal ur-role-modal" role="dialog" aria-modal="true">

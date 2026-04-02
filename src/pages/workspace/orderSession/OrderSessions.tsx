@@ -154,7 +154,7 @@ const OrderSessions = () => {
   };
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in">
+    <div className="bk-root animate-fade-in">
       <div className="bk-page-header">
         <div className="bk-title-group">
           <div className="add-branch-header-icon-wrap">
@@ -229,60 +229,6 @@ const OrderSessions = () => {
         </div>
       </div>
 
-      <div className="luxury-card !p-0 overflow-hidden">
-        <div className="bk-toolbar">
-          <div className="bk-search-wrap">
-            <Search className="bk-search-icon" size={16} />
-            <input
-              className="bk-search-input"
-              placeholder="Search by session ID, table, room or guest name..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal
-                size={14}
-                className="text-[hsl(var(--grandeur-gold))]"
-              />
-              <select
-                className="luxury-input !py-1.5 !text-xs !px-3 !h-9 min-w-[120px]"
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                aria-label="Filter sessions by status"
-              >
-                <option value="ALL">All Statuses</option>
-                <option value="OPEN">Open</option>
-                <option value="BILL_REQUESTED">Billing</option>
-                <option value="PAID">Paid</option>
-                <option value="CLOSED">Closed</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <ShoppingBag
-                size={14}
-                className="text-[hsl(var(--grandeur-gold))]"
-              />
-              <select
-                className="luxury-input !py-1.5 !text-xs !px-3 !h-9 min-w-[120px]"
-                value={typeFilter}
-                onChange={(event) => setTypeFilter(event.target.value)}
-                aria-label="Filter sessions by type"
-              >
-                <option value="ALL">All Types</option>
-                <option value="DINE_IN">Dine-In</option>
-                <option value="ROOM_SERVICE">Room Service</option>
-                <option value="TAKEAWAY">Takeaway</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
       {loading ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
@@ -292,117 +238,173 @@ const OrderSessions = () => {
             />
           ))}
         </div>
-      ) : filteredSessions.length === 0 ? (
-        <div className="luxury-card flex min-h-[320px] flex-col items-center justify-center rounded-[28px] border-dashed border-border/60 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 text-muted-foreground">
-            <Search size={30} />
-          </div>
-          <h3 className="mt-6 text-2xl font-semibold text-foreground">
-            No sessions found
-          </h3>
-          <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-            Try changing your filters or create a new order session to get
-            started.
-          </p>
-        </div>
       ) : (
-        <div className="luxury-card !p-0 overflow-hidden border-[hsl(var(--grandeur-gold)/0.18)] shadow-[0_18px_45px_rgba(32,24,12,0.06)]">
-          <div className="overflow-x-auto">
-            <table className="luxury-table w-full">
-              <thead>
-                <tr>
-                  <th className="w-16">#</th>
-                  <th>Order NO</th>
-                  <th>Type</th>
-                  <th>Table / Room</th>
-                  <th>Items</th>
-                  <th className="text-right">Total</th>
-                  <th>Status</th>
-                  <th>Time</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSessions.map((session, index) => {
-                  const status = statusConfig[session.status];
-                  const location =
-                    session.type === "DINE_IN"
-                      ? session.tableNo || "-"
-                      : session.type === "ROOM_SERVICE"
-                        ? session.roomNo || "-"
-                        : "Takeaway";
+        <div className="luxury-card bk-table-card border-[hsl(var(--grandeur-gold)/0.18)] shadow-[0_18px_45px_rgba(32,24,12,0.06)]">
+          <div
+            className="bk-toolbar"
+            style={{ flexWrap: "wrap", justifyContent: "space-between" }}
+          >
+            <div className="bk-search-wrap">
+              <Search className="bk-search-icon" size={16} />
+              <input
+                className="bk-search-input"
+                placeholder="Search by session ID, table, room or guest name..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </div>
 
-                  return (
-                    <tr
-                      key={session.sessionId}
-                      className="group hover:bg-[hsl(var(--grandeur-gold)/0.02)] transition-colors"
-                    >
-                      <td className="font-medium text-muted-foreground/60">
-                        {String(index + 1).padStart(2, "0")}
-                      </td>
-                      <td className="font-mono text-xs font-semibold">
-                        #{session.sessionId.slice(-6).toUpperCase()}
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <div className="text-[hsl(var(--grandeur-gold))]">
-                            {getTypeIcon(session.type)}
-                          </div>
-                          <span className="text-sm font-medium">
-                            {typeLabel[session.type]}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="text-sm font-bold text-foreground">
-                          {location}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 text-[11px] font-bold text-muted-foreground">
-                          {session.orderCount}{" "}
-                          {session.orderCount === 1 ? "item" : "items"}
-                        </div>
-                      </td>
-                      <td className="text-right">
-                        <span className="text-sm font-black text-[hsl(var(--grandeur-gold))]">
-                          {formatCurrency(session.runningTotal)}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`luxury-badge ${status.className} rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider`}
-                        >
-                          {status.label}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground/70">
-                          <Clock3 size={13} />
-                          {new Date(session.createdAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                      </td>
-                      <td className="text-right">
-                        <button
-                          onClick={() =>
-                            navigate(
-                              `/workspace/${branchId}/order-sessions/${session.sessionId}`,
-                            )
-                          }
-                          className="luxury-btn luxury-btn-primary !py-1.5 !px-4 text-xs font-bold opacity-0 group-hover:opacity-100 transition-all hover:scale-105"
-                        >
-                          Open
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal
+                  size={14}
+                  className="text-[hsl(var(--grandeur-gold))]"
+                />
+                <select
+                  className="luxury-input !py-1.5 !text-xs !px-3 !h-9 min-w-[120px]"
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value)}
+                  aria-label="Filter sessions by status"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="OPEN">Open</option>
+                  <option value="BILL_REQUESTED">Billing</option>
+                  <option value="PAID">Paid</option>
+                  <option value="CLOSED">Closed</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <ShoppingBag
+                  size={14}
+                  className="text-[hsl(var(--grandeur-gold))]"
+                />
+                <select
+                  className="luxury-input !py-1.5 !text-xs !px-3 !h-9 min-w-[120px]"
+                  value={typeFilter}
+                  onChange={(event) => setTypeFilter(event.target.value)}
+                  aria-label="Filter sessions by type"
+                >
+                  <option value="ALL">All Types</option>
+                  <option value="DINE_IN">Dine-In</option>
+                  <option value="ROOM_SERVICE">Room Service</option>
+                  <option value="TAKEAWAY">Takeaway</option>
+                </select>
+              </div>
+            </div>
           </div>
+
+          {filteredSessions.length === 0 ? (
+            <div className="flex min-h-[320px] flex-col items-center justify-center px-6 py-12 text-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 text-muted-foreground">
+                <Search size={30} />
+              </div>
+              <h3 className="mt-6 text-2xl font-semibold text-foreground">
+                No sessions found
+              </h3>
+              <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                Try changing your filters or create a new order session to get
+                started.
+              </p>
+            </div>
+          ) : (
+            <div className="bk-table-scroll">
+              <table className="luxury-table w-full">
+                <thead>
+                  <tr>
+                    <th className="w-16">#</th>
+                    <th>Order NO</th>
+                    <th>Type</th>
+                    <th>Table / Room</th>
+                    <th>Items</th>
+                    <th className="text-right">Total</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSessions.map((session, index) => {
+                    const status = statusConfig[session.status];
+                    const location =
+                      session.type === "DINE_IN"
+                        ? session.tableNo || "-"
+                        : session.type === "ROOM_SERVICE"
+                          ? session.roomNo || "-"
+                          : "Takeaway";
+
+                    return (
+                      <tr
+                        key={session.sessionId}
+                        className="group hover:bg-[hsl(var(--grandeur-gold)/0.02)] transition-colors"
+                      >
+                        <td className="font-medium text-muted-foreground/60">
+                          {String(index + 1).padStart(2, "0")}
+                        </td>
+                        <td className="font-mono text-xs font-semibold">
+                          #{session.sessionId.slice(-6).toUpperCase()}
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-2">
+                            <div className="text-[hsl(var(--grandeur-gold))]">
+                              {getTypeIcon(session.type)}
+                            </div>
+                            <span className="text-sm font-medium">
+                              {typeLabel[session.type]}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="text-sm font-bold text-foreground">
+                            {location}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50 text-[11px] font-bold text-muted-foreground">
+                            {session.orderCount}{" "}
+                            {session.orderCount === 1 ? "item" : "items"}
+                          </div>
+                        </td>
+                        <td className="text-right">
+                          <span className="text-sm font-black text-[hsl(var(--grandeur-gold))]">
+                            {formatCurrency(session.runningTotal)}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`luxury-badge ${status.className} rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider`}
+                          >
+                            {status.label}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground/70">
+                            <Clock3 size={13} />
+                            {new Date(session.createdAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </td>
+                        <td className="text-right">
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/workspace/${branchId}/order-sessions/${session.sessionId}`,
+                              )
+                            }
+                            className="luxury-btn luxury-btn-primary !py-1.5 !px-4 text-xs font-bold opacity-0 group-hover:opacity-100 transition-all hover:scale-105"
+                          >
+                            Open
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>

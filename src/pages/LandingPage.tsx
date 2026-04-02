@@ -631,7 +631,7 @@ const LandingPage = () => {
               <button
                 className="lnd-btn-primary"
                 onClick={() => {
-                  navigate("/login");
+                  navigate("/signup");
                   setMobileMenuOpen(false);
                 }}
               >
@@ -684,7 +684,7 @@ const LandingPage = () => {
             <div className="lnd-hero-actions">
               <button
                 className="lnd-btn-primary lnd-btn-lg"
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/signup")}
               >
                 Start Free Trial
                 <span className="lnd-btn-arrow">→</span>

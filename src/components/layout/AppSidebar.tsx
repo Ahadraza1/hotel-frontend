@@ -89,8 +89,8 @@ const globalMenuItems = [
     title: "Role Permissions",
     path: "/permissions",
     icon: Shield,
-    roles: ["SUPER_ADMIN"],
-    permission: null,
+    roles: ["SUPER_ADMIN", "CORPORATE_ADMIN"],
+    permission: "ACCESS_ROLE_PERMISSIONS_PAGE",
   },
 
   {

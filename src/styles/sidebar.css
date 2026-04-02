@@ -156,9 +156,9 @@
 .workspace-indicator {
   margin: 1.5rem 1rem 0.5rem;
   padding: 1rem;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: hsl(var(--sidebar-accent));
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid hsl(var(--sidebar-accent-foreground) / 0.14);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
@@ -213,7 +213,7 @@
   font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: rgba(255, 255, 255, 0.5);
+  color: hsl(var(--sidebar-accent-foreground) / 0.78);
   font-weight: 600;
   margin-bottom: 0.25rem;
 }
@@ -222,12 +222,13 @@
   font-size: 0.8125rem;
   font-weight: 600;
   white-space: nowrap;
+  color: hsl(var(--sidebar-accent-foreground));
 }
 
-.workspace-exit {
+.workspace-indicator .workspace-exit {
   margin-top: 0.75rem;
   font-size: 0.6875rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: hsl(var(--sidebar-accent-foreground) / 0.78);
   background: none;
   border: none;
   cursor: pointer;
@@ -235,6 +236,11 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+.workspace-indicator .workspace-exit:hover {
+  color: hsl(var(--sidebar-accent-foreground));
+  background: none;
 }
 
 /* Navigation Section */
@@ -428,8 +434,8 @@
 }
 
 [data-theme="dark"] .workspace-indicator {
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: hsl(var(--sidebar-accent));
+  border: 1px solid hsl(var(--sidebar-border));
 }
 
 [data-theme="dark"] .sidebar-footer {
