@@ -31,12 +31,26 @@ interface Role {
   category?: "MAIN" | "ORGANIZATION" | "BRANCH";
   description?: string;
   type?: "SYSTEM" | "CUSTOM";
+  organizationId?: string | null;
+  branchId?: string | null;
   permissions: Permission[];
 }
 
 interface PermissionCategory {
   category: string;
   permissions: Permission[];
+}
+
+interface OrganizationOption {
+  _id: string;
+  organizationId?: string | null;
+  name: string;
+}
+
+interface BranchOption {
+  _id: string;
+  organizationId?: string | null;
+  name: string;
 }
 
 interface RoleFormState {
@@ -77,6 +91,18 @@ const toTitleCase = (str: string) =>
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
 const toPermissionKey = (value: string) => value.trim().toUpperCase();
+const normalizeIdValue = (value?: string | null) => String(value || "").trim();
+const getOrganizationFilterValue = (
+  organization?: Pick<OrganizationOption, "_id" | "organizationId"> | null,
+) => normalizeIdValue(organization?.organizationId || organization?._id || "");
+const getRoleOrganizationId = (
+  role?: Pick<Role, "organizationId"> | null,
+) => normalizeIdValue(role?.organizationId);
+const getRoleBranchId = (role?: Pick<Role, "branchId"> | null) =>
+  normalizeIdValue(role?.branchId);
+const getBranchOrganizationId = (
+  branch?: Pick<BranchOption, "organizationId"> | null,
+) => normalizeIdValue(branch?.organizationId);
 const getNormalizedRoleName = (role?: Pick<Role, "name" | "normalizedName"> | null) =>
   String(role?.normalizedName || role?.name || "")
     .trim()
@@ -159,6 +185,10 @@ const RolePermissionEditor = () => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [categories, setCategories] = useState<PermissionCategory[]>([]);
+  const [organizations, setOrganizations] = useState<OrganizationOption[]>([]);
+  const [branches, setBranches] = useState<BranchOption[]>([]);
+  const [selectedOrg, setSelectedOrg] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("");
   const [search, setSearch] = useState("");
   const [permissionsState, setPermissionsState] = useState<
     Record<string, boolean>
@@ -187,6 +217,18 @@ const RolePermissionEditor = () => {
   const canAddPermission = hasPermission("ADD_PERMISSION");
   const canTogglePermissions = hasPermission("TOGGLE_PERMISSION");
   const isViewerSuperAdmin = user?.role === "SUPER_ADMIN";
+  const isCorporateAdmin = user?.role === "CORPORATE_ADMIN";
+  const showWorkspaceFilters = isViewerSuperAdmin || isCorporateAdmin;
+
+  useEffect(() => {
+    if (isCorporateAdmin) {
+      setSelectedOrg(normalizeIdValue(user?.organizationId));
+    }
+  }, [isCorporateAdmin, user?.organizationId]);
+
+  useEffect(() => {
+    setSelectedBranch("");
+  }, [selectedOrg]);
 
   const loadEditorData = async (preferredRoleId?: string) => {
     const rolesRes = await api.get<{ data: Role[] }>("/roles");
@@ -205,10 +247,23 @@ const RolePermissionEditor = () => {
     );
   };
 
+  const loadFilterOptions = async () => {
+    const [organizationsRes, branchesRes] = await Promise.all([
+      api.get<{ data: OrganizationOption[] }>("/organizations"),
+      api.get<{ data: BranchOption[] }>("/branches"),
+    ]);
+
+    setOrganizations(organizationsRes.data.data || []);
+    setBranches(branchesRes.data.data || []);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await loadEditorData();
+        await Promise.all([
+          loadEditorData(),
+          showWorkspaceFilters ? loadFilterOptions() : Promise.resolve(),
+        ]);
       } catch (err: unknown) {
         console.error("Failed to load roles/permissions", err);
       }
@@ -217,7 +272,7 @@ const RolePermissionEditor = () => {
     if (canAccessRolePermissionsPage) {
       fetchData();
     }
-  }, [canAccessRolePermissionsPage, canViewPermissions]);
+  }, [canAccessRolePermissionsPage, canViewPermissions, showWorkspaceFilters]);
 
   useEffect(() => {
     if (!selectedRole) return;
@@ -239,12 +294,60 @@ const RolePermissionEditor = () => {
     return Array.from(modules);
   }, [categories]);
 
+  const organizationOptions = useMemo(
+    () =>
+      organizations
+        .map((organization) => ({
+          label: organization.name,
+          value: getOrganizationFilterValue(organization),
+          key: organization._id || getOrganizationFilterValue(organization),
+        }))
+        .filter((organization) => organization.value)
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [organizations],
+  );
+
+  const branchOptions = useMemo(
+    () =>
+      branches
+        .filter(
+          (branch) =>
+            !selectedOrg || getBranchOrganizationId(branch) === selectedOrg,
+        )
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [branches, selectedOrg],
+  );
+
   const visibleRoles = useMemo(
     () =>
-      roles.filter((role) =>
-        isViewerSuperAdmin ? true : getRoleCategory(role) !== "MAIN",
-      ),
-    [isViewerSuperAdmin, roles],
+      roles.filter((role) => {
+        const roleCategory = getRoleCategory(role);
+
+        if (!isViewerSuperAdmin && roleCategory === "MAIN") {
+          return false;
+        }
+
+        if (selectedOrg) {
+          if (roleCategory === "MAIN") {
+            return false;
+          }
+
+          const roleOrganizationId = getRoleOrganizationId(role);
+          if (roleOrganizationId && roleOrganizationId !== selectedOrg) {
+            return false;
+          }
+        }
+
+        if (selectedBranch) {
+          const roleBranchId = getRoleBranchId(role);
+          if (roleBranchId && roleBranchId !== selectedBranch) {
+            return false;
+          }
+        }
+
+        return true;
+      }),
+    [isViewerSuperAdmin, roles, selectedBranch, selectedOrg],
   );
 
   const groupedRoles = useMemo(
@@ -783,25 +886,61 @@ const RolePermissionEditor = () => {
             </div>
 
             <div className="rpe-toolbar-row">
-              <div className="rpe-search-wrap w-full max-w-[24rem]">
-                <Search className="rpe-search-icon" />
-                <input
-                  id="perm-search"
-                  className="luxury-input rpe-search-input !bg-transparent w-full"
-                  placeholder="Search permissions..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  autoComplete="off"
-                />
-                {search && (
-                  <button
-                    className="rpe-search-clear"
-                    onClick={() => setSearch("")}
-                    aria-label="Clear search"
-                  >
-                    x
-                  </button>
-                )}
+              <div className="flex flex-1 flex-wrap items-center gap-3">
+                <div className="rpe-search-wrap w-full max-w-[24rem]">
+                  <Search className="rpe-search-icon" />
+                  <input
+                    id="perm-search"
+                    className="luxury-input rpe-search-input !bg-transparent w-full"
+                    placeholder="Search permissions..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    autoComplete="off"
+                  />
+                  {search && (
+                    <button
+                      className="rpe-search-clear"
+                      onClick={() => setSearch("")}
+                      aria-label="Clear search"
+                    >
+                      x
+                    </button>
+                  )}
+                </div>
+
+                {showWorkspaceFilters ? (
+                  <>
+                    <select
+                      className="luxury-input luxury-select w-full sm:w-[13rem]"
+                      value={selectedOrg}
+                      onChange={(e) => setSelectedOrg(e.target.value)}
+                      disabled={!isViewerSuperAdmin}
+                      aria-label="Filter roles by organization"
+                    >
+                      <option value="">Select Organization</option>
+                      {organizationOptions.map((organization) => (
+                        <option key={organization.key} value={organization.value}>
+                          {organization.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      className="luxury-input luxury-select w-full sm:w-[12rem]"
+                      value={selectedBranch}
+                      onChange={(e) => setSelectedBranch(e.target.value)}
+                      disabled={!selectedOrg}
+                      aria-label="Filter roles by branch"
+                    >
+                      <option value="">Select Branch</option>
+                      {branchOptions.map((branch) => (
+                        <option key={branch._id} value={branch._id}>
+                          {branch.name}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                ) : null}
               </div>
 
               {canAddPermission ? (
