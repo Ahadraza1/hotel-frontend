@@ -1265,9 +1265,9 @@
 .lnd-contact-page-shell {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 138px 20px 40px;
 }
 
 .lnd-contact-page-content {
@@ -1275,7 +1275,8 @@
 }
 
 .lnd-contact-hero {
-  margin-bottom: 28px;
+  margin-bottom: 40px;
+  text-align: center;
 }
 
 .lnd-contact-page-grid {
@@ -1324,19 +1325,35 @@
 }
 
 .lnd-contact-showcase-title {
-  margin: 22px 0 14px;
-  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  margin: 22px 0 8px;
+  font-size: clamp(3rem, 5.5vw, 5.3rem);
   line-height: 1.05;
-  letter-spacing: -1.5px;
+  letter-spacing: -2px;
   color: var(--lnd-cream);
 }
 
-.lnd-contact-showcase-copy {
+.lnd-contact-showcase-accent {
   margin: 0;
-  max-width: 520px;
+  font-size: clamp(2.4rem, 5vw, 4.6rem);
+  line-height: 1.05;
+  letter-spacing: -1.8px;
+  color: var(--lnd-gold);
+}
+
+.lnd-contact-showcase-copy {
+  margin: 28px auto 0;
+  max-width: 760px;
   color: var(--lnd-muted);
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.lnd-contact-nav {
+  border-bottom: 1px solid var(--lnd-border);
+}
+
+.lnd-contact-nav-active {
+  color: var(--lnd-gold) !important;
 }
 
 .lnd-contact-info-stack {
@@ -1686,6 +1703,10 @@
     margin-bottom: 22px;
   }
 
+  .lnd-contact-page-shell {
+    padding-top: 124px;
+  }
+
   /* Navbar */
   .lnd-nav { padding: 14px 0; }
   .lnd-nav-inner { justify-content: space-between; }
@@ -1731,6 +1752,20 @@
 
 /* ── Tablet portrait / large mobile: 768px ── */
 @media (max-width: 768px) {
+  .lnd-contact-showcase-title {
+    font-size: 2.4rem;
+    letter-spacing: -1.2px;
+  }
+
+  .lnd-contact-showcase-accent {
+    font-size: 2.1rem;
+    letter-spacing: -1px;
+  }
+
+  .lnd-contact-showcase-copy {
+    font-size: 15px;
+  }
+
   .lnd-contact-showcase,
   .lnd-contact-form-card {
     padding: 28px 22px 24px;
@@ -1808,12 +1843,16 @@
 /* ── Mobile: 480px ── */
 @media (max-width: 480px) {
   .lnd-contact-page-shell {
-    padding: 20px 12px;
+    padding: 108px 12px 20px;
   }
 
   .lnd-contact-showcase-title {
-    font-size: 2rem;
+    font-size: 1.95rem;
     letter-spacing: -1px;
+  }
+
+  .lnd-contact-showcase-accent {
+    font-size: 1.7rem;
   }
 
   /* Nav */
@@ -1928,6 +1967,10 @@
 .lnd-root[data-theme="light"] .lnd-contact-showcase-title,
 .lnd-root[data-theme="light"] .lnd-contact-info-value {
   color: #2d2004;
+}
+
+.lnd-root[data-theme="light"] .lnd-contact-showcase-accent {
+  color: #c7971e;
 }
 
 .lnd-root[data-theme="light"] .lnd-contact-showcase-copy {

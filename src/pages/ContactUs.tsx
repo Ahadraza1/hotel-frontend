@@ -5,12 +5,15 @@ import {
   Loader2,
   Mail,
   MapPin,
+  Moon,
   Phone,
+  Sun,
   UserRound,
   X,
 } from "lucide-react";
 import api from "@/api/axios";
 import { useToast } from "@/components/confirm/ConfirmProvider";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import "./landing.css";
 
@@ -35,7 +38,8 @@ const emptyContactForm: ContactFormState = {
 const ContactUs = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactEmail, setContactEmail] = useState("");
   const [contactForm, setContactForm] =
@@ -43,6 +47,12 @@ const ContactUs = () => {
   const [contactErrors, setContactErrors] = useState<
     Partial<Record<keyof ContactFormState, string>>
   >({});
+  const isAuthenticated = !!user;
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   useEffect(() => {
     let active = true;
@@ -144,11 +154,74 @@ const ContactUs = () => {
 
   return (
     <div className="lnd-root" data-theme={theme}>
+      <nav className="lnd-nav lnd-nav-scrolled lnd-contact-nav">
+        <div className="lnd-nav-inner">
+          <div className="lnd-logo" onClick={() => navigate("/")}>
+            <span className="lnd-logo-icon">🏨</span>
+            <span className="lnd-logo-text">HotelOS</span>
+          </div>
+
+          <div className="lnd-nav-links">
+            <button onClick={() => (window.location.href = "/#features")}>
+              Features
+            </button>
+            <button onClick={() => (window.location.href = "/#analytics")}>
+              Analytics
+            </button>
+            <button onClick={() => (window.location.href = "/#pricing")}>
+              Pricing
+            </button>
+            <button onClick={() => (window.location.href = "/#testimonials")}>
+              Reviews
+            </button>
+            <button className="lnd-contact-nav-active">Contact</button>
+          </div>
+
+          <div className="lnd-nav-cta">
+            <button
+              className="lnd-theme-toggle"
+              onClick={toggleTheme}
+              aria-label={
+                theme === "light"
+                  ? "Switch to dark mode"
+                  : "Switch to light mode"
+              }
+              title={
+                theme === "light"
+                  ? "Switch to dark mode"
+                  : "Switch to light mode"
+              }
+            >
+              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+            </button>
+            <button
+              className="lnd-btn-ghost lnd-desktop-only"
+              onClick={() =>
+                isAuthenticated ? handleLogout() : navigate("/login")
+              }
+            >
+              {isAuthenticated ? "Sign Out" : "Sign In"}
+            </button>
+            <button
+              className="lnd-btn-primary lnd-desktop-only"
+              onClick={() =>
+                isAuthenticated ? navigate("/dashboard") : navigate("/signup")
+              }
+            >
+              {isAuthenticated ? "Dashboard" : "Start Free Trial"}
+            </button>
+          </div>
+        </div>
+      </nav>
+
       <div className="lnd-contact-page-shell">
         <div className="lnd-contact-page-content">
           <section className="lnd-contact-hero">
-            <div className="lnd-contact-showcase-badge">Contact Concierge</div>
-            <h1 className="lnd-contact-showcase-title">Let's start a conversation</h1>
+            <div className="lnd-contact-showcase-badge">Get in Touch</div>
+            <h1 className="lnd-contact-showcase-title">Let's Connect</h1>
+            <h2 className="lnd-contact-showcase-accent">
+              We'd love to hear from you
+            </h2>
             <p className="lnd-contact-showcase-copy">
               Reach our team for demos, onboarding help, enterprise questions,
               or product guidance. Everything here follows the same HotelOS
@@ -191,7 +264,9 @@ const ContactUs = () => {
                     <MapPin size={18} />
                   </div>
                   <div>
-                    <span className="lnd-contact-info-label">Support Window</span>
+                    <span className="lnd-contact-info-label">
+                      Support Window
+                    </span>
                     <span className="lnd-contact-info-value">
                       Hospitality onboarding and product assistance
                     </span>
@@ -215,8 +290,8 @@ const ContactUs = () => {
                 <div className="lnd-contact-badge">Premium Support</div>
                 <h2 className="lnd-contact-title">Contact Us</h2>
                 <p className="lnd-contact-sub">
-                  Share your requirements and our team will get back to you with a
-                  tailored response.
+                  Share your requirements and our team will get back to you with
+                  a tailored response.
                 </p>
               </div>
 
@@ -235,7 +310,9 @@ const ContactUs = () => {
                     />
                   </div>
                   {contactErrors.name ? (
-                    <small className="lnd-contact-error">{contactErrors.name}</small>
+                    <small className="lnd-contact-error">
+                      {contactErrors.name}
+                    </small>
                   ) : null}
                 </label>
 
