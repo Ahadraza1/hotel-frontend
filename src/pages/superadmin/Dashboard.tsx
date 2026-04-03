@@ -16,8 +16,10 @@ import {
   ArrowDownRight,
   Star,
   TriangleAlert,
+  ChevronRight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "@/api/axios";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import {
@@ -97,6 +99,7 @@ const getStatusBadgeClass = (status: string) => {
 };
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { formatCurrency, formatCompactCurrency } = useSystemSettings();
   const [kpiData, setKpiData] = useState<KPIData | null>(null);
   const [revenueData, setRevenueData] = useState<RevenueItem[]>([]);

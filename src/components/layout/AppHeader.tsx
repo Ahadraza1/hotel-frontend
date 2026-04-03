@@ -55,7 +55,7 @@ const formatRole = (role?: string) => {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-const getPageTitle = (
+export const getPageTitle = (
   pathname: string,
 ): { title: string; subtitle: string } => {
   const map: Record<string, { title: string; subtitle: string }> = {
@@ -68,9 +68,13 @@ const getPageTitle = (
       title: "Branch Management",
       subtitle: "Oversee all branch operations",
     },
-    "/users-roles": {
+    "/users": {
       title: "Users & Roles",
       subtitle: "Manage access and permissions",
+    },
+    "/permissions": {
+      title: "Role Permissions",
+      subtitle: "Configure fine-grained access control",
     },
     "/financial-reports": {
       title: "Financial Reports",
@@ -96,6 +100,30 @@ const getPageTitle = (
       title: "Update Password",
       subtitle: "Change your login credentials",
     },
+    "/analytics": {
+      title: "Analytics",
+      subtitle: "Advanced data insights and trends",
+    },
+    "/subscriptions": {
+      title: "Subscription Plans",
+      subtitle: "Manage and assign service tiers",
+    },
+    "/subscription-access": {
+      title: "Subscription Access",
+      subtitle: "View your current service level",
+    },
+    "/branches/add": {
+      title: "Add Branch",
+      subtitle: "Add a new branch location",
+    },
+    "/organizations/add": {
+       title: "Add Organization",
+       subtitle: "Create a new organization account"
+    },
+    "/platform/users": {
+      title: "Platform Users",
+      subtitle: "Manage all users across the platform"
+    }
   };
 
   if (pathname.includes("/notifications")) {
@@ -105,8 +133,18 @@ const getPageTitle = (
     };
   }
 
-  if (pathname.startsWith("/workspace/"))
-    return { title: "Branch Workspace", subtitle: "Active branch session" };
+  // Handle Workspace with dynamic sub-pages
+  if (pathname.startsWith("/workspace/")) {
+    const parts = pathname.split("/");
+    // Format: /workspace/:id/page-name
+    // parts[0]="", parts[1]="workspace", parts[2]=:id, parts[3]=page-name
+    const subPage = parts[3] ? parts[3].charAt(0).toUpperCase() + parts[3].slice(1) : "Overview";
+    
+    // Some cleaning for multi-word or known identifiers
+    const title = subPage.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase());
+
+    return { title: title || "Branch Workspace", subtitle: "Active branch session" };
+  }
 
   if (pathname.startsWith("/organizations/")) {
     if (pathname.includes("/edit"))
@@ -120,9 +158,16 @@ const getPageTitle = (
     };
   }
 
+  if (pathname.startsWith("/branches/edit/")) {
+    return {
+       title: "Edit Branch",
+       subtitle: "Update branch configuration"
+    };
+  }
+
   return (
     map[pathname] ?? {
-      title: "Super Admin",
+      title: "System Admin",
       subtitle: "Hotel Management System",
     }
   );

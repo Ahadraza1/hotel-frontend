@@ -1,8 +1,9 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
-import { AppHeader } from "./AppHeader";
+import { AppHeader, getPageTitle } from "./AppHeader";
 import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
+import { ChevronRight } from "lucide-react";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -94,7 +95,14 @@ export const AppLayout = ({ children, onLogout }: AppLayoutProps) => {
           ariaExpanded={isSidebarVisible}
         />
 
-        <main className="main">{children}</main>
+        <main className="main">
+          <div className="dash-breadcrumb">
+            <button onClick={() => navigate("/")}>Home</button>
+            <ChevronRight size={14} />
+            <span>{getPageTitle(location.pathname).title}</span>
+          </div>
+          {children}
+        </main>
       </div>
     </div>
   );
