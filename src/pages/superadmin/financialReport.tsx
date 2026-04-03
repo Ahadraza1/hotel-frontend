@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { DollarSign, CreditCard, RefreshCw, Receipt, TrendingUp, Wallet } from "lucide-react";
+import {
+  DollarSign,
+  CreditCard,
+  RefreshCw,
+  Receipt,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -23,6 +30,7 @@ interface MonthlyRevenue {
 interface PlanDist {
   name: string;
   value: number;
+  count: number;
   color: string;
   dotClass?: string;
 }
@@ -49,12 +57,12 @@ interface OverviewData {
 
 /* ── Site luxury palette ── */
 const THEME_COLORS = [
-  "hsl(41, 55%, 57%)",   // gold
-  "hsl(160, 59%, 30%)",  // emerald
-  "hsl(210, 40%, 50%)",  // blue
-  "hsl(280, 40%, 50%)",  // violet
-  "hsl(350, 60%, 55%)",  // rose
-  "hsl(30,  40%, 50%)",  // orange
+  "hsl(41, 55%, 57%)", // gold
+  "hsl(160, 59%, 30%)", // emerald
+  "hsl(210, 40%, 50%)", // blue
+  "hsl(280, 40%, 50%)", // violet
+  "hsl(350, 60%, 55%)", // rose
+  "hsl(30,  40%, 50%)", // orange
 ];
 
 const THEME_DOT_CLASSES = [
@@ -65,6 +73,9 @@ const THEME_DOT_CLASSES = [
   "dot-rose",
   "dot-orange",
 ];
+
+const formatPlanPercentage = (value: number) =>
+  Number.isInteger(value) ? String(value) : value.toFixed(1);
 
 const GlobalFinance = () => {
   const { formatCurrency, formatCompactCurrency } = useSystemSettings();
@@ -83,6 +94,10 @@ const GlobalFinance = () => {
   const [planDist, setPlanDist] = useState<PlanDist[]>([]);
   const [recentPayments, setRecentPayments] = useState<RecentPayment[]>([]);
   const [loading, setLoading] = useState(true);
+  const totalOrganizationsOnPlans = planDist.reduce(
+    (sum, plan) => sum + (plan.count || 0),
+    0,
+  );
 
   useEffect(() => {
     const fetchFinance = async () => {
@@ -90,9 +105,15 @@ const GlobalFinance = () => {
         const [overviewRes, revenueRes, planRes, paymentsRes] =
           await Promise.all([
             api.get<{ data: OverviewData }>("/financial-reports/overview"),
-            api.get<{ data: MonthlyRevenue[] }>("/financial-reports/monthly-revenue"),
-            api.get<{ data: PlanDist[] }>("/financial-reports/plan-distribution"),
-            api.get<{ data: RecentPayment[] }>("/financial-reports/recent-payments"),
+            api.get<{ data: MonthlyRevenue[] }>(
+              "/financial-reports/monthly-revenue",
+            ),
+            api.get<{ data: PlanDist[] }>(
+              "/financial-reports/plan-distribution",
+            ),
+            api.get<{ data: RecentPayment[] }>(
+              "/financial-reports/recent-payments",
+            ),
           ]);
 
         setOverview(
@@ -114,7 +135,7 @@ const GlobalFinance = () => {
             ...p,
             color: THEME_COLORS[i % THEME_COLORS.length],
             dotClass: THEME_DOT_CLASSES[i % THEME_DOT_CLASSES.length],
-          }))
+          })),
         );
         setRecentPayments(paymentsRes.data.data || []);
       } catch (error) {
@@ -140,7 +161,6 @@ const GlobalFinance = () => {
 
   return (
     <div className="animate-fade-in gf-root">
-
       {/* ── Page Header ── */}
       <div className="add-branch-header">
         <div className="add-branch-header-icon-wrap">
@@ -148,18 +168,41 @@ const GlobalFinance = () => {
         </div>
         <div>
           <h1 className="page-title">Financial Reports</h1>
-          <p className="page-subtitle">Platform revenue, billing, and financial overview</p>
+          <p className="page-subtitle">
+            Platform revenue, billing, and financial overview
+          </p>
         </div>
       </div>
 
       {/* ── KPI Cards ── */}
       <div className="gf-kpi-grid">
+        <div className="luxury-card kpi-card gf-kpi-card">
+          <div className="gf-kpi-icon-wrap gf-kpi-icon-gold">
+            <Wallet className="gf-kpi-icon" />
+          </div>
+          <span className="kpi-value">
+            {formatCurrency(overview.totalSubscriptionRevenue)}
+          </span>
+          <span className="kpi-label">Total Revenue</span>
+        </div>
+
+        <div className="luxury-card kpi-card gf-kpi-card">
+          <div className="gf-kpi-icon-wrap gf-kpi-icon-green">
+            <CreditCard className="gf-kpi-icon" />
+          </div>
+          <span className="kpi-value">
+            {formatCurrency(overview.todayRevenue)}
+          </span>
+          <span className="kpi-label">Today Revenue</span>
+        </div>
 
         <div className="luxury-card kpi-card gf-kpi-card">
           <div className="gf-kpi-icon-wrap gf-kpi-icon-gold">
             <DollarSign className="gf-kpi-icon" />
           </div>
-          <span className="kpi-value">{formatCurrency(overview.monthlyRevenue)}</span>
+          <span className="kpi-value">
+            {formatCurrency(overview.monthlyRevenue)}
+          </span>
           <span className="kpi-label">Monthly Revenue</span>
         </div>
 
@@ -188,42 +231,18 @@ const GlobalFinance = () => {
         </div>
 
         <div className="luxury-card kpi-card gf-kpi-card">
-          <div className="gf-kpi-icon-wrap gf-kpi-icon-gold">
-            <Wallet className="gf-kpi-icon" />
-          </div>
-          <span className="kpi-value">{formatCurrency(overview.totalSubscriptionRevenue)}</span>
-          <span className="kpi-label">Total Revenue</span>
-        </div>
-
-        <div className="luxury-card kpi-card gf-kpi-card">
-          <div className="gf-kpi-icon-wrap gf-kpi-icon-green">
-            <CreditCard className="gf-kpi-icon" />
-          </div>
-          <span className="kpi-value">{formatCurrency(overview.todayRevenue)}</span>
-          <span className="kpi-label">Today Revenue</span>
-        </div>
-
-        <div className="luxury-card kpi-card gf-kpi-card">
-          <div className="gf-kpi-icon-wrap gf-kpi-icon-amber">
-            <DollarSign className="gf-kpi-icon" />
-          </div>
-          <span className="kpi-value">{formatCurrency(overview.monthlySubscriptionRevenue)}</span>
-          <span className="kpi-label">Monthly Revenue</span>
-        </div>
-
-        <div className="luxury-card kpi-card gf-kpi-card">
           <div className="gf-kpi-icon-wrap gf-kpi-icon-muted">
             <TrendingUp className="gf-kpi-icon" />
           </div>
-          <span className="kpi-value">{formatCurrency(overview.yearlyRevenue)}</span>
+          <span className="kpi-value">
+            {formatCurrency(overview.yearlyRevenue)}
+          </span>
           <span className="kpi-label">Yearly Revenue</span>
         </div>
-
       </div>
 
       {/* ── Charts Row ── */}
       <div className="gf-charts-row">
-
         {/* Bar Chart */}
         <div className="luxury-card gf-bar-card">
           <div className="gf-section-header">
@@ -279,7 +298,7 @@ const GlobalFinance = () => {
             <h3 className="kpi-label pdc-title">Plan Distribution</h3>
             {planDist.length > 0 && (
               <span className="pdc-total-pill">
-                {planDist.reduce((s, r) => s + r.value, 0)}% Total
+                {totalOrganizationsOnPlans > 0 ? 100 : 0}% Total
               </span>
             )}
           </div>
@@ -289,9 +308,19 @@ const GlobalFinance = () => {
               <PieChart>
                 <defs>
                   {planDist.map((e: PlanDist, i) => (
-                    <radialGradient key={i} id={`pdcGrad${i}`} cx="50%" cy="50%" r="50%">
+                    <radialGradient
+                      key={i}
+                      id={`pdcGrad${i}`}
+                      cx="50%"
+                      cy="50%"
+                      r="50%"
+                    >
                       <stop offset="0%" stopColor={e.color} stopOpacity={1} />
-                      <stop offset="100%" stopColor={e.color} stopOpacity={0.75} />
+                      <stop
+                        offset="100%"
+                        stopColor={e.color}
+                        stopOpacity={0.75}
+                      />
                     </radialGradient>
                   ))}
                 </defs>
@@ -318,10 +347,13 @@ const GlobalFinance = () => {
                     boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                     color: "hsl(var(--foreground))",
                   }}
-                  formatter={(value: number, name: string) => [
-                    `${value}%`,
-                    name,
-                  ]}
+                  formatter={(value: number, name: string, item) => {
+                    const payload = item?.payload as PlanDist | undefined;
+                    return [
+                      `${payload?.count ?? 0} org${payload?.count === 1 ? "" : "s"} (${formatPlanPercentage(value)}%)`,
+                      name,
+                    ];
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -346,19 +378,22 @@ const GlobalFinance = () => {
                     }}
                   />
                 </div>
-                <span className="pdc-legend-value">{r.value}%</span>
+                <span className="pdc-legend-value">
+                  {formatPlanPercentage(r.value)}%
+                </span>
               </div>
             ))}
           </div>
         </div>
-
       </div>
 
       {/* ── Recent Payments Table ── */}
       <div className="luxury-card gf-table-card">
         <div className="gf-section-header gf-section-header-border">
           <span className="gf-section-title">Recent Payments</span>
-          <span className="gf-payments-count">{recentPayments.length} entries</span>
+          <span className="gf-payments-count">
+            {recentPayments.length} entries
+          </span>
         </div>
         <div className="gf-table-scroll">
           <table className="luxury-table">
@@ -374,7 +409,9 @@ const GlobalFinance = () => {
             <tbody>
               {recentPayments.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="gf-table-empty">No recent payments found</td>
+                  <td colSpan={5} className="gf-table-empty">
+                    No recent payments found
+                  </td>
                 </tr>
               ) : (
                 recentPayments.map((p: RecentPayment) => (
@@ -403,7 +440,6 @@ const GlobalFinance = () => {
           </table>
         </div>
       </div>
-
     </div>
   );
 };
