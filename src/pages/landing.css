@@ -951,51 +951,56 @@
 .lnd-pricing-section { position: relative; }
 .lnd-orb-pricing { display: none; }
 
-/* ── Billing toggle ── */
-.lnd-billing-toggle {
-  display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 32px;
+/* ── Billing toggle (Pill style) ── */
+.lnd-billing-toggle-pill {
+  display: inline-flex;
+  background: var(--lnd-card-2);
+  border: 1px solid var(--lnd-border);
+  border-radius: 999px;
+  padding: 6px;
+  gap: 4px;
+  margin: 32px auto 0;
+  width: fit-content;
 }
 
-.lnd-billing-toggle span {
-  font-size: 14px; font-weight: 600;
+.lnd-toggle-option {
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 28px;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--lnd-muted);
-  display: flex; align-items: center; gap: 8px;
-  transition: color 0.2s; letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.lnd-billing-toggle span.active { color: var(--lnd-cream); }
-
-.lnd-toggle-btn {
-  width: 52px; height: 28px; border-radius: 14px;
-  background: rgba(201,168,92, 0.1);
-  border: 1px solid rgba(201,168,92, 0.25);
-  cursor: pointer; position: relative;
-  transition: background 0.3s; padding: 0;
+.lnd-toggle-option.active {
+  background: var(--lnd-card);
+  color: var(--lnd-gold);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25), 0 0 0 1px rgba(201,168,92, 0.1);
 }
 
-.lnd-toggle-btn.yearly {
-  background: var(--lnd-gold-dark);
-  border-color: transparent;
+.lnd-root[data-theme="light"] .lnd-toggle-option.active {
+  background: #FFFFFF;
+  color: var(--lnd-gold);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(160,120,48, 0.1);
 }
 
-.lnd-toggle-thumb {
-  position: absolute; top: 3px; left: 3px;
-  width: 20px; height: 20px; border-radius: 50%;
-  background: var(--lnd-cream);
-  transition: left 0.3s;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4); display: block;
+.lnd-save-badge-pill {
+  background: var(--lnd-gold);
+  color: #FFFFFF;
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: none;
 }
 
-.lnd-toggle-btn.yearly .lnd-toggle-thumb { left: 27px; }
-
-.lnd-save-badge {
-  background: rgba(61,139,110, 0.15);
-  color: #6EC4A4;
-  border-radius: 100px; padding: 2px 10px;
-  font-size: 10px; font-weight: 700; font-style: normal; letter-spacing: 0.5px;
-}
-
-/* ── Pricing grid ── */
 .lnd-pricing-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: start;
 }
@@ -1356,6 +1361,56 @@
   color: var(--lnd-gold) !important;
 }
 
+.lnd-pricing-page-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 138px 20px 56px;
+}
+
+.lnd-pricing-page-content {
+  width: min(1240px, 100%);
+}
+
+.lnd-pricing-page-hero {
+  text-align: center;
+  margin-bottom: 52px;
+}
+
+.lnd-pricing-page-title {
+  margin: 24px auto 18px;
+  max-width: 860px;
+  font-size: clamp(3rem, 5vw, 4.8rem);
+  line-height: 1.08;
+  letter-spacing: -2px;
+  color: var(--lnd-cream);
+}
+
+.lnd-pricing-page-copy {
+  margin: 0 auto;
+  max-width: 780px;
+  color: var(--lnd-muted);
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.lnd-pricing-page-note {
+  margin-top: 20px;
+  color: var(--lnd-gold-light);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lnd-pricing-page-toggle {
+  margin-top: 34px;
+  justify-content: center;
+}
+
+.lnd-pricing-page-plans .lnd-pricing-grid {
+  align-items: stretch;
+}
+
 .lnd-contact-info-stack {
   display: grid;
   gap: 16px;
@@ -1695,6 +1750,15 @@
 
 /* ── Tablet landscape: 1024px ── */
 @media (max-width: 1024px) {
+  .lnd-pricing-page-shell {
+    padding-top: 124px;
+  }
+
+  .lnd-pricing-page-title {
+    font-size: 2.8rem;
+    letter-spacing: -1.4px;
+  }
+
   .lnd-contact-page-grid {
     grid-template-columns: 1fr;
   }
@@ -1752,6 +1816,14 @@
 
 /* ── Tablet portrait / large mobile: 768px ── */
 @media (max-width: 768px) {
+  .lnd-pricing-page-title {
+    font-size: 2.3rem;
+  }
+
+  .lnd-pricing-page-copy {
+    font-size: 15px;
+  }
+
   .lnd-contact-showcase-title {
     font-size: 2.4rem;
     letter-spacing: -1.2px;
@@ -1842,6 +1914,19 @@
 
 /* ── Mobile: 480px ── */
 @media (max-width: 480px) {
+  .lnd-pricing-page-shell {
+    padding: 108px 12px 28px;
+  }
+
+  .lnd-pricing-page-title {
+    font-size: 1.95rem;
+    letter-spacing: -1px;
+  }
+
+  .lnd-pricing-page-copy {
+    font-size: 14px;
+  }
+
   .lnd-contact-page-shell {
     padding: 108px 12px 20px;
   }
@@ -1974,6 +2059,14 @@
 }
 
 .lnd-root[data-theme="light"] .lnd-contact-showcase-copy {
+  color: #6b5a3a;
+}
+
+.lnd-root[data-theme="light"] .lnd-pricing-page-title {
+  color: #2d2004;
+}
+
+.lnd-root[data-theme="light"] .lnd-pricing-page-copy {
   color: #6b5a3a;
 }
 

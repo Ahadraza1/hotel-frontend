@@ -7,16 +7,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import "./landing.css";
 
-type LandingPlan = {
-  _id: string;
-  name: string;
-  description: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
-  features: string[];
-  maxBranches: number | null;
-  isPopular: boolean;
-};
+
 
 /* ─────────────────────────────────────────────
    DATA
@@ -110,8 +101,7 @@ const testimonials = [
   },
 ];
 
-const formatBranchLabel = (maxBranches: number | null) =>
-  maxBranches === null ? "Unlimited Branches" : `Up to ${maxBranches} Branches`;
+
 
 /* ─────────────────────────────────────────────
    ANIMATED COUNTER
@@ -366,8 +356,6 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
-  const [plans, setPlans] = useState<LandingPlan[]>([]);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const kpiRef = useRef<HTMLDivElement>(null);
@@ -400,31 +388,7 @@ const LandingPage = () => {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    let active = true;
 
-    const loadPlans = async () => {
-      try {
-        const response = await api.get<LandingPlan[]>(
-          "/public/subscription-plans",
-        );
-        if (!active) return;
-        setPlans(Array.isArray(response.data) ? response.data : []);
-      } catch (error) {
-        if (!active) return;
-        console.error("Failed to load public subscription plans", error);
-        setPlans([]);
-      }
-    };
-
-    loadPlans();
-    const intervalId = window.setInterval(loadPlans, 15000);
-
-    return () => {
-      active = false;
-      window.clearInterval(intervalId);
-    };
-  }, []);
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
@@ -446,7 +410,7 @@ const LandingPage = () => {
           <div className="lnd-nav-links">
             <button onClick={() => scrollTo("features")}>Features</button>
             <button onClick={() => scrollTo("analytics")}>Analytics</button>
-            <button onClick={() => scrollTo("pricing")}>Pricing</button>
+            <button onClick={() => navigate("/pricing")}>Pricing</button>
             <button onClick={() => scrollTo("testimonials")}>Reviews</button>
             <button onClick={() => navigate("/contact")}>Contact</button>
           </div>
@@ -501,7 +465,7 @@ const LandingPage = () => {
           <div className="lnd-mobile-menu">
             <button onClick={() => scrollTo("features")}>Features</button>
             <button onClick={() => scrollTo("analytics")}>Analytics</button>
-            <button onClick={() => scrollTo("pricing")}>Pricing</button>
+            <button onClick={() => navigate("/pricing")}>Pricing</button>
             <button onClick={() => scrollTo("testimonials")}>Reviews</button>
             <button onClick={() => navigate("/contact")}>Contact</button>
             <div className="lnd-mobile-menu-cta">
@@ -800,85 +764,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── PRICING ── */}
-      <section className="lnd-section lnd-pricing-section" id="pricing">
-        <div className="lnd-orb lnd-orb-pricing" />
-        <div className="lnd-section-inner">
-          <div className="lnd-section-header">
-            <div className="lnd-section-badge">Pricing</div>
-            <h2 className="lnd-section-title">
-              Transparent Pricing,{" "}
-              <span className="lnd-gradient-text">No Surprises</span>
-            </h2>
-            <p className="lnd-section-sub">
-              Choose the plan that fits your portfolio. Scale up anytime — your
-              data and settings move with you.
-            </p>
 
-            {/* Billing toggle */}
-            <div className="lnd-billing-toggle">
-              <span className={billing === "monthly" ? "active" : ""}>
-                Monthly
-              </span>
-              <button
-                className={`lnd-toggle-btn ${billing === "yearly" ? "yearly" : ""}`}
-                onClick={() =>
-                  setBilling(billing === "monthly" ? "yearly" : "monthly")
-                }
-                aria-label="Toggle billing period"
-              >
-                <span className="lnd-toggle-thumb" />
-              </button>
-              <span className={billing === "yearly" ? "active" : ""}>
-                Yearly
-                <em className="lnd-save-badge">Save 20%</em>
-              </span>
-            </div>
-          </div>
-
-          <div className="lnd-pricing-grid">
-            {plans.map((p) => (
-              <div
-                key={p._id}
-                className={`lnd-pricing-card ${p.isPopular ? "lnd-pricing-popular" : ""}`}
-              >
-                {p.isPopular && (
-                  <div className="lnd-popular-badge">⭐ Most Popular</div>
-                )}
-                <div className="lnd-pricing-header">
-                  <h3 className="lnd-plan-name">{p.name}</h3>
-                  <p className="lnd-plan-desc">{p.description}</p>
-                  <div className="lnd-plan-price">
-                    <span className="lnd-plan-currency">{currencySymbol}</span>
-                    <span className="lnd-plan-amount">
-                      {formatCurrency(
-                        billing === "monthly" ? p.monthlyPrice : p.yearlyPrice,
-                      ).replace(currencySymbol, "")}
-                    </span>
-                    <span className="lnd-plan-period">/mo</span>
-                  </div>
-                  <div className="lnd-plan-branches">
-                    {formatBranchLabel(p.maxBranches)}
-                  </div>
-                </div>
-                <ul className="lnd-plan-features">
-                  {p.features.map((f) => (
-                    <li key={f}>
-                      <span className="lnd-check">✓</span> {f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  className={`lnd-plan-cta ${p.isPopular ? "lnd-btn-primary" : "lnd-btn-outline"}`}
-                  onClick={() => navigate("/login")}
-                >
-                  Get Started
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── TESTIMONIALS ── */}
       <section className="lnd-section" id="testimonials">
@@ -940,12 +826,7 @@ const LandingPage = () => {
               Get Started Now
               <span className="lnd-btn-arrow">→</span>
             </button>
-            <button
-              className="lnd-btn-ghost-light lnd-btn-lg"
-              onClick={() => scrollTo("pricing")}
-            >
-              View Pricing
-            </button>
+
           </div>
           <p className="lnd-cta-disclaimer">
             14-day free trial · No credit card required · Cancel anytime
@@ -1008,8 +889,21 @@ const LandingPage = () => {
           <div className="lnd-footer-links">
             <div className="lnd-footer-col">
               <h4>Product</h4>
-              <a href="#features">Features</a>
-              <a href="#pricing">Pricing</a>
+              <button
+                  type="button"
+                  className="lnd-footer-link-button"
+                  onClick={() => scrollTo("features")}
+                >
+                  Features
+                </button>
+              <button
+                  type="button"
+                  className="lnd-footer-link-button"
+                  onClick={() => navigate("/pricing")}
+                >
+                  Pricing
+                </button>
+
               <a href="#analytics">Analytics</a>
               <a href="#how-it-works">How It Works</a>
             </div>

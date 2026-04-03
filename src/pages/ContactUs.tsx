@@ -168,7 +168,7 @@ const ContactUs = () => {
             <button onClick={() => (window.location.href = "/#analytics")}>
               Analytics
             </button>
-            <button onClick={() => (window.location.href = "/#pricing")}>
+            <button onClick={() => navigate("/pricing")}>
               Pricing
             </button>
             <button onClick={() => (window.location.href = "/#testimonials")}>
