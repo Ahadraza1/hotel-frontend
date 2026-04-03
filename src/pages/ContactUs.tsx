@@ -44,6 +44,7 @@ const ContactUs = () => {
   const [contactEmail, setContactEmail] = useState("");
   const [contactForm, setContactForm] =
     useState<ContactFormState>(emptyContactForm);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactErrors, setContactErrors] = useState<
     Partial<Record<keyof ContactFormState, string>>
   >({});
@@ -210,8 +211,88 @@ const ContactUs = () => {
             >
               {isAuthenticated ? "Dashboard" : "Start Free Trial"}
             </button>
+
+            {/* Hamburger — mobile only */}
+            <button
+              className="lnd-hamburger"
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              <span className={mobileMenuOpen ? "open" : ""} />
+              <span className={mobileMenuOpen ? "open" : ""} />
+              <span className={mobileMenuOpen ? "open" : ""} />
+            </button>
           </div>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div className="lnd-mobile-menu">
+            <button
+              onClick={() => {
+                window.location.href = "/#features";
+                setMobileMenuOpen(false);
+              }}
+            >
+              Features
+            </button>
+            <button
+              onClick={() => {
+                window.location.href = "/#analytics";
+                setMobileMenuOpen(false);
+              }}
+            >
+              Analytics
+            </button>
+            <button
+              onClick={() => {
+                navigate("/pricing");
+                setMobileMenuOpen(false);
+              }}
+            >
+              Pricing
+            </button>
+            <button
+              onClick={() => {
+                window.location.href = "/#testimonials";
+                setMobileMenuOpen(false);
+              }}
+            >
+              Reviews
+            </button>
+            <button
+              className="lnd-contact-nav-active"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Contact
+            </button>
+            <div className="lnd-mobile-menu-cta">
+              <button
+                className="lnd-btn-ghost"
+                onClick={() => {
+                  if (isAuthenticated) {
+                    handleLogout();
+                    return;
+                  }
+                  navigate("/login");
+                  setMobileMenuOpen(false);
+                }}
+              >
+                {isAuthenticated ? "Sign Out" : "Sign In"}
+              </button>
+              <button
+                className="lnd-btn-primary"
+                onClick={() => {
+                  navigate(isAuthenticated ? "/dashboard" : "/signup");
+                  setMobileMenuOpen(false);
+                }}
+              >
+                {isAuthenticated ? "Dashboard" : "Start Free Trial"}
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
       <div className="lnd-contact-page-shell">
