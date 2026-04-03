@@ -5,6 +5,7 @@ import api from "@/api/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
+import MarketingHeader from "@/components/layout/MarketingHeader.tsx";
 import "./landing.css";
 
 type PricingPlan = {
@@ -28,7 +29,6 @@ const PricingPage = () => {
   const { formatCurrency, currencySymbol } = useSystemSettings();
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [plans, setPlans] = useState<PricingPlan[]>([]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isAuthenticated = !!user;
 
   useEffect(() => {
@@ -62,143 +62,7 @@ const PricingPage = () => {
 
   return (
     <div className="lnd-root" data-theme={theme}>
-      <nav className="lnd-nav lnd-nav-scrolled lnd-contact-nav">
-        <div className="lnd-nav-inner">
-          <div className="lnd-logo" onClick={() => navigate("/")}>
-            <span className="lnd-logo-icon">🏨</span>
-            <span className="lnd-logo-text">HotelOS</span>
-          </div>
-
-          <div className="lnd-nav-links">
-            <button onClick={() => (window.location.href = "/#features")}>
-              Features
-            </button>
-            <button onClick={() => (window.location.href = "/#analytics")}>
-              Analytics
-            </button>
-            <button className="lnd-contact-nav-active">Pricing</button>
-            <button onClick={() => (window.location.href = "/#testimonials")}>
-              Reviews
-            </button>
-            <button onClick={() => navigate("/contact")}>Contact</button>
-          </div>
-
-          <div className="lnd-nav-cta">
-            <button
-              className="lnd-theme-toggle"
-              onClick={toggleTheme}
-              aria-label={
-                theme === "light"
-                  ? "Switch to dark mode"
-                  : "Switch to light mode"
-              }
-              title={
-                theme === "light"
-                  ? "Switch to dark mode"
-                  : "Switch to light mode"
-              }
-            >
-              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-            </button>
-            <button
-              className="lnd-btn-ghost lnd-desktop-only"
-              onClick={() =>
-                isAuthenticated ? handleLogout() : navigate("/login")
-              }
-            >
-              {isAuthenticated ? "Sign Out" : "Sign In"}
-            </button>
-            <button
-              className="lnd-btn-primary lnd-desktop-only"
-              onClick={() =>
-                isAuthenticated ? navigate("/dashboard") : navigate("/signup")
-              }
-            >
-              {isAuthenticated ? "Dashboard" : "Start Free Trial"}
-            </button>
-
-            {/* Hamburger — mobile only */}
-            <button
-              className="lnd-hamburger"
-              onClick={() => setMobileMenuOpen((o) => !o)}
-              aria-label="Toggle menu"
-              aria-expanded={mobileMenuOpen}
-            >
-              <span className={mobileMenuOpen ? "open" : ""} />
-              <span className={mobileMenuOpen ? "open" : ""} />
-              <span className={mobileMenuOpen ? "open" : ""} />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile dropdown menu */}
-        {mobileMenuOpen && (
-          <div className="lnd-mobile-menu">
-            <button
-              onClick={() => {
-                window.location.href = "/#features";
-                setMobileMenuOpen(false);
-              }}
-            >
-              Features
-            </button>
-            <button
-              onClick={() => {
-                window.location.href = "/#analytics";
-                setMobileMenuOpen(false);
-              }}
-            >
-              Analytics
-            </button>
-            <button
-              className="lnd-contact-nav-active"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Pricing
-            </button>
-            <button
-              onClick={() => {
-                window.location.href = "/#testimonials";
-                setMobileMenuOpen(false);
-              }}
-            >
-              Reviews
-            </button>
-            <button
-              onClick={() => {
-                navigate("/contact");
-                setMobileMenuOpen(false);
-              }}
-            >
-              Contact
-            </button>
-            <div className="lnd-mobile-menu-cta">
-              <button
-                className="lnd-btn-ghost"
-                onClick={() => {
-                  if (isAuthenticated) {
-                    handleLogout();
-                    return;
-                  }
-                  navigate("/login");
-                  setMobileMenuOpen(false);
-                }}
-              >
-                {isAuthenticated ? "Sign Out" : "Sign In"}
-              </button>
-              <button
-                className="lnd-btn-primary"
-                onClick={() => {
-                  navigate(isAuthenticated ? "/dashboard" : "/signup");
-                  setMobileMenuOpen(false);
-                }}
-              >
-                {isAuthenticated ? "Dashboard" : "Start Free Trial"}
-              </button>
-            </div>
-          </div>
-        )}
-      </nav>
+      <MarketingHeader />
 
       <div className="lnd-pricing-page-shell">
         <div className="lnd-pricing-page-content">

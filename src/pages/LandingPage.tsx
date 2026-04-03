@@ -5,6 +5,7 @@ import api from "@/api/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
+import MarketingHeader from "@/components/layout/MarketingHeader.tsx";
 import "./landing.css";
 
 
@@ -400,101 +401,7 @@ const LandingPage = () => {
 
   return (
     <div className="lnd-root" data-theme={theme}>
-      {/* ── NAVBAR ── */}
-      <nav className={`lnd-nav ${scrolled ? "lnd-nav-scrolled" : ""}`}>
-        <div className="lnd-nav-inner">
-          <div className="lnd-logo">
-            <span className="lnd-logo-icon">🏨</span>
-            <span className="lnd-logo-text">HotelOS</span>
-          </div>
-          <div className="lnd-nav-links">
-            <button onClick={() => scrollTo("features")}>Features</button>
-            <button onClick={() => scrollTo("analytics")}>Analytics</button>
-            <button onClick={() => navigate("/pricing")}>Pricing</button>
-            <button onClick={() => scrollTo("testimonials")}>Reviews</button>
-            <button onClick={() => navigate("/contact")}>Contact</button>
-          </div>
-          <div className="lnd-nav-cta">
-            <button
-              className="lnd-theme-toggle"
-              onClick={toggleTheme}
-              aria-label={
-                theme === "light"
-                  ? "Switch to dark mode"
-                  : "Switch to light mode"
-              }
-              title={
-                theme === "light"
-                  ? "Switch to dark mode"
-                  : "Switch to light mode"
-              }
-            >
-              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-            </button>
-            <button
-              className="lnd-btn-ghost lnd-desktop-only"
-              onClick={() =>
-                isAuthenticated ? handleLogout() : navigate("/login")
-              }
-            >
-              {isAuthenticated ? "Sign Out" : "Sign In"}
-            </button>
-            <button
-              className="lnd-btn-primary lnd-desktop-only"
-              onClick={() =>
-                isAuthenticated ? navigate("/dashboard") : navigate("/signup")
-              }
-            >
-              {isAuthenticated ? "Dashboard" : "Start Free Trial"}
-            </button>
-            {/* Hamburger — mobile only */}
-            <button
-              className="lnd-hamburger"
-              onClick={() => setMobileMenuOpen((o) => !o)}
-              aria-label="Toggle menu"
-              aria-expanded={mobileMenuOpen}
-            >
-              <span className={mobileMenuOpen ? "open" : ""} />
-              <span className={mobileMenuOpen ? "open" : ""} />
-              <span className={mobileMenuOpen ? "open" : ""} />
-            </button>
-          </div>
-        </div>
-        {/* Mobile dropdown menu */}
-        {mobileMenuOpen && (
-          <div className="lnd-mobile-menu">
-            <button onClick={() => scrollTo("features")}>Features</button>
-            <button onClick={() => scrollTo("analytics")}>Analytics</button>
-            <button onClick={() => navigate("/pricing")}>Pricing</button>
-            <button onClick={() => scrollTo("testimonials")}>Reviews</button>
-            <button onClick={() => navigate("/contact")}>Contact</button>
-            <div className="lnd-mobile-menu-cta">
-              <button
-                className="lnd-btn-ghost"
-                onClick={() => {
-                  if (isAuthenticated) {
-                    handleLogout();
-                    return;
-                  }
-                  navigate("/login");
-                  setMobileMenuOpen(false);
-                }}
-              >
-                {isAuthenticated ? "Sign Out" : "Sign In"}
-              </button>
-              <button
-                className="lnd-btn-primary"
-                onClick={() => {
-                  navigate(isAuthenticated ? "/dashboard" : "/signup");
-                  setMobileMenuOpen(false);
-                }}
-              >
-                {isAuthenticated ? "Dashboard" : "Start Free Trial"}
-              </button>
-            </div>
-          </div>
-        )}
-      </nav>
+      <MarketingHeader />
 
       {/* ── HERO ── */}
       <section className="lnd-hero" id="hero">
@@ -639,7 +546,7 @@ const LandingPage = () => {
             <KpiCard
               label="Total Revenue"
               value={2840000}
-              prefix="$"
+              prefix="₹"
               sub="across all branches this year"
               variant="gold"
               isVisible={kpiVisible}
@@ -647,7 +554,7 @@ const LandingPage = () => {
             <KpiCard
               label="Today's Revenue"
               value={18450}
-              prefix="$"
+              prefix="₹"
               sub="live bookings + restaurant POS"
               variant="gold-light"
               isVisible={kpiVisible}

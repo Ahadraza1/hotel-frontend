@@ -24,6 +24,9 @@ import {
 import api from "@/api/axios";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useToast } from "@/components/confirm/ConfirmProvider";
+import { useTheme } from "@/contexts/ThemeContext";
+import MarketingHeader from "@/components/layout/MarketingHeader.tsx";
+import "./landing.css";
 import {
   validateCityField,
   validateCountryField,
@@ -467,89 +470,27 @@ const OrganizationSignup = () => {
       <span className="org-signup-error">{errors[field]}</span>
     ) : null;
 
+  const { theme } = useTheme();
+
   return (
-    <div className="lp-root" style={{ minHeight: "100vh" }}>
-      {/* ── Left Panel ── */}
-      <div className="lp-left" style={{ position: "sticky", top: 0, height: "100vh" }}>
-        {/* Decorative grid overlay */}
-        <div className="lp-left-grid" aria-hidden="true" />
-        {/* Corner ornaments */}
-        <div className="lp-corner lp-corner-tl" aria-hidden="true" />
-        <div className="lp-corner lp-corner-br" aria-hidden="true" />
+    <div className="lnd-root" data-theme={theme}>
+      <MarketingHeader />
+      <div className="luxury-signup-root">
+        {/* Subtle radial glow above card */}
+        <div className="luxury-signup-glow-top" aria-hidden="true" />
 
-        <div className="lp-left-inner">
-          {/* Crown logo */}
-          <div className="lp-crown-wrap">
-            <Crown className="lp-crown-icon" />
-          </div>
-
-          {/* Brand */}
-          <p className="lp-enterprise-label">ENTERPRISE PLATFORM</p>
-          <h1 className="lp-brand-title">LUXURY HMS</h1>
-          <div className="lp-divider" />
-          <p className="lp-brand-tagline">Global Hospitality Command Center</p>
-          <p className="lp-brand-desc">
-            Enterprise-grade property management for the world's most{" "}
-            <span className="lp-brand-desc-highlight">
-              distinguished hotel collections
-            </span>
-            . Trusted by leading luxury hospitality groups across six
-            continents.
-          </p>
-
-          {/* Stats */}
-          <div className="lp-stats-row">
-            <div className="lp-stat">
-              <span className="lp-stat-value">248</span>
-              <span className="lp-stat-label">PROPERTIES</span>
+        <div className="luxury-signup-card">
+          <div className="luxury-signup-header">
+            <div className="lp-form-crown-wrap" style={{ margin: "0 auto 1.5rem" }}>
+              <Crown className="lp-form-crown-icon" />
             </div>
-            <div className="lp-stat-divider" />
-            <div className="lp-stat">
-              <span className="lp-stat-value">42</span>
-              <span className="lp-stat-label">COUNTRIES</span>
-            </div>
-            <div className="lp-stat-divider" />
-            <div className="lp-stat">
-              <span className="lp-stat-value">7★</span>
-              <span className="lp-stat-label">STANDARD</span>
-            </div>
-          </div>
-
-          {/* Compliance badges */}
-          <div className="lp-compliance-row">
-            <div className="lp-compliance-badge">
-              <Shield className="lp-compliance-icon" />
-              <span>SOC 2 CERTIFIED</span>
-            </div>
-            <div className="lp-compliance-badge">
-              <Globe className="lp-compliance-icon" />
-              <span>GDPR COMPLIANT</span>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <p className="lp-left-footer">
-            © 2026 Luxury HMS · All Rights Reserved
-          </p>
-        </div>
-      </div>
-
-      {/* ── Right Panel ── */}
-      <div className="lp-right">
-        {/* Subtle radial glow behind card */}
-        <div className="lp-right-glow" aria-hidden="true" />
-
-        <div className="org-signup-card-container">
-          <div className="lp-form-crown-wrap" style={{ margin: "0 auto 1.5rem" }}>
-            <Crown className="lp-form-crown-icon" />
-          </div>
-          <div className="org-signup-topbar" style={{ textAlign: "center", display: "block" }}>
-            <p className="org-signup-topbar-label">Onboarding Process</p>
-            <h2 className="lp-form-title">Create Your Organization Account</h2>
-            <p className="lp-form-subtitle" style={{ margin: "0.5rem auto 0", maxWidth: "40rem" }}>
-              Register your hotel business and manage everything in one place
+            <span className="luxury-signup-eyebrow">Onboarding Process</span>
+            <h1 className="luxury-signup-title">Create Your Organization Account</h1>
+            <p className="luxury-signup-subtitle">
+              Register your hotel business and manage everything in one place with our enterprise-grade command center.
             </p>
           </div>
+
 
           {successMessage ? (
             <div className="org-signup-success-card">
@@ -610,7 +551,7 @@ const OrganizationSignup = () => {
                 {currentStep === 0 ? (
                   <div className="org-signup-grid">
                     <label className="org-signup-field">
-                      <span>Organization Name</span>
+                      <span className="org-signup-field-label">Organization Name</span>
                       <div className="org-signup-input-wrap">
                         <Building2 />
                         <input
@@ -624,7 +565,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>Business Type</span>
+                      <span className="org-signup-field-label">Business Type</span>
                       <div className="org-signup-input-wrap">
                         <Building2 />
                         <select
@@ -643,7 +584,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>Number of Branches (Optional)</span>
+                      <span className="org-signup-field-label">Number of Branches (Optional)</span>
                       <div className="org-signup-input-wrap">
                         <MapPinned />
                         <input
@@ -659,7 +600,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>Country</span>
+                      <span className="org-signup-field-label">Country</span>
                       <div className="org-signup-input-wrap">
                         <Globe2 />
                         <input
@@ -674,7 +615,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>State</span>
+                      <span className="org-signup-field-label">State</span>
                       <div className="org-signup-input-wrap">
                         <MapPinned />
                         <input
@@ -689,7 +630,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>City</span>
+                      <span className="org-signup-field-label">City</span>
                       <div className="org-signup-input-wrap">
                         <MapPinned />
                         <input
@@ -704,7 +645,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field org-signup-field-full">
-                      <span>Full Business Address</span>
+                      <span className="org-signup-field-label">Full Business Address</span>
                       <div className="org-signup-input-wrap org-signup-input-wrap-textarea">
                         <MapPinned />
                         <textarea
@@ -719,7 +660,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>GST / Tax ID (Optional)</span>
+                      <span className="org-signup-field-label">GST / Tax ID (Optional)</span>
                       <div className="org-signup-input-wrap">
                         <ShieldCheck />
                         <input
@@ -732,7 +673,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>Contact Phone Number</span>
+                      <span className="org-signup-field-label">Contact Phone Number</span>
                       <div className="org-signup-input-wrap">
                         <Phone />
                         <input
@@ -747,7 +688,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>Organization Email</span>
+                      <span className="org-signup-field-label">Organization Email</span>
                       <div className="org-signup-input-wrap">
                         <Mail />
                         <input
@@ -772,7 +713,7 @@ const OrganizationSignup = () => {
                     </div>
 
                     <label className="org-signup-field">
-                      <span>Full Name</span>
+                      <span className="org-signup-field-label">Full Name</span>
                       <div className="org-signup-input-wrap">
                         <UserRoundCog />
                         <input
@@ -786,7 +727,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>Work Email Address</span>
+                      <span className="org-signup-field-label">Work Email Address</span>
                       <div className="org-signup-input-wrap">
                         <Mail />
                         <input
@@ -802,7 +743,7 @@ const OrganizationSignup = () => {
                     </label>
 
                     <label className="org-signup-field">
-                      <span>Phone Number</span>
+                      <span className="org-signup-field-label">Phone Number</span>
                       <div className="org-signup-input-wrap">
                         <Phone />
                         <input
@@ -818,7 +759,7 @@ const OrganizationSignup = () => {
 
                     <div className="org-signup-password-panel">
                       <label className="org-signup-field">
-                        <span>Password</span>
+                        <span className="org-signup-field-label">Password</span>
                         <div className="org-signup-input-wrap">
                           <LockKeyhole />
                           <input
@@ -833,7 +774,7 @@ const OrganizationSignup = () => {
                       </label>
 
                       <label className="org-signup-field">
-                        <span>Confirm Password</span>
+                        <span className="org-signup-field-label">Confirm Password</span>
                         <div className="org-signup-input-wrap">
                           <LockKeyhole />
                           <input
@@ -913,7 +854,7 @@ const OrganizationSignup = () => {
                                     <p>{plan.name}</p>
                                     <h4>
                                       {formatCurrency(price)}
-                                      <span>
+                                      <span className="org-signup-field-label">
                                         /
                                         {billingCycle === "yearly"
                                           ? "yr"
@@ -957,7 +898,7 @@ const OrganizationSignup = () => {
                             {selectedPlan.name} ({billingCycle})
                           </strong>
                         </div>
-                        <span>
+                        <span className="org-signup-field-label">
                           $
                           {billingCycle === "yearly"
                             ? selectedPlan.yearlyPrice
@@ -1023,19 +964,15 @@ const OrganizationSignup = () => {
               </p>
             </form>
           )}
+          <div style={{ textAlign: "center", marginTop: "3rem" }}>
+            <p className="luxury-login-footer-note">
+              Already have an organization?{" "}
+              <Link to="/login" className="luxury-login-link">
+                Sign in to your dashboard
+              </Link>
+            </p>
+          </div>
         </div>
-        <p className="lp-demo-note" style={{ marginTop: "2rem" }}>
-          Already have a corporate account?{" "}
-          <Link to="/login" className="org-signup-login-link">
-            Log in here
-          </Link>
-        </p>
-
-        {/* Bottom mode note */}
-        <p className="lp-demo-note" style={{ marginTop: "1rem" }}>
-          <span className="lp-demo-bold">Registration Mode</span> · Step{" "}
-          {currentStep + 1} of 3
-        </p>
       </div>
     </div>
   );

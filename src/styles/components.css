@@ -1554,7 +1554,22 @@
    Login Page — Two-Panel Luxury Layout
    ═══════════════════════════════════════════════════ */
 
-/* Root wrapper: full viewport, two columns */
+/* Root wrapper: centered luxury layout */
+.lp-root-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 6rem 2.25rem 4rem;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--lnd-dark-bg, #0E0E0B);
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(201, 168, 92, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(201, 168, 92, 0.05) 0%, transparent 40%);
+}
+
 .lp-root {
   display: flex;
   min-height: 100vh;
@@ -6066,3 +6081,424 @@ body.sb-modal-open .layout {
     white-space: normal;
   }
 }
+
+
+/* ---------------------------------------------------
+   7-Star Luxury Login Page � Centered Design
+   --------------------------------------------------- */
+
+.luxury-login-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 6rem 2.25rem 4rem;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--lnd-dark-bg, #0E0E0B) !important;
+  font-family: 'Inter', sans-serif;
+  z-index: 1;
+}
+
+.luxury-login-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 45rem;
+  height: 45rem;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgba(201, 168, 92, 0.08) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+.luxury-login-card {
+  background-color: var(--lnd-card, #FFFFFF);
+  border: 1px solid var(--lnd-border, rgba(201, 168, 92, 0.16));
+  border-radius: 24px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(201, 168, 92, 0.05);
+  padding: 3.5rem 2.75rem;
+  width: 100%;
+  max-width: 25rem;
+  text-align: center;
+  position: relative;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.luxury-login-crown-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: 1.5px solid rgba(201, 168, 92, 0.4);
+  margin-bottom: 1.5rem;
+  background: rgba(201, 168, 92, 0.05);
+}
+
+.luxury-login-crown-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--lnd-gold, #C9A85C);
+}
+
+.luxury-login-title {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--lnd-cream, #EDE8DF);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+}
+
+.luxury-login-subtitle {
+  font-size: 0.875rem;
+  color: var(--lnd-muted, #7A7060);
+  margin-bottom: 2.5rem;
+}
+
+.luxury-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: left;
+}
+
+.luxury-login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.luxury-login-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--lnd-gold, #C9A85C);
+  text-transform: uppercase;
+}
+
+.luxury-login-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--lnd-border, rgba(201, 168, 92, 0.15));
+  border-radius: 12px;
+  color: var(--lnd-text, #EDE8DF);
+  font-size: 0.9375rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.luxury-login-input:focus {
+  border-color: var(--lnd-gold, #C9A85C);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 4px rgba(201, 168, 92, 0.1);
+}
+
+.luxury-login-password-wrap {
+  position: relative;
+}
+
+.luxury-login-eye {
+  position: absolute;
+  right: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--lnd-dim, #3D3828);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.luxury-login-eye:hover {
+  color: var(--lnd-gold, #C9A85C);
+}
+
+.luxury-login-eye-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.luxury-login-remember {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.luxury-login-remember-label {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--lnd-muted, #7A7060);
+  cursor: pointer;
+}
+
+.luxury-login-checkbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--lnd-gold, #C9A85C);
+  cursor: pointer;
+}
+
+.luxury-login-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--lnd-gold, #C9A85C);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  box-shadow: 0 10px 20px -5px rgba(201, 168, 92, 0.4);
+}
+
+.luxury-login-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px -8px rgba(201, 168, 92, 0.5);
+  background: var(--lnd-gold-light, #DFC48A);
+}
+
+.luxury-login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.luxury-login-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #FFF;
+  border-radius: 50%;
+  animation: luxury-spin 0.8s linear infinite;
+}
+
+@keyframes luxury-spin {
+  to { transform: rotate(360deg); }
+}
+
+.luxury-login-ssl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--lnd-dim, #3D3828);
+  margin-top: 0.5rem;
+}
+
+.luxury-login-ssl-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--lnd-gold, #C9A85C);
+  opacity: 0.6;
+}
+
+.luxury-login-footer-note {
+  margin-top: 2.5rem;
+  font-size: 0.9375rem;
+  color: var(--lnd-muted, #7A7060);
+}
+
+.luxury-login-link {
+  color: var(--lnd-gold, #C9A85C);
+  text-decoration: none;
+  font-weight: 700;
+  margin-left: 0.25rem;
+}
+
+.luxury-login-link:hover {
+  text-decoration: underline;
+}
+
+.luxury-login-bottom-note {
+  margin-top: 1.25rem;
+  font-size: 0.75rem;
+  color: var(--lnd-dim, #3D3828);
+}
+
+.luxury-login-bold {
+  font-weight: 700;
+  color: var(--lnd-muted, #7A7060);
+}
+
+@media (max-width: 480px) {
+  .luxury-login-card {
+    padding: 2.5rem 1.75rem;
+  }
+}
+
+
+
+/* ---------------------------------------------------
+   7-Star Luxury SignUp Page � Centered Design
+   --------------------------------------------------- */
+
+.luxury-signup-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 8rem 2rem 4rem;
+  position: relative;
+  overflow-x: hidden;
+  background-color: var(--lnd-dark-bg, #0E0E0B) !important;
+  font-family: 'Inter', sans-serif;
+}
+
+.luxury-signup-card {
+  background-color: var(--lnd-card, #FFFFFF);
+  border: 1px solid var(--lnd-border, rgba(201, 168, 92, 0.16));
+  border-radius: 28px;
+  box-shadow: 
+    0 30px 60px -12px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(201, 168, 92, 0.05);
+  padding: 3.5rem;
+  width: 100%;
+  max-width: 1100px;
+  position: relative;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 2;
+  animation: org-signup-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-signup-glow-top {
+  position: absolute;
+  top: -10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rem;
+  height: 40rem;
+  background: radial-gradient(circle, rgba(201, 168, 92, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.luxury-signup-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+  border-bottom: 1px solid var(--lnd-border, rgba(201, 168, 92, 0.12));
+  padding-bottom: 2.5rem;
+}
+
+.luxury-signup-eyebrow {
+  color: var(--lnd-gold, #C9A85C);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.luxury-signup-title {
+  font-family: var(--font-display, inherit);
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--lnd-cream, #EDE8DF);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+
+.luxury-signup-subtitle {
+  color: var(--lnd-muted, #7A7060);
+  font-size: 1rem;
+  max-width: 32rem;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Re-styling the existing signup elements within the luxury card */
+.luxury-signup-card .org-signup-step {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--lnd-border, rgba(201, 168, 92, 0.1));
+}
+
+.luxury-signup-card .org-signup-step.is-active {
+  background: rgba(201, 168, 92, 0.06);
+  border-color: var(--lnd-gold, #C9A85C);
+}
+
+.luxury-signup-card .org-signup-step-index {
+  background: var(--lnd-dim, #3D3828);
+  color: var(--lnd-muted, #7A7060);
+}
+
+.luxury-signup-card .org-signup-step.is-active .org-signup-step-index {
+  background: var(--lnd-gold, #C9A85C);
+  color: #FFF;
+}
+
+.luxury-signup-card .org-signup-input-wrap input,
+.luxury-signup-card .org-signup-input-wrap select,
+.luxury-signup-card .org-signup-input-wrap textarea {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--lnd-border, rgba(201, 168, 92, 0.15));
+  color: var(--lnd-text, #EDE8DF);
+}
+
+.luxury-signup-card .org-signup-input-wrap input:focus,
+.luxury-signup-card .org-signup-input-wrap select:focus,
+.luxury-signup-card .org-signup-input-wrap textarea:focus {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--lnd-gold, #C9A85C);
+  box-shadow: 0 0 0 4px rgba(201, 168, 92, 0.1);
+}
+
+.luxury-signup-card .org-signup-section-icon {
+  background: rgba(201, 168, 92, 0.08);
+  border-color: rgba(201, 168, 92, 0.2);
+  color: var(--lnd-gold, #C9A85C);
+}
+
+.luxury-signup-card .org-signup-plan-card {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--lnd-border, rgba(201, 168, 92, 0.1));
+}
+
+.luxury-signup-card .org-signup-plan-card.is-active {
+  background: rgba(201, 168, 92, 0.04);
+  border-color: var(--lnd-gold, #C9A85C);
+}
+
+.luxury-signup-card .org-signup-summary-card {
+  background: #111111;
+  border: 1px solid var(--lnd-border, rgba(201, 168, 92, 0.2));
+}
+
+@media (max-width: 768px) {
+  .luxury-signup-root {
+    padding: 6rem 1.25rem 3rem;
+  }
+  .luxury-signup-card {
+    padding: 2.25rem 1.5rem;
+  }
+  .luxury-signup-title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) { .luxury-signup-root { padding: 6rem 1rem 3rem; } .luxury-signup-card { padding: 2.5rem 1.25rem; border-radius: 24px; } .luxury-signup-title { font-size: 1.75rem; } .luxury-signup-subtitle { font-size: 1rem; } }
