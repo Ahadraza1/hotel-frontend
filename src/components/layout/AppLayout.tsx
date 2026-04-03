@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader, getPageTitle } from "./AppHeader";
 import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Home } from "lucide-react";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -97,9 +97,14 @@ export const AppLayout = ({ children, onLogout }: AppLayoutProps) => {
 
         <main className="main">
           <div className="dash-breadcrumb">
-            <button onClick={() => navigate("/")}>Home</button>
-            <ChevronRight size={14} />
-            <span>{getPageTitle(location.pathname).title}</span>
+            <button onClick={() => navigate("/")} className="breadcrumb-home">
+              <Home size={13} />
+              Home
+            </button>
+            <span className="breadcrumb-separator">/</span>
+            <span className="breadcrumb-current">
+              {getPageTitle(location.pathname).title}
+            </span>
           </div>
           {children}
         </main>

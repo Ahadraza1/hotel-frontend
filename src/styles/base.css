@@ -251,3 +251,60 @@ select {
     font-size: 0.8125rem;
   }
 }
+
+/* ── Dash Breadcrumb (Luxury HMS Gold Theme) ── */
+.dash-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 2rem;
+  padding: 0 0.5rem;
+  user-select: none;
+}
+
+.dash-breadcrumb .breadcrumb-home {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: hsla(var(--grandeur-gold), 0.08); /* HMS Gold tint */
+  border: 1px solid hsla(var(--grandeur-gold), 0.2);
+  padding: 0.45rem 0.875rem;
+  border-radius: 10px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: hsla(var(--grandeur-gold), 1);
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.03);
+}
+
+.dash-breadcrumb .breadcrumb-home:hover {
+  background-color: hsla(var(--grandeur-gold), 0.14);
+  border-color: hsla(var(--grandeur-gold), 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -6px rgba(176, 141, 87, 0.28);
+  color: hsla(var(--grandeur-gold-dark), 1);
+}
+
+.dash-breadcrumb .breadcrumb-home svg {
+  color: hsla(var(--grandeur-gold), 1);
+  margin-top: -1px;
+}
+
+.dash-breadcrumb .breadcrumb-separator {
+  color: hsl(var(--muted-foreground) / 0.35);
+  font-size: 0.9rem;
+  font-weight: 300;
+  margin: 0 0.15rem;
+}
+
+.dash-breadcrumb .breadcrumb-current {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: hsl(var(--foreground) / 0.85);
+  font-family: var(--font-display);
+}
