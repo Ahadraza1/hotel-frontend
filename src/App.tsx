@@ -28,6 +28,7 @@ import Integrations from "./pages/superadmin/Integrations";
 import SystemSettings from "./pages/superadmin/SystemSettings";
 import Login from "./pages/superadmin/Login";
 import LandingPage from "./pages/LandingPage";
+import ContactUs from "./pages/ContactUs";
 import NotFound from "./pages/superadmin/NotFound";
 import Profile from "./pages/superadmin/profile/Profile";
 import UpdatePassword from "./pages/superadmin/profile/UpdatePassword";
@@ -94,6 +95,7 @@ const App = () => {
                   <Routes>
                 {/* PUBLIC ROUTES */}
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/contact" element={<ContactUs />} />
                 <Route
                   path="/login"
                   element={<Login onLogin={handleLogin} />}

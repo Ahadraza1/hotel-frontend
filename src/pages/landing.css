@@ -1262,6 +1262,133 @@
   -webkit-backdrop-filter: blur(16px);
 }
 
+.lnd-contact-page-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.lnd-contact-page-content {
+  width: min(1180px, 100%);
+}
+
+.lnd-contact-hero {
+  margin-bottom: 28px;
+}
+
+.lnd-contact-page-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.05fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.lnd-contact-showcase,
+.lnd-contact-form-card {
+  position: relative;
+  border-radius: 28px;
+  border: 1px solid rgba(201,168,92, 0.16);
+  overflow: hidden;
+}
+
+.lnd-contact-showcase {
+  padding: 42px 34px;
+  background:
+    radial-gradient(circle at top left, rgba(201,168,92,0.18), transparent 30%),
+    linear-gradient(180deg, rgba(22,17,10,0.98) 0%, rgba(14,11,7,0.98) 100%);
+  box-shadow: 0 28px 80px rgba(0,0,0,0.36);
+}
+
+.lnd-contact-form-card {
+  padding: 36px;
+  background:
+    radial-gradient(circle at top right, rgba(201,168,92,0.12), transparent 34%),
+    linear-gradient(180deg, rgba(28,22,13,0.98) 0%, rgba(15,12,7,0.98) 100%);
+  box-shadow: 0 32px 120px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.lnd-contact-showcase-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(201,168,92, 0.24);
+  background: rgba(201,168,92, 0.08);
+  color: var(--lnd-gold-light);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.lnd-contact-showcase-title {
+  margin: 22px 0 14px;
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -1.5px;
+  color: var(--lnd-cream);
+}
+
+.lnd-contact-showcase-copy {
+  margin: 0;
+  max-width: 520px;
+  color: var(--lnd-muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.lnd-contact-info-stack {
+  display: grid;
+  gap: 16px;
+  margin-top: 34px;
+}
+
+.lnd-contact-info-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px 18px 18px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(201,168,92, 0.12);
+  background: rgba(255,255,255,0.02);
+}
+
+.lnd-contact-info-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(201,168,92, 0.1);
+  color: var(--lnd-gold);
+}
+
+.lnd-contact-info-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--lnd-gold-light);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.lnd-contact-info-value {
+  color: var(--lnd-cream);
+  font-size: 16px;
+  line-height: 1.7;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.lnd-contact-info-value:hover {
+  color: var(--lnd-gold-light);
+}
+
 .lnd-contact-modal {
   position: relative;
   width: min(100%, 760px);
@@ -1551,6 +1678,14 @@
 
 /* ── Tablet landscape: 1024px ── */
 @media (max-width: 1024px) {
+  .lnd-contact-page-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lnd-contact-hero {
+    margin-bottom: 22px;
+  }
+
   /* Navbar */
   .lnd-nav { padding: 14px 0; }
   .lnd-nav-inner { justify-content: space-between; }
@@ -1596,6 +1731,12 @@
 
 /* ── Tablet portrait / large mobile: 768px ── */
 @media (max-width: 768px) {
+  .lnd-contact-showcase,
+  .lnd-contact-form-card {
+    padding: 28px 22px 24px;
+    border-radius: 22px;
+  }
+
   /* Hero */
   .lnd-hero {
     padding: 96px 20px 64px;
@@ -1666,6 +1807,15 @@
 
 /* ── Mobile: 480px ── */
 @media (max-width: 480px) {
+  .lnd-contact-page-shell {
+    padding: 20px 12px;
+  }
+
+  .lnd-contact-showcase-title {
+    font-size: 2rem;
+    letter-spacing: -1px;
+  }
+
   /* Nav */
   .lnd-nav-inner { padding: 0 16px; }
   .lnd-logo-text { font-size: 17px; }
@@ -1757,6 +1907,40 @@
 .lnd-root[data-theme="light"] .lnd-contact-close {
   background: rgba(160,120,48, 0.08);
   border-color: rgba(160,120,48, 0.2);
+}
+
+.lnd-root[data-theme="light"] .lnd-contact-showcase {
+  background:
+    radial-gradient(circle at top left, rgba(160,120,48,0.16), transparent 28%),
+    linear-gradient(180deg, #fffaf3 0%, #f4ebde 100%);
+  border-color: rgba(160,120,48, 0.18);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.12);
+}
+
+.lnd-root[data-theme="light"] .lnd-contact-form-card {
+  background:
+    radial-gradient(circle at top right, rgba(160,120,48,0.12), transparent 34%),
+    linear-gradient(180deg, #fffdfa 0%, #f6efe4 100%);
+  border-color: rgba(160,120,48, 0.24);
+  box-shadow: 0 28px 90px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.85);
+}
+
+.lnd-root[data-theme="light"] .lnd-contact-showcase-title,
+.lnd-root[data-theme="light"] .lnd-contact-info-value {
+  color: #2d2004;
+}
+
+.lnd-root[data-theme="light"] .lnd-contact-showcase-copy {
+  color: #6b5a3a;
+}
+
+.lnd-root[data-theme="light"] .lnd-contact-info-card {
+  background: rgba(255,255,255,0.58);
+  border-color: rgba(160,120,48, 0.14);
+}
+
+.lnd-root[data-theme="light"] .lnd-contact-info-icon {
+  background: rgba(160,120,48, 0.1);
 }
 
 /* ── Small mobile: 360px ── */
@@ -1967,4 +2151,3 @@
 .lnd-root[data-theme="light"] .lnd-mock-donut-label {
   color: #A07830;
 }
-
