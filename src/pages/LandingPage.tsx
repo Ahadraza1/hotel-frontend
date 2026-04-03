@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Loader2, Mail, Moon, Phone, Sun, UserRound, X } from "lucide-react";
 import api from "@/api/axios";
 import { useToast } from "@/components/confirm/ConfirmProvider";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import "./landing.css";
@@ -379,6 +380,7 @@ const LandingPage = () => {
     useSystemSettings();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [plans, setPlans] = useState<LandingPlan[]>([]);
@@ -393,6 +395,13 @@ const LandingPage = () => {
   >({});
   const kpiRef = useRef<HTMLDivElement>(null);
   const [kpiVisible, setKpiVisible] = useState(false);
+  const isAuthenticated = !!user;
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    setMobileMenuOpen(false);
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -587,15 +596,19 @@ const LandingPage = () => {
             </button>
             <button
               className="lnd-btn-ghost lnd-desktop-only"
-              onClick={() => navigate("/login")}
+              onClick={() =>
+                isAuthenticated ? handleLogout() : navigate("/login")
+              }
             >
-               In
+              {isAuthenticated ? "Sign Out" : "Sign In"}
             </button>
             <button
               className="lnd-btn-primary lnd-desktop-only"
-              onClick={() => navigate("/signup")}
+              onClick={() =>
+                isAuthenticated ? navigate("/dashboard") : navigate("/signup")
+              }
             >
-              Start Free Trial
+              {isAuthenticated ? "Dashboard" : "Start Free Trial"}
             </button>
             {/* Hamburger — mobile only */}
             <button
@@ -622,20 +635,24 @@ const LandingPage = () => {
               <button
                 className="lnd-btn-ghost"
                 onClick={() => {
+                  if (isAuthenticated) {
+                    handleLogout();
+                    return;
+                  }
                   navigate("/login");
                   setMobileMenuOpen(false);
                 }}
               >
-                Sign In
+                {isAuthenticated ? "Sign Out" : "Sign In"}
               </button>
               <button
                 className="lnd-btn-primary"
                 onClick={() => {
-                  navigate("/signup");
+                  navigate(isAuthenticated ? "/dashboard" : "/signup");
                   setMobileMenuOpen(false);
                 }}
               >
-                Start Free Trial
+                {isAuthenticated ? "Dashboard" : "Start Free Trial"}
               </button>
             </div>
           </div>
@@ -1126,8 +1143,6 @@ const LandingPage = () => {
             <div className="lnd-footer-col">
               <h4>Company</h4>
               <a href="#">About</a>
-              <a href="#">Blog</a>
-              <a href="#">Careers</a>
               <button
                 type="button"
                 className="lnd-footer-link-button"
@@ -1140,8 +1155,6 @@ const LandingPage = () => {
               <h4>Legal</h4>
               <a href="#">Privacy Policy</a>
               <a href="#">Terms of Service</a>
-              <a href="#">Cookie Policy</a>
-              <a href="#">GDPR</a>
             </div>
           </div>
         </div>

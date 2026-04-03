@@ -80,7 +80,7 @@ const Login = ({ onLogin }: LoginProps) => {
 
       if (role === "SUPER_ADMIN") {
         onLogin();
-        navigate("/dashboard");
+        navigate("/");
         return;
       }
 
@@ -92,7 +92,7 @@ const Login = ({ onLogin }: LoginProps) => {
 
       if (role === "CORPORATE_ADMIN") {
         onLogin();
-        navigate("/dashboard");
+        navigate("/");
         return;
       }
 
@@ -101,17 +101,16 @@ const Login = ({ onLogin }: LoginProps) => {
      */
       if (!isDashboardRole && user.branchId) {
         localStorage.setItem("activeBranchId", user.branchId);
-
-        // reload app with branch context
-        window.location.href = `/workspace/${user.branchId}/overview`;
+        onLogin();
+        navigate("/");
         return;
       }
 
       /*
-     Fallback
-     */
+      Fallback
+      */
       onLogin();
-      navigate("/dashboard");
+      navigate("/");
     } catch (error: unknown) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response
