@@ -286,19 +286,28 @@ const RolePermissionEditor = () => {
     showWorkspaceFilters,
   ]);
 
+  const selectedRoleName = selectedRole?.normalizedName || selectedRole?.name;
+  const isSuperAdmin = selectedRoleName === "SUPER_ADMIN";
+
   useEffect(() => {
     if (!selectedRole) return;
 
     const map: Record<string, boolean> = {};
-    selectedRole.permissions.forEach((permission) => {
-      map[permission.key || permission.name] = true;
-    });
+
+    if (isSuperAdmin) {
+      categories.forEach((category) => {
+        category.permissions.forEach((permission) => {
+          map[permission.key || permission.name] = true;
+        });
+      });
+    } else {
+      selectedRole.permissions.forEach((permission) => {
+        map[permission.key || permission.name] = true;
+      });
+    }
 
     setPermissionsState(map);
-  }, [selectedRole]);
-
-  const selectedRoleName = selectedRole?.normalizedName || selectedRole?.name;
-  const isSuperAdmin = selectedRoleName === "SUPER_ADMIN";
+  }, [categories, isSuperAdmin, selectedRole]);
 
   const availableModules = useMemo(() => {
     const modules = new Set(DEFAULT_MODULES);
@@ -356,7 +365,7 @@ const RolePermissionEditor = () => {
           return false;
         }
 
-        return true;
+        return roleCategory === "MAIN";
       }),
     [isViewerSuperAdmin, roles, selectedBranch, selectedOrg],
   );
@@ -579,6 +588,11 @@ const RolePermissionEditor = () => {
       return;
     }
 
+    if (!selectedRole) {
+      toast.error("Select a role before adding a permission");
+      return;
+    }
+
     const payload = {
       name: permissionForm.name.trim(),
       key: toPermissionKey(permissionForm.key || permissionForm.name),
@@ -599,6 +613,14 @@ const RolePermissionEditor = () => {
       }>("/permissions", payload);
 
       const createdPermission = response.data.data;
+      const nextRolePermissionKeys = [
+        ...new Set([
+          ...selectedRole.permissions.map(
+            (permission) => permission.key || permission.name,
+          ),
+          createdPermission.key || createdPermission.name,
+        ]),
+      ];
 
       setCategories((prev) => {
         const existingCategory = prev.find(
@@ -627,12 +649,19 @@ const RolePermissionEditor = () => {
         ].sort((a, b) => a.category.localeCompare(b.category));
       });
 
+      await api.put(`/roles/${selectedRole._id}/permissions`, {
+        permissions: nextRolePermissionKeys,
+        organizationId: selectedOrg || getRoleOrganizationId(selectedRole) || undefined,
+        branchId: selectedBranch || getRoleBranchId(selectedRole) || undefined,
+      });
+
       setPermissionsState((prev) => ({
         ...prev,
-        [createdPermission.key || createdPermission.name]: false,
+        [createdPermission.key || createdPermission.name]: true,
       }));
       setPermissionForm({ name: "", key: "", module: permissionForm.module });
       setIsAddPermissionOpen(false);
+      await loadEditorData(selectedRole._id);
       toast.success(response.data.message || "Permission created successfully");
     } catch (error: unknown) {
       const message =
