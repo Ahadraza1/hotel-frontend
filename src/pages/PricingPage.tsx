@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
 import api from "@/api/axios";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,11 +24,13 @@ const formatBranchLabel = (maxBranches: number | null) =>
 
 const PricingPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { formatCurrency, currencySymbol } = useSystemSettings();
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [plans, setPlans] = useState<PricingPlan[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const isAuthenticated = !!user;
 
   useEffect(() => {
@@ -54,6 +56,26 @@ const PricingPage = () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!plans.length) return;
+
+    const requestedPlan = searchParams.get("plan")?.trim().toLowerCase();
+
+    if (requestedPlan !== "free") return;
+
+    const freePlan =
+      plans.find(
+        (plan) =>
+          plan.name.trim().toLowerCase() === "free" ||
+          Number(plan.monthlyPrice) === 0 ||
+          Number(plan.yearlyPrice) === 0,
+      ) || null;
+
+    if (freePlan) {
+      setSelectedPlanId(freePlan._id);
+    }
+  }, [plans, searchParams]);
 
   const handleLogout = () => {
     logout();
@@ -99,7 +121,9 @@ const PricingPage = () => {
               {plans.map((plan) => (
                 <div
                   key={plan._id}
-                  className={`lnd-pricing-card ${plan.isPopular ? "lnd-pricing-popular" : ""}`}
+                  className={`lnd-pricing-card ${plan.isPopular ? "lnd-pricing-popular" : ""} ${
+                    selectedPlanId === plan._id ? "lnd-pricing-selected" : ""
+                  }`}
                 >
                   {plan.isPopular && (
                     <div className="lnd-popular-badge">⭐ Most Popular</div>
@@ -135,8 +159,13 @@ const PricingPage = () => {
                   </ul>
 
                   <button
-                    className={`lnd-plan-cta ${plan.isPopular ? "lnd-btn-primary" : "lnd-btn-outline"}`}
-                    onClick={() =>
+                    className={`lnd-plan-cta ${
+                      plan.isPopular || selectedPlanId === plan._id
+                        ? "lnd-btn-primary"
+                        : "lnd-btn-outline"
+                    }`}
+                    onClick={() => {
+                      setSelectedPlanId(plan._id);
                       navigate(
                         isAuthenticated
                           ? "/dashboard"
@@ -152,7 +181,7 @@ const PricingPage = () => {
                               ),
                             )}&billingCycle=${encodeURIComponent(billing)}`,
                       )
-                    }
+                    }}
                   >
                     Get Started
                   </button>

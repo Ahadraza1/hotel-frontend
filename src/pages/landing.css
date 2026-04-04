@@ -1038,6 +1038,11 @@
   transform: scale(1.025);
 }
 
+.lnd-pricing-selected {
+  border-color: rgba(201,168,92, 0.65);
+  box-shadow: 0 0 0 1px rgba(201,168,92, 0.22), 0 0 36px rgba(201,168,92, 0.12);
+}
+
 .lnd-pricing-popular:hover { transform: scale(1.025) translateY(-8px); }
 
 .lnd-popular-badge {
@@ -2213,6 +2218,11 @@
 .lnd-root[data-theme="light"] .lnd-pricing-popular {
   border-color: rgba(160,120,48, 0.5);
   box-shadow: 0 1px 0 rgba(160,120,48, 0.15);
+}
+
+.lnd-root[data-theme="light"] .lnd-pricing-selected {
+  border-color: rgba(160,120,48, 0.55);
+  box-shadow: 0 0 0 1px rgba(160,120,48, 0.14), 0 16px 36px rgba(160,120,48, 0.08);
 }
 
 /* Section badge uses gold on light bg */

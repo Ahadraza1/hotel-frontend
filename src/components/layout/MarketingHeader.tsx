@@ -89,7 +89,9 @@ const MarketingHeader: React.FC = () => {
 
           <button
             className="lnd-btn-primary lnd-desktop-only"
-            onClick={() => isAuthenticated ? navigate("/dashboard") : navigate("/pricing")}
+            onClick={() =>
+              isAuthenticated ? navigate("/dashboard") : navigate("/pricing?plan=free")
+            }
           >
             {isAuthenticated ? "Dashboard" : "Start Free Trial"}
           </button>
@@ -120,7 +122,9 @@ const MarketingHeader: React.FC = () => {
           </button>
           <button 
             className="lnd-btn-primary" 
-            onClick={() => isAuthenticated ? navigate("/dashboard") : navigate("/pricing")}
+            onClick={() =>
+              isAuthenticated ? navigate("/dashboard") : navigate("/pricing?plan=free")
+            }
           >
             {isAuthenticated ? "Dashboard" : "Start Free Trial"}
           </button>
