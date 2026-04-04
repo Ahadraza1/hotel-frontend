@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { City, Country, State } from "country-state-city";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import {
   ArrowRight,
   BadgeCheck,
@@ -28,11 +31,14 @@ import { useTheme } from "@/contexts/ThemeContext";
 import MarketingHeader from "@/components/layout/MarketingHeader.tsx";
 import "./landing.css";
 import {
-  validateCityField,
-  validateCountryField,
+  clearSignupCheckoutState,
+  readSuccessfulSignupCheckout,
+  storeSuccessfulSignupCheckout,
+  type SignupCheckoutState,
+} from "@/lib/signupCheckout";
+import {
   validateEmailField,
   validatePhoneField,
-  validateStateField,
 } from "@/lib/fieldValidation";
 
 type BillingCycle = "monthly" | "yearly";
@@ -109,6 +115,8 @@ const BUSINESS_TYPES = [
   "Villa Group",
 ];
 
+const COUNTRY_OPTIONS = Country.getAllCountries();
+
 const STEPS = [
   {
     id: 0,
@@ -135,16 +143,19 @@ const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 const OrganizationSignup = () => {
   const { formatCurrency } = useSystemSettings();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const toast = useToast();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [accessLoading, setAccessLoading] = useState(true);
   const [plansLoading, setPlansLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const [plans, setPlans] = useState<SignupPlan[]>(FALLBACK_PLANS);
   const [selectedPlanCode, setSelectedPlanCode] = useState("PRO");
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [paymentSession, setPaymentSession] = useState<SignupCheckoutState | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState({
@@ -165,18 +176,96 @@ const OrganizationSignup = () => {
     confirmPassword: "",
   });
 
+  const selectedCountry = useMemo(
+    () =>
+      COUNTRY_OPTIONS.find((country) => country.name === form.country) || null,
+    [form.country],
+  );
+
+  const stateOptions = useMemo(
+    () =>
+      selectedCountry ? State.getStatesOfCountry(selectedCountry.isoCode) : [],
+    [selectedCountry],
+  );
+
+  const selectedState = useMemo(
+    () => stateOptions.find((state) => state.name === form.state) || null,
+    [form.state, stateOptions],
+  );
+
+  const cityOptions = useMemo(
+    () =>
+      selectedCountry && selectedState
+        ? City.getCitiesOfState(selectedCountry.isoCode, selectedState.isoCode)
+        : [],
+    [selectedCountry, selectedState],
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    const validateCheckoutAccess = async () => {
+      const storedCheckout = readSuccessfulSignupCheckout();
+      const checkoutReference =
+        searchParams.get("checkoutRef") || storedCheckout?.checkoutReference || "";
+
+      if (!checkoutReference) {
+        clearSignupCheckoutState();
+        toast.error("Please complete payment before accessing signup.");
+        navigate("/pricing", { replace: true });
+        return;
+      }
+
+      try {
+        setAccessLoading(true);
+
+        const response = await api.get<{
+          data: SignupCheckoutState;
+        }>(`/auth/signup/checkout/session/${encodeURIComponent(checkoutReference)}`);
+
+        if (!active) return;
+
+        const checkoutData = response.data.data;
+
+        setPaymentSession(checkoutData);
+        storeSuccessfulSignupCheckout(checkoutData);
+        setBillingCycle(checkoutData.billingCycle);
+        setSelectedPlanId(checkoutData.planId);
+        setForm((prev) => ({
+          ...prev,
+          adminEmail: checkoutData.email,
+          adminFullName: prev.adminFullName || checkoutData.name || "",
+        }));
+      } catch (error) {
+        if (!active) return;
+        clearSignupCheckoutState();
+        toast.error("Successful payment is required before signup.");
+        navigate("/pricing", { replace: true });
+      } finally {
+        if (active) {
+          setAccessLoading(false);
+        }
+      }
+    };
+
+    void validateCheckoutAccess();
+
+    return () => {
+      active = false;
+    };
+  }, [navigate, searchParams, toast]);
+
   const getFieldError = (
     name: string,
     value: string,
-    values = form,
   ): string => {
     switch (name) {
       case "country":
-        return validateCountryField(value);
+        return value ? "" : "Please select a country";
       case "state":
-        return validateStateField(values.country, value);
+        return value ? "" : "Please select a state";
       case "city":
-        return validateCityField(values.country, values.state, value);
+        return value ? "" : "Please select a city";
       case "contactPhone":
       case "adminPhone":
         return validatePhoneField(value);
@@ -209,13 +298,17 @@ const OrganizationSignup = () => {
           response.data.data[0];
 
         if (defaultPlan) {
-          setSelectedPlanCode(defaultPlan.code);
-          setSelectedPlanId(defaultPlan._id || defaultPlan.id || null);
+          if (!paymentSession) {
+            setSelectedPlanCode(defaultPlan.code);
+            setSelectedPlanId(defaultPlan._id || defaultPlan.id || null);
+          }
         }
       } catch {
         setPlans(FALLBACK_PLANS);
-        setSelectedPlanCode("PRO");
-        setSelectedPlanId(null);
+        if (!paymentSession) {
+          setSelectedPlanCode("PRO");
+          setSelectedPlanId(null);
+        }
       } finally {
         if (active) {
           setPlansLoading(false);
@@ -228,14 +321,51 @@ const OrganizationSignup = () => {
     return () => {
       active = false;
     };
-  }, []);
+  }, [paymentSession]);
+
+  useEffect(() => {
+    if (!paymentSession) return;
+
+    setBillingCycle(paymentSession.billingCycle);
+    setSelectedPlanId(paymentSession.planId);
+
+    const matchedPlan = plans.find((plan) => {
+      const planIdentity = plan._id || plan.id || "";
+      return (
+        String(planIdentity) === String(paymentSession.planId) ||
+        plan.name === paymentSession.planName
+      );
+    });
+
+    if (matchedPlan) {
+      setSelectedPlanCode(matchedPlan.code);
+    }
+  }, [paymentSession, plans]);
 
   const selectedPlan = useMemo(
     () =>
       plans.find((plan) => plan.code === selectedPlanCode) ||
+      plans.find(
+        (plan) =>
+          String(plan._id || plan.id || "") === String(paymentSession?.planId || ""),
+      ) ||
+      (paymentSession
+        ? {
+            _id: paymentSession.planId,
+            code: "PAID_PLAN",
+            name: paymentSession.planName,
+            description: "",
+            monthlyPrice:
+              paymentSession.billingCycle === "monthly" ? paymentSession.price : 0,
+            yearlyPrice:
+              paymentSession.billingCycle === "yearly" ? paymentSession.price : 0,
+            branchLimit: null,
+            features: [],
+          }
+        : null) ||
       plans[0] ||
       FALLBACK_PLANS[1],
-    [plans, selectedPlanCode],
+    [paymentSession, plans, selectedPlanCode],
   );
 
   const handleChange = (
@@ -249,31 +379,31 @@ const OrganizationSignup = () => {
       [name]: value,
     };
 
+    if (name === "country") {
+      nextForm.state = "";
+      nextForm.city = "";
+    }
+
+    if (name === "state") {
+      nextForm.city = "";
+    }
+
     setForm(nextForm);
 
     setErrors((prev) => {
       const next = { ...prev };
-      const nextError = getFieldError(name, value, nextForm);
+      const nextError = getFieldError(name, value);
 
       if (nextError) next[name] = nextError;
       else delete next[name];
 
       if (name === "country") {
-        const stateError = getFieldError("state", nextForm.state, nextForm);
-        const cityError = getFieldError("city", nextForm.city, nextForm);
-
-        if (stateError && (touched.state || prev.state)) next.state = stateError;
-        else delete next.state;
-
-        if (cityError && (touched.city || prev.city)) next.city = cityError;
-        else delete next.city;
+        delete next.state;
+        delete next.city;
       }
 
       if (name === "state") {
-        const cityError = getFieldError("city", nextForm.city, nextForm);
-
-        if (cityError && (touched.city || prev.city)) next.city = cityError;
-        else delete next.city;
+        delete next.city;
       }
 
       return next;
@@ -299,6 +429,38 @@ const OrganizationSignup = () => {
     });
   };
 
+  const handlePhoneChange = (name: "contactPhone" | "adminPhone", value: string) => {
+    const formattedValue = value ? `+${value}` : "";
+    const nextForm = {
+      ...form,
+      [name]: formattedValue,
+    };
+
+    setForm(nextForm);
+    setErrors((prev) => {
+      const next = { ...prev };
+      const nextError = getFieldError(name, formattedValue);
+
+      if (nextError && (touched[name] || prev[name])) next[name] = nextError;
+      else delete next[name];
+
+      return next;
+    });
+  };
+
+  const handlePhoneBlur = (name: "contactPhone" | "adminPhone") => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      const nextError = getFieldError(name, form[name]);
+
+      if (nextError) next[name] = nextError;
+      else delete next[name];
+
+      return next;
+    });
+  };
+
   const validateStep = (step: number) => {
     const nextErrors: Record<string, string> = {};
 
@@ -310,14 +472,9 @@ const OrganizationSignup = () => {
       if (form.numberOfBranches && Number(form.numberOfBranches) < 1) {
         nextErrors.numberOfBranches = "Branches must be at least 1";
       }
-      const countryError = getFieldError("country", form.country);
-      if (countryError) nextErrors.country = countryError;
-
-      const stateError = getFieldError("state", form.state);
-      if (stateError) nextErrors.state = stateError;
-
-      const cityError = getFieldError("city", form.city);
-      if (cityError) nextErrors.city = cityError;
+      if (!form.country) nextErrors.country = "Please select a country";
+      if (!form.state) nextErrors.state = "Please select a state";
+      if (!form.city) nextErrors.city = "Please select a city";
       if (!form.fullBusinessAddress.trim())
         nextErrors.fullBusinessAddress = "Business address is required";
       const contactPhoneError = getFieldError("contactPhone", form.contactPhone);
@@ -393,6 +550,7 @@ const OrganizationSignup = () => {
   };
 
   const handlePlanSelect = (plan: SignupPlan) => {
+    if (paymentSession) return;
     setSelectedPlanCode(plan.code);
     setSelectedPlanId(plan._id || plan.id || null);
   };
@@ -443,8 +601,10 @@ const OrganizationSignup = () => {
         selectedPlanId,
         selectedPlanCode,
         billingCycle,
+        checkoutReference: paymentSession?.checkoutReference,
       });
 
+      clearSignupCheckoutState();
       setSuccessMessage(
         `${response.data.message}. Redirecting to login for ${response.data.data.adminEmail}...`,
       );
@@ -471,6 +631,25 @@ const OrganizationSignup = () => {
     ) : null;
 
   const { theme } = useTheme();
+
+  if (accessLoading) {
+    return (
+      <div className="lnd-root" data-theme={theme}>
+        <MarketingHeader />
+        <div className="luxury-signup-root">
+          <div className="luxury-signup-card">
+            <div className="org-signup-success-card">
+              <div className="org-signup-success-icon">
+                <LoaderCircle className="lnd-spin" />
+              </div>
+              <h3>Validating payment</h3>
+              <p>We’re confirming your successful payment before unlocking signup.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lnd-root" data-theme={theme}>
@@ -603,13 +782,19 @@ const OrganizationSignup = () => {
                       <span className="org-signup-field-label">Country</span>
                       <div className="org-signup-input-wrap">
                         <Globe2 />
-                        <input
+                        <select
                           name="country"
                           value={form.country}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="India"
-                        />
+                        >
+                          <option value="">Select country</option>
+                          {COUNTRY_OPTIONS.map((country) => (
+                            <option key={country.isoCode} value={country.name}>
+                              {country.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       {renderFieldError("country")}
                     </label>
@@ -618,13 +803,20 @@ const OrganizationSignup = () => {
                       <span className="org-signup-field-label">State</span>
                       <div className="org-signup-input-wrap">
                         <MapPinned />
-                        <input
+                        <select
                           name="state"
                           value={form.state}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Maharashtra"
-                        />
+                          disabled={!selectedCountry}
+                        >
+                          <option value="">Select state</option>
+                          {stateOptions.map((state) => (
+                            <option key={`${state.countryCode}-${state.isoCode}`} value={state.name}>
+                              {state.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       {renderFieldError("state")}
                     </label>
@@ -633,13 +825,23 @@ const OrganizationSignup = () => {
                       <span className="org-signup-field-label">City</span>
                       <div className="org-signup-input-wrap">
                         <MapPinned />
-                        <input
+                        <select
                           name="city"
                           value={form.city}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Mumbai"
-                        />
+                          disabled={!selectedState}
+                        >
+                          <option value="">Select city</option>
+                          {cityOptions.map((city) => (
+                            <option
+                              key={`${city.countryCode}-${city.stateCode}-${city.name}`}
+                              value={city.name}
+                            >
+                              {city.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       {renderFieldError("city")}
                     </label>
@@ -674,14 +876,27 @@ const OrganizationSignup = () => {
 
                     <label className="org-signup-field">
                       <span className="org-signup-field-label">Contact Phone Number</span>
-                      <div className="org-signup-input-wrap">
-                        <Phone />
-                        <input
-                          name="contactPhone"
-                          value={form.contactPhone}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          placeholder="+91 98765 43210"
+                      <div className="org-signup-phone-wrap">
+                        <PhoneInput
+                          country="in"
+                          value={form.contactPhone.replace(/^\+/, "")}
+                          onChange={(value) => handlePhoneChange("contactPhone", value)}
+                          onBlur={() => handlePhoneBlur("contactPhone")}
+                          inputProps={{
+                            name: "contactPhone",
+                            required: true,
+                          }}
+                          enableSearch
+                          disableSearchIcon
+                          countryCodeEditable={false}
+                          specialLabel=""
+                          inputClass="org-signup-phone-input"
+                          buttonClass="org-signup-phone-button"
+                          dropdownClass="org-signup-phone-dropdown"
+                          searchClass="org-signup-phone-search"
+                          isValid={(value) =>
+                            !value || validatePhoneField(`+${value}`) === ""
+                          }
                         />
                       </div>
                       {renderFieldError("contactPhone")}
@@ -711,6 +926,11 @@ const OrganizationSignup = () => {
                       This creates the main corporate admin account for the
                       organization.
                     </div>
+                    {paymentSession ? (
+                      <div className="org-signup-inline-note org-signup-field-full">
+                        Payment confirmed for {paymentSession.planName}. The corporate admin email is locked to the successful payment email.
+                      </div>
+                    ) : null}
 
                     <label className="org-signup-field">
                       <span className="org-signup-field-label">Full Name</span>
@@ -720,7 +940,7 @@ const OrganizationSignup = () => {
                           name="adminFullName"
                           value={form.adminFullName}
                           onChange={handleChange}
-                          placeholder="Aarav Mehta"
+                          placeholder="Your Name"
                         />
                       </div>
                       {renderFieldError("adminFullName")}
@@ -736,7 +956,8 @@ const OrganizationSignup = () => {
                           value={form.adminEmail}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="admin@blueharbor.com"
+                          placeholder="Admin email for login"
+                          disabled={!!paymentSession}
                         />
                       </div>
                       {renderFieldError("adminEmail")}
@@ -744,14 +965,27 @@ const OrganizationSignup = () => {
 
                     <label className="org-signup-field">
                       <span className="org-signup-field-label">Phone Number</span>
-                      <div className="org-signup-input-wrap">
-                        <Phone />
-                        <input
-                          name="adminPhone"
-                          value={form.adminPhone}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          placeholder="+91 99887 77665"
+                      <div className="org-signup-phone-wrap">
+                        <PhoneInput
+                          country="in"
+                          value={form.adminPhone.replace(/^\+/, "")}
+                          onChange={(value) => handlePhoneChange("adminPhone", value)}
+                          onBlur={() => handlePhoneBlur("adminPhone")}
+                          inputProps={{
+                            name: "adminPhone",
+                            required: true,
+                          }}
+                          enableSearch
+                          disableSearchIcon
+                          countryCodeEditable={false}
+                          specialLabel=""
+                          inputClass="org-signup-phone-input"
+                          buttonClass="org-signup-phone-button"
+                          dropdownClass="org-signup-phone-dropdown"
+                          searchClass="org-signup-phone-search"
+                          isValid={(value) =>
+                            !value || validatePhoneField(`+${value}`) === ""
+                          }
                         />
                       </div>
                       {renderFieldError("adminPhone")}
@@ -812,7 +1046,10 @@ const OrganizationSignup = () => {
                         className={
                           billingCycle === "monthly" ? "is-selected" : ""
                         }
-                        onClick={() => setBillingCycle("monthly")}
+                        onClick={() =>
+                          paymentSession ? undefined : setBillingCycle("monthly")
+                        }
+                        disabled={!!paymentSession}
                       >
                         Monthly
                       </button>
@@ -821,7 +1058,10 @@ const OrganizationSignup = () => {
                         className={
                           billingCycle === "yearly" ? "is-selected" : ""
                         }
-                        onClick={() => setBillingCycle("yearly")}
+                        onClick={() =>
+                          paymentSession ? undefined : setBillingCycle("yearly")
+                        }
+                        disabled={!!paymentSession}
                       >
                         Yearly
                       </button>
@@ -846,8 +1086,11 @@ const OrganizationSignup = () => {
                               <button
                                 key={plan.code}
                                 type="button"
-                                className={`org-signup-plan-card ${isActive ? "is-active" : ""}`}
+                                className={`org-signup-plan-card ${isActive ? "is-active" : ""} ${
+                                  paymentSession ? "is-locked" : ""
+                                }`}
                                 onClick={() => handlePlanSelect(plan)}
+                                disabled={!!paymentSession}
                               >
                                 <div className="org-signup-plan-head">
                                   <div>
@@ -899,10 +1142,12 @@ const OrganizationSignup = () => {
                           </strong>
                         </div>
                         <span className="org-signup-field-label">
-                          $
-                          {billingCycle === "yearly"
-                            ? selectedPlan.yearlyPrice
-                            : selectedPlan.monthlyPrice}
+                          {formatCurrency(
+                            paymentSession?.price ??
+                              (billingCycle === "yearly"
+                                ? selectedPlan.yearlyPrice
+                                : selectedPlan.monthlyPrice),
+                          )}
                         </span>
                       </div>
                     ) : null}
@@ -915,7 +1160,7 @@ const OrganizationSignup = () => {
                   <strong>Corporate Admin is mandatory</strong>
                   <span>
                     This signup creates the organization, creates the corporate
-                    admin, and links both together.
+                    admin, and links both together with the paid subscription.
                   </span>
                 </div>
 

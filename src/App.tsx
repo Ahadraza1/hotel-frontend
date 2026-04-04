@@ -30,6 +30,8 @@ import Login from "./pages/superadmin/Login";
 import LandingPage from "./pages/LandingPage";
 import ContactUs from "./pages/ContactUs";
 import PricingPage from "./pages/PricingPage";
+import FinalizeOrderPage from "./pages/FinalizeOrderPage";
+import PaymentFailedPage from "./pages/PaymentFailedPage";
 import NotFound from "./pages/superadmin/NotFound";
 import Profile from "./pages/superadmin/profile/Profile";
 import UpdatePassword from "./pages/superadmin/profile/UpdatePassword";
@@ -98,6 +100,8 @@ const App = () => {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/contact" element={<ContactUs />} />
                 <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/finalize-order" element={<FinalizeOrderPage />} />
+                <Route path="/payment-failed" element={<PaymentFailedPage />} />
                 <Route
                   path="/login"
                   element={<Login onLogin={handleLogin} />}

@@ -244,6 +244,24 @@
   transition: all 0.2s;
 }
 
+.org-signup-input-wrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color-scheme: dark;
+  background-color: rgba(24, 22, 18, 0.96);
+}
+
+.org-signup-input-wrap select option {
+  background-color: #1a1712;
+  color: #f3ecdf;
+}
+
+.org-signup-input-wrap select:disabled {
+  background-color: rgba(255, 255, 255, 0.02);
+  color: rgba(237, 232, 223, 0.45);
+}
+
 .org-signup-input-wrap input:focus,
 .org-signup-input-wrap select:focus,
 .org-signup-input-wrap textarea:focus {
@@ -256,6 +274,114 @@
 .org-signup-input-wrap textarea {
   padding-top: 1rem;
   min-height: 100px;
+}
+
+.org-signup-phone-wrap {
+  position: relative;
+}
+
+.org-signup-phone-wrap .react-tel-input {
+  width: 100%;
+}
+
+.org-signup-phone-wrap .form-control.org-signup-phone-input {
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  border-radius: 10px;
+  background-color: rgba(24, 22, 18, 0.96);
+  padding: 0.75rem 1rem 0.75rem 4rem;
+  font-size: 0.9375rem;
+  color: var(--lnd-text, #ffffff);
+  transition: all 0.2s;
+}
+
+.org-signup-phone-wrap .form-control.org-signup-phone-input:focus {
+  border-color: rgba(255, 215, 0, 0.5);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
+}
+
+.org-signup-phone-wrap .flag-dropdown.org-signup-phone-button {
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.org-signup-phone-wrap .selected-flag {
+  border-radius: 10px 0 0 10px;
+  background: transparent !important;
+}
+
+.org-signup-phone-wrap .selected-flag:hover,
+.org-signup-phone-wrap .selected-flag:focus,
+.org-signup-phone-wrap .flag-dropdown.open,
+.org-signup-phone-wrap .flag-dropdown.open .selected-flag {
+  background: rgba(255, 215, 0, 0.06) !important;
+}
+
+.org-signup-phone-wrap .country-list.org-signup-phone-dropdown {
+  background: #1a1712;
+  border: 1px solid rgba(255, 215, 0, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  color: #f3ecdf;
+}
+
+.org-signup-phone-wrap .country-list .country,
+.org-signup-phone-wrap .country-list .search {
+  background: transparent;
+  color: #f3ecdf;
+}
+
+.org-signup-phone-wrap .country-list .country:hover,
+.org-signup-phone-wrap .country-list .country.highlight {
+  background: rgba(201, 168, 92, 0.16);
+}
+
+.org-signup-phone-wrap .search-box.org-signup-phone-search {
+  width: calc(100% - 1rem);
+  margin: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 215, 0, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f3ecdf;
+}
+
+.org-signup-phone-wrap .search-box.org-signup-phone-search:focus {
+  outline: none;
+  border-color: rgba(255, 215, 0, 0.35);
+}
+
+.lnd-root[data-theme="light"] .org-signup-phone-wrap .form-control.org-signup-phone-input {
+  background: rgba(255, 255, 255, 0.98);
+  color: #34240f;
+}
+
+.lnd-root[data-theme="light"] .org-signup-phone-wrap .flag-dropdown.org-signup-phone-button {
+  background: rgba(160, 120, 48, 0.04);
+}
+
+.lnd-root[data-theme="light"] .org-signup-phone-wrap .country-list.org-signup-phone-dropdown {
+  background: #fffaf0;
+  color: #34240f;
+}
+
+.lnd-root[data-theme="light"] .org-signup-phone-wrap .country-list .country,
+.lnd-root[data-theme="light"] .org-signup-phone-wrap .country-list .search,
+.lnd-root[data-theme="light"] .org-signup-phone-wrap .search-box.org-signup-phone-search {
+  color: #34240f;
+}
+.lnd-root[data-theme="light"] .org-signup-input-wrap select {
+  color-scheme: light;
+  background-color: rgba(255, 255, 255, 0.98);
+  color: #34240f;
+}
+
+.lnd-root[data-theme="light"] .org-signup-input-wrap select option {
+  background-color: #fffaf0;
+  color: #34240f;
 }
 
 .org-signup-error {

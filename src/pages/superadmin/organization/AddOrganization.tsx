@@ -377,7 +377,7 @@ const AddOrganization = () => {
                       id="adminEmail"
                       type="email"
                       name="email"
-                      placeholder="e.g. admin@royalhospitality.com"
+                      placeholder="Admin email for login"
                       className="luxury-input add-branch-input-with-icon"
                       value={corporateAdmin.email}
                       onChange={handleAdminChange}

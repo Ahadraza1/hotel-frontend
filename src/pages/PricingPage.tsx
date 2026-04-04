@@ -137,7 +137,21 @@ const PricingPage = () => {
                   <button
                     className={`lnd-plan-cta ${plan.isPopular ? "lnd-btn-primary" : "lnd-btn-outline"}`}
                     onClick={() =>
-                      navigate(isAuthenticated ? "/dashboard" : "/signup")
+                      navigate(
+                        isAuthenticated
+                          ? "/dashboard"
+                          : `/finalize-order?planId=${encodeURIComponent(
+                              plan._id,
+                            )}&planName=${encodeURIComponent(
+                              plan.name,
+                            )}&price=${encodeURIComponent(
+                              String(
+                                billing === "monthly"
+                                  ? plan.monthlyPrice
+                                  : plan.yearlyPrice,
+                              ),
+                            )}&billingCycle=${encodeURIComponent(billing)}`,
+                      )
                     }
                   >
                     Get Started

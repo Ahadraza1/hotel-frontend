@@ -445,7 +445,7 @@ const LandingPage = () => {
             <div className="lnd-hero-actions">
               <button
                 className="lnd-btn-primary lnd-btn-lg"
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate("/pricing")}
               >
                 Start Free Trial
                 <span className="lnd-btn-arrow">→</span>

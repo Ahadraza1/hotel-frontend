@@ -157,7 +157,7 @@ const Login = ({ onLogin }: LoginProps) => {
                 id="lp-email"
                 type="email"
                 className="luxury-login-input"
-                placeholder="admin@luxuryhms.com"
+                placeholder="Your Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -232,7 +232,7 @@ const Login = ({ onLogin }: LoginProps) => {
 
         <p className="luxury-login-footer-note">
           Need to register your hotel business?{" "}
-          <Link to="/signup" className="luxury-login-link">
+          <Link to="/pricing" className="luxury-login-link">
             Create organization
           </Link>
         </p>

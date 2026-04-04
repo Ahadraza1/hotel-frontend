@@ -1,7 +1,7 @@
 import { City, Country, State } from "country-state-city";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^\+\d(?: ?\d)*$/;
+const PHONE_REGEX = /^\+\d{8,15}$/;
 
 const normalizeLocationValue = (value: string) =>
   value.trim().replace(/\s+/g, " ").toLocaleLowerCase();
@@ -47,9 +47,9 @@ export const validateEmailField = (value: string) =>
   EMAIL_REGEX.test(value.trim()) ? "" : "Please enter a valid email address";
 
 export const validatePhoneField = (value: string) =>
-  PHONE_REGEX.test(value.trim())
+  PHONE_REGEX.test(value.trim().replace(/\s+/g, ""))
     ? ""
-    : "Phone number must be numeric and include country code";
+    : "Please enter a valid phone number with country code";
 
 export const validateCountryField = (value: string) =>
   findCountry(value) ? "" : "This field should contain a valid country name";
