@@ -126,8 +126,8 @@ const Analytics = () => {
     view === "today" ? "Hour" : view === "monthly" ? "Period" : "Month";
 
   const renderControls = () => (
-    <div className="bo-chart-controls">
-      <div className="bo-chart-select-group" style={{ marginRight: "0.5rem" }}>
+    <div className="bo-chart-controls an-controls">
+      <div className="bo-chart-select-group an-controls-group an-controls-group-mode">
         <button
           className={`bo-chart-btn ${mode === "branch" ? "active" : ""}`}
           onClick={() => setMode("branch")}
@@ -141,26 +141,28 @@ const Analytics = () => {
           Organization
         </button>
       </div>
-      <button
-        className={`bo-chart-btn ${view === "today" ? "active" : ""}`}
-        onClick={() => setView("today")}
-      >
-        Today
-      </button>
-      <button
-        className={`bo-chart-btn ${view === "monthly" ? "active" : ""}`}
-        onClick={() => setView("monthly")}
-      >
-        Monthly
-      </button>
-      <button
-        className={`bo-chart-btn ${view === "yearly" ? "active" : ""}`}
-        onClick={() => setView("yearly")}
-      >
-        Yearly
-      </button>
+      <div className="an-controls-group an-controls-group-view">
+        <button
+          className={`bo-chart-btn ${view === "today" ? "active" : ""}`}
+          onClick={() => setView("today")}
+        >
+          Today
+        </button>
+        <button
+          className={`bo-chart-btn ${view === "monthly" ? "active" : ""}`}
+          onClick={() => setView("monthly")}
+        >
+          Monthly
+        </button>
+        <button
+          className={`bo-chart-btn ${view === "yearly" ? "active" : ""}`}
+          onClick={() => setView("yearly")}
+        >
+          Yearly
+        </button>
+      </div>
       {view === "monthly" && (
-        <div className="flex gap-2 items-center bo-chart-select-group">
+        <div className="flex gap-2 items-center bo-chart-select-group an-controls-group an-controls-group-filter">
           <span className="bo-chart-divider" />
           <span className="bo-chart-year-label">Filter:</span>
           <select
@@ -188,7 +190,7 @@ const Analytics = () => {
         </div>
       )}
       {view === "yearly" && (
-        <div className="bo-chart-select-group">
+        <div className="bo-chart-select-group an-controls-group an-controls-group-filter">
           <span className="bo-chart-divider" />
           <span className="bo-chart-year-label">Year:</span>
           <select
@@ -313,38 +315,27 @@ const Analytics = () => {
       <div className="an-charts-grid">
         {activeTab === "Revenue" && (
           <div className="luxury-card an-chart-card" style={{ gridColumn: "1 / -1" }}>
-            <div
-              className="gf-section-header"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-            >
-              <div>
+            <div className="gf-section-header an-section-header">
+              <div className="an-section-heading">
                 <span className="gf-section-title" style={{ display: "block" }}>
                   {mode === "organization" ? "Revenue by Organization" : "Revenue by Branch"}
                 </span>
                 {view === "monthly" && comparison && (
-                  <div
-                    style={{
-                      marginTop: "0.25rem",
-                      fontSize: "0.875rem",
-                      display: "flex",
-                      gap: "0.5rem",
-                      alignItems: "center",
-                    }}
-                  >
+                  <div className="an-comparison-row">
                     {comparison.growth > 0 && (
-                      <span style={{ color: "hsl(160, 59%, 40%)", fontWeight: 500 }}>
+                      <span className="an-comparison-value an-comparison-positive">
                         ↑ {comparison.growth.toFixed(1)}%
                       </span>
                     )}
                     {comparison.growth < 0 && (
-                      <span style={{ color: "hsl(0, 84%, 60%)", fontWeight: 500 }}>
+                      <span className="an-comparison-value an-comparison-negative">
                         ↓ {Math.abs(comparison.growth).toFixed(1)}%
                       </span>
                     )}
                     {comparison.growth === 0 && (
-                      <span style={{ color: "hsl(var(--muted-foreground))" }}>0%</span>
+                      <span className="an-comparison-value an-comparison-neutral">0%</span>
                     )}
-                    <span style={{ color: "hsl(var(--muted-foreground))" }}>vs last month</span>
+                    <span className="an-comparison-caption">vs last month</span>
                   </div>
                 )}
               </div>
@@ -362,13 +353,12 @@ const Analytics = () => {
 
         {activeTab === "Occupancy" && (
           <div className="luxury-card an-chart-card" style={{ gridColumn: "1 / -1" }}>
-            <div
-              className="gf-section-header"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-            >
-              <span className="gf-section-title">
-                {mode === "organization" ? "Occupancy by Organization" : "Occupancy Trend"}
-              </span>
+            <div className="gf-section-header an-section-header">
+              <div className="an-section-heading">
+                <span className="gf-section-title">
+                  {mode === "organization" ? "Occupancy by Organization" : "Occupancy Trend"}
+                </span>
+              </div>
               {renderControls()}
             </div>
             {renderTrendChart({
@@ -384,13 +374,12 @@ const Analytics = () => {
 
         {activeTab === "RevPAR" && (
           <div className="luxury-card an-chart-card" style={{ gridColumn: "1 / -1" }}>
-            <div
-              className="gf-section-header"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-            >
-              <span className="gf-section-title">
-                {mode === "organization" ? "RevPAR by Organization" : "RevPAR Trend"}
-              </span>
+            <div className="gf-section-header an-section-header">
+              <div className="an-section-heading">
+                <span className="gf-section-title">
+                  {mode === "organization" ? "RevPAR by Organization" : "RevPAR Trend"}
+                </span>
+              </div>
               {renderControls()}
             </div>
             {renderTrendChart({

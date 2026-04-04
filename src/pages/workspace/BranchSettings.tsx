@@ -108,10 +108,10 @@ const BranchSettings = () => {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in bs-root">
       {/* ── Page Header ── */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between mb-6 bs-header">
+        <div className="flex items-center gap-3 bs-header-main">
           <div className="add-branch-header-icon-wrap md:flex hidden items-center justify-center">
             <Settings className="add-branch-header-icon" />
           </div>
@@ -126,7 +126,7 @@ const BranchSettings = () => {
 
         <button
           onClick={resetSettings}
-          className="luxury-btn luxury-btn-outline whitespace-nowrap"
+          className="luxury-btn luxury-btn-outline whitespace-nowrap bs-reset-btn"
           title="Reset to global defaults"
         >
           <RefreshCcw size={16} />
@@ -135,12 +135,12 @@ const BranchSettings = () => {
       </div>
 
       {/* ── Tabs ── */}
-      <div className="flex gap-2 settings-tabs-bar flex-wrap overflow-x-auto">
+      <div className="flex gap-2 settings-tabs-bar flex-wrap overflow-x-auto bs-tabs-bar">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`luxury-btn settings-tab-btn ${
+            className={`luxury-btn settings-tab-btn bs-tab-btn ${
               activeTab === tab
                 ? "settings-tab-active"
                 : "settings-tab-inactive"
@@ -152,7 +152,7 @@ const BranchSettings = () => {
       </div>
 
       {/* ── Settings Form Card ── */}
-      <div className="luxury-card settings-card">
+      <div className="luxury-card settings-card bs-card">
         <div className="mb-6">
           <h2 className="text-xl font-bold font-display text-foreground m-0">
             {formatTabName(activeTab)} Settings
@@ -180,8 +180,8 @@ const BranchSettings = () => {
 
             if (isBoolean) {
               return (
-                <div key={key} className="flex items-center gap-3">
-                  <label className="kpi-label settings-field-label p-0 min-w-[15rem] mb-0">
+                <div key={key} className="flex items-center gap-3 bs-boolean-row">
+                  <label className="kpi-label settings-field-label p-0 min-w-[15rem] mb-0 bs-boolean-label">
                     {formatKey(key)}
                   </label>
                   <button
@@ -242,8 +242,8 @@ const BranchSettings = () => {
           })}
         </div>
 
-        <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/60">
-          <span className="text-xs text-muted-foreground mr-auto">
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/60 bs-footer">
+          <span className="text-xs text-muted-foreground mr-auto bs-footer-text">
             {settings.updatedAt
               ? `Last Updated: ${new Date(settings.updatedAt as unknown as string).toLocaleString()}`
               : ""}
@@ -252,7 +252,7 @@ const BranchSettings = () => {
             <button
               onClick={updateSection}
               disabled={isLoading}
-              className="luxury-btn luxury-btn-primary"
+              className="luxury-btn luxury-btn-primary bs-save-btn"
             >
               {isLoading ? (
                 <Settings className="icon-md animate-spin" />

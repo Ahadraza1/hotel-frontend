@@ -817,9 +817,9 @@ const RolePermissionEditor = () => {
       </div>
 
       {showWorkspaceFilters ? (
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="rpe-filters mb-4 flex flex-wrap items-center gap-3">
           <select
-            className="luxury-input luxury-select w-full sm:w-[13rem]"
+            className="luxury-input luxury-select rpe-filter-select w-full sm:w-[13rem]"
             value={selectedOrg}
             onChange={(e) => setSelectedOrg(e.target.value)}
             disabled={!isViewerSuperAdmin}
@@ -834,7 +834,7 @@ const RolePermissionEditor = () => {
           </select>
 
           <select
-            className="luxury-input luxury-select w-full sm:w-[12rem]"
+            className="luxury-input luxury-select rpe-filter-select w-full sm:w-[12rem]"
             value={selectedBranch}
             onChange={(e) => setSelectedBranch(e.target.value)}
             disabled={!selectedOrg}
