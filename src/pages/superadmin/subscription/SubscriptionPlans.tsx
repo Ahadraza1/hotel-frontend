@@ -8,9 +8,11 @@ import {
   CreditCard,
   Crown,
   Layers3,
+  MoreHorizontal,
   Pencil,
   Plus,
   Trash2,
+  XCircle,
   X,
 } from "lucide-react";
 import api from "@/api/axios";
@@ -84,6 +86,23 @@ interface PlanFormState {
   branchLimit: string;
   features: string[];
 }
+
+const calculateSavingsPercentage = (monthlyPrice: number, yearlyPrice: number) => {
+  if (!Number.isFinite(monthlyPrice) || !Number.isFinite(yearlyPrice) || monthlyPrice <= 0) {
+    return null;
+  }
+
+  if (yearlyPrice >= monthlyPrice * 12) {
+    return null;
+  }
+
+  const yearlyMonthlyEquivalent = yearlyPrice / 12;
+  const savings = monthlyPrice - yearlyMonthlyEquivalent;
+  const savingsPercentage = (savings / monthlyPrice) * 100;
+  const finalPercentage = Math.round(savingsPercentage);
+
+  return finalPercentage > 0 ? finalPercentage : null;
+};
 
 const emptyPlanForm: PlanFormState = {
   name: "",
@@ -182,6 +201,9 @@ const SubscriptionPlans = () => {
   const [planForm, setPlanForm] = useState<PlanFormState>(emptyPlanForm);
   const [assigningOrganization, setAssigningOrganization] =
     useState<OrganizationSummary | null>(null);
+  const [openOrganizationActionId, setOpenOrganizationActionId] = useState<
+    string | null
+  >(null);
   const [assignPlanId, setAssignPlanId] = useState("");
   const [assignBillingCycle, setAssignBillingCycle] = useState<
     "monthly" | "yearly"
@@ -238,6 +260,20 @@ const SubscriptionPlans = () => {
     };
   }, [planModalOpen, assigningOrganization]);
 
+  useEffect(() => {
+    const handleDocumentClick = () => {
+      setOpenOrganizationActionId(null);
+    };
+
+    if (openOrganizationActionId) {
+      document.addEventListener("click", handleDocumentClick);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleDocumentClick);
+    };
+  }, [openOrganizationActionId]);
+
   const sortedPlans = useMemo(() => {
     return [...(dashboard?.plans || [])].sort(
       (left, right) => left.monthlyPrice - right.monthlyPrice,
@@ -266,6 +302,21 @@ const SubscriptionPlans = () => {
       }
     );
   }, [currentOrganization?.subscription.activePlan, sortedPlans]);
+
+  const planFormSavings = useMemo(() => {
+    const monthlyPrice = Number(planForm.monthlyPrice || 0);
+    const yearlyPrice = Number(planForm.yearlyPrice || 0);
+    const savingsPercentage = calculateSavingsPercentage(monthlyPrice, yearlyPrice);
+
+    if (savingsPercentage === null) {
+      return null;
+    }
+
+    return {
+      percentage: savingsPercentage,
+      monthlyEquivalent: yearlyPrice / 12,
+    };
+  }, [planForm.monthlyPrice, planForm.yearlyPrice]);
 
   const overviewCards = useMemo(() => {
     if (!dashboard) return [];
@@ -468,6 +519,38 @@ const SubscriptionPlans = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const openOrganizationPlanEditor = (organization: OrganizationSummary) => {
+    const currentPlan =
+      sortedPlans.find(
+        (plan) => plan.name === organization.subscription.activePlan?.name,
+      ) || null;
+
+    setAssigningOrganization(organization);
+    setAssignBillingCycle(
+      organization.subscription.billingCycle === "yearly" ? "yearly" : "monthly",
+    );
+    setAssignPlanId(currentPlan?._id || "");
+    setOpenOrganizationActionId(null);
+  };
+
+  const cancelOrganizationPlan = async (organization: OrganizationSummary) => {
+    await confirm({
+      title: "Cancel Plan",
+      message: `Are you sure you want to cancel the plan for ${organization.organizationName}?`,
+      itemName: organization.organizationName,
+      successMessage: "Plan cancelled successfully.",
+      errorMessage: "Failed to cancel plan.",
+      confirmLabel: "Cancel Plan",
+      onConfirm: async () => {
+        await api.post(
+          `/subscriptions/organizations/${organization.organizationId}/cancel`,
+        );
+        setOpenOrganizationActionId(null);
+        await fetchDashboard();
+      },
+    });
   };
 
   const upgradePlan = async (plan: Plan) => {
@@ -852,16 +935,92 @@ const SubscriptionPlans = () => {
                       <td>{organization.branchUsage}</td>
                       <td>{formatDate(organization.expiryDate)}</td>
                       <td>
-                        <button
-                          className="luxury-btn luxury-btn-outline sb-table-btn"
-                          onClick={() => {
-                            setAssigningOrganization(organization);
-                            setAssignBillingCycle("monthly");
-                            setAssignPlanId("");
+                        <div
+                          style={{
+                            position: "relative",
+                            display: "inline-flex",
                           }}
                         >
-                          Assign Plan
-                        </button>
+                          <button
+                            className="sb-icon-btn"
+                            aria-label="Open actions menu"
+                            aria-haspopup="true"
+                            aria-expanded={
+                              openOrganizationActionId === organization.organizationId
+                            }
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenOrganizationActionId((current) =>
+                                current === organization.organizationId
+                                  ? null
+                                  : organization.organizationId,
+                              );
+                            }}
+                          >
+                            <MoreHorizontal size={18} />
+                          </button>
+
+                          {openOrganizationActionId === organization.organizationId ? (
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: "42px",
+                                right: 0,
+                                width: "220px",
+                                background: "hsl(var(--card))",
+                                borderRadius: "16px",
+                                boxShadow:
+                                  "0 20px 45px rgba(0, 0, 0, 0.22), 0 4px 16px rgba(0, 0, 0, 0.12)",
+                                border: "1px solid hsl(var(--border) / 0.8)",
+                                padding: "6px 0",
+                                zIndex: 30,
+                              }}
+                              onClick={(event) => event.stopPropagation()}
+                            >
+                              <button
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "12px",
+                                  padding: "11px 18px",
+                                  fontSize: "14px",
+                                  fontWeight: 500,
+                                  color: "hsl(var(--foreground))",
+                                  background: "transparent",
+                                  border: "none",
+                                  width: "100%",
+                                  cursor: "pointer",
+                                  textAlign: "left",
+                                }}
+                                onClick={() => openOrganizationPlanEditor(organization)}
+                              >
+                                <Pencil size={16} />
+                                Edit Plan
+                              </button>
+
+                              <button
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "12px",
+                                  padding: "11px 18px",
+                                  fontSize: "14px",
+                                  fontWeight: 500,
+                                  color: "#ef4444",
+                                  background: "rgba(239, 68, 68, 0.06)",
+                                  border: "none",
+                                  width: "100%",
+                                  cursor: "pointer",
+                                  textAlign: "left",
+                                }}
+                                onClick={() => void cancelOrganizationPlan(organization)}
+                              >
+                                <XCircle size={16} />
+                                Cancel Plan
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -969,6 +1128,20 @@ const SubscriptionPlans = () => {
                       }))
                     }
                   />
+                  {planFormSavings ? (
+                    <p
+                      className="add-branch-label"
+                      style={{
+                        marginTop: "0.5rem",
+                        textTransform: "none",
+                        letterSpacing: "0.02em",
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      Save {planFormSavings.percentage}%. Effective monthly price:{" "}
+                      {formatCurrency(planFormSavings.monthlyEquivalent)}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="add-branch-field add-branch-field-full">

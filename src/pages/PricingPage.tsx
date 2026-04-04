@@ -19,6 +19,23 @@ type PricingPlan = {
   isPopular: boolean;
 };
 
+const calculateSavingsPercentage = (monthlyPrice: number, yearlyPrice: number) => {
+  if (!Number.isFinite(monthlyPrice) || !Number.isFinite(yearlyPrice) || monthlyPrice <= 0) {
+    return null;
+  }
+
+  if (yearlyPrice >= monthlyPrice * 12) {
+    return null;
+  }
+
+  const yearlyMonthlyEquivalent = yearlyPrice / 12;
+  const savings = monthlyPrice - yearlyMonthlyEquivalent;
+  const savingsPercentage = (savings / monthlyPrice) * 100;
+  const finalPercentage = Math.round(savingsPercentage);
+
+  return finalPercentage > 0 ? finalPercentage : null;
+};
+
 const formatBranchLabel = (maxBranches: number | null) =>
   maxBranches === null ? "Unlimited Branches" : `Up to ${maxBranches} Branches`;
 
@@ -77,6 +94,21 @@ const PricingPage = () => {
     }
   }, [plans, searchParams]);
 
+  const yearlySavingsPercentage = useMemo(() => {
+    const savingsValues = plans
+      .map((plan) =>
+        calculateSavingsPercentage(
+          Number(plan.monthlyPrice || 0),
+          Number(plan.yearlyPrice || 0),
+        ),
+      )
+      .filter((value): value is number => value !== null);
+
+    if (!savingsValues.length) return null;
+
+    return Math.max(...savingsValues);
+  }, [plans]);
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -111,7 +143,11 @@ const PricingPage = () => {
                 onClick={() => setBilling("yearly")}
               >
                 Yearly
-                <span className="lnd-save-badge-pill">Save 20%</span>
+                {yearlySavingsPercentage !== null ? (
+                  <span className="lnd-save-badge-pill">
+                    Save {yearlySavingsPercentage}%
+                  </span>
+                ) : null}
               </button>
             </div>
           </section>
