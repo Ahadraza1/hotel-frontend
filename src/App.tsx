@@ -92,8 +92,8 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ConfirmProvider>
-          <SystemSettingsProvider>
-            <AuthProvider>
+          <AuthProvider>
+            <SystemSettingsProvider>
               <BranchWorkspaceProvider>
                 <BrowserRouter>
                   <Routes>
@@ -606,8 +606,8 @@ const App = () => {
                   </Routes>
                 </BrowserRouter>
               </BranchWorkspaceProvider>
-            </AuthProvider>
-          </SystemSettingsProvider>
+            </SystemSettingsProvider>
+          </AuthProvider>
         </ConfirmProvider>
       </ThemeProvider>
     </QueryClientProvider>

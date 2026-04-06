@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import api from "@/api/axios";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   DEFAULT_CURRENCY,
   formatCompactCurrency as formatCompactCurrencyValue,
@@ -37,6 +38,7 @@ export const SystemSettingsProvider = ({
 }: {
   children: ReactNode;
 }) => {
+  const { user, token, loading: isAuthLoading } = useAuth();
   const [systemSettings, setSystemSettings] = useState<SystemSettingsData>({
     baseCurrency: DEFAULT_CURRENCY,
   });
@@ -46,9 +48,30 @@ export const SystemSettingsProvider = ({
     let isMounted = true;
 
     const fetchSystemSettings = async () => {
+      if (isAuthLoading) {
+        return;
+      }
+
+      if (!token || !user) {
+        if (isMounted) {
+          setSystemSettings({ baseCurrency: DEFAULT_CURRENCY });
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (isMounted) {
+        setLoading(true);
+      }
+
       try {
         const response = await api.get<{ data: SystemSettingsData }>(
           "/system-settings",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
 
         if (!isMounted) return;
@@ -68,7 +91,7 @@ export const SystemSettingsProvider = ({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isAuthLoading, token, user]);
 
   const baseCurrency = normalizeCurrency(systemSettings.baseCurrency);
 

@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import { Clock, ChefHat, CheckSquare } from "lucide-react";
 import api from "@/api/axios";
 import { useConfirmModal } from "@/hooks/useConfirmModal";
-import socket from "@/socket";
+import { useAuth } from "@/contexts/AuthContext";
+import { connectSocket } from "@/socket";
 
 type FilterType = "all" | "pending" | "preparing" | "ready";
 
@@ -86,6 +87,7 @@ function formatElapsed(date: Date, now: Date): string {
 
 const Kitchen = () => {
   const { branchId } = useParams();
+  const { user, token, loading: isAuthLoading } = useAuth();
 
   const [groups, setGroups] = useState<KitchenGroup[]>([]);
   const [filter, setFilter] = useState<FilterType>("all");
@@ -111,9 +113,13 @@ const Kitchen = () => {
   };
 
   useEffect(() => {
-    if (!branchId) return;
+    if (isAuthLoading || !branchId || !token || !user) return;
 
     void fetchGroups(branchId);
+
+    const socket = connectSocket(token);
+
+    if (!socket) return;
 
     socket.emit("join-branch", branchId);
 
@@ -132,7 +138,7 @@ const Kitchen = () => {
       socket.off("ORDER_CREATED", refreshGroups);
       socket.off("ORDER_UPDATED", refreshGroups);
     };
-  }, [branchId]);
+  }, [branchId, isAuthLoading, token, user]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);

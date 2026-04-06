@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import socket from "@/socket";
 import api from "@/api/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
@@ -8,6 +7,7 @@ import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useConfirm, useToast } from "@/components/confirm/ConfirmProvider";
 import PermissionNotice from "@/components/auth/PermissionNotice";
+import { connectSocket } from "@/socket";
 import {
   Plus,
   Trash2,
@@ -79,7 +79,7 @@ const POS = () => {
   const toast = useToast();
   const confirm = useConfirm();
 
-  const { user } = useAuth();
+  const { user, token, loading: isAuthLoading } = useAuth();
   const { activeBranch } = useBranchWorkspace();
   const { formatCurrency } = useSystemSettings();
   const { canAccess, canView, canCreate, canUpdate, canDelete } =
@@ -117,7 +117,11 @@ const POS = () => {
   const shouldHideContent = !!user && canAccess && !canView;
 
   useEffect(() => {
-    if (!branchId) return;
+    if (isAuthLoading || !branchId || !token || !user) return;
+
+    const socket = connectSocket(token);
+
+    if (!socket) return;
 
     socket.emit("join-branch", `branch-${branchId}`);
     socket.emit("join-branch", `branch_${branchId}`);
@@ -152,7 +156,7 @@ const POS = () => {
       socket.off("new-order", handleNewOrder);
       socket.off("order-updated", handleOrderUpdated);
     };
-  }, [branchId]);
+  }, [branchId, isAuthLoading, token, user]);
 
   useEffect(() => {
     setSelectedTableId("");

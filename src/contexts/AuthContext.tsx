@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "@/api/axios";
+import { disconnectSocket } from "@/socket";
 
 interface User {
   id?: string;
@@ -29,6 +30,7 @@ interface SubscriptionAccess {
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   role: string | null;
   permissions: string[];
   loading: boolean;
@@ -47,6 +49,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const normalizePermissions = (perms?: string[]) =>
@@ -69,13 +72,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const storedUser = localStorage.getItem("auth_user");
 
       if (!token) {
+        setToken(null);
         localStorage.removeItem("auth_user");
         localStorage.removeItem("activeBranchId");
         localStorage.removeItem("userBranchId");
+        disconnectSocket();
         setUser(null);
         setLoading(false);
         return;
       }
+
+      setToken(token);
 
       if (storedUser) {
         try {
@@ -119,10 +126,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         setUser(normalizedUser);
       } catch (error) {
+        setToken(null);
         localStorage.removeItem("token");
         localStorage.removeItem("auth_user");
         localStorage.removeItem("activeBranchId");
         localStorage.removeItem("userBranchId");
+        disconnectSocket();
         setUser(null);
       } finally {
         setLoading(false);
@@ -146,6 +155,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     persistBranchContext(normalizedUser.branchId);
 
+    setToken(token);
     setUser(normalizedUser);
   };
 
@@ -154,6 +164,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem("auth_user");
     localStorage.removeItem("activeBranchId");
     localStorage.removeItem("userBranchId");
+    setToken(null);
+    disconnectSocket();
     setUser(null);
   };
 
@@ -234,6 +246,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider
       value={{
         user,
+        token,
         role: user?.role || null,
         permissions: user?.permissions || [],
         loading,
