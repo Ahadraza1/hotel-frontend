@@ -7,6 +7,8 @@ import "@/pages/superadmin/profile/profile.css";
 import { useConfirm, useToast } from "@/components/confirm/ConfirmProvider";
 import { validateEmailField, validatePhoneField } from "@/lib/fieldValidation";
 import { useAuth } from "@/contexts/AuthContext";
+import ForgotPasswordFlow from "@/components/auth/ForgotPasswordFlow";
+import "@/components/auth/forgot-password.css";
 
 const normalizePhoneValue = (value: string) => {
   const trimmed = value.trim();
@@ -22,6 +24,7 @@ const Profile = () => {
   const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState<"profile" | "security">("profile");
   const [passwordSaving, setPasswordSaving] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -461,6 +464,16 @@ const Profile = () => {
                     }
                   />
                 </div>
+
+                <div className="profile-security-otp-action">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setForgotPasswordOpen(true)}
+                  >
+                    Forgot Password (Use OTP)
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -479,6 +492,15 @@ const Profile = () => {
           </>
         )}
       </div>
+
+      <ForgotPasswordFlow
+        open={forgotPasswordOpen}
+        onClose={() => setForgotPasswordOpen(false)}
+        initialEmail={form.email}
+        onPasswordResetSuccess={() => {
+          logout();
+        }}
+      />
     </div>
   );
 };

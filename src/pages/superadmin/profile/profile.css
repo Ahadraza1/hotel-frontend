@@ -208,11 +208,77 @@
 }
 
 .profile-phone-input .profile-phone-input-dropdown {
-  background: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
   border-radius: 10px;
-  color: hsl(var(--foreground));
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  color: hsl(var(--foreground)) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Search box inside dropdown */
+.profile-phone-input .profile-phone-input-dropdown .search {
+  background: hsl(var(--card)) !important;
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 8px 10px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.profile-phone-input .profile-phone-input-dropdown .search .search-emoji {
+  color: hsl(var(--muted-foreground));
+}
+
+.profile-phone-input .profile-phone-input-dropdown .search input,
+.profile-phone-input .profile-phone-input-dropdown .search-box {
+  background: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 6px !important;
+  padding: 6px 10px !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+}
+
+.profile-phone-input .profile-phone-input-dropdown .search input::placeholder,
+.profile-phone-input .profile-phone-input-dropdown .search-box::placeholder {
+  color: hsl(var(--muted-foreground) / 0.6) !important;
+}
+
+/* Country list items — .profile-phone-input-dropdown IS the ul.country-list */
+.profile-phone-input .profile-phone-input-dropdown .country {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  padding: 8px 14px;
+}
+
+.profile-phone-input .profile-phone-input-dropdown .country:hover {
+  background: hsl(var(--muted) / 0.5) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.profile-phone-input .profile-phone-input-dropdown .country.highlight {
+  background: hsl(var(--muted) / 0.35) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.profile-phone-input .profile-phone-input-dropdown .country.highlight:hover {
+  background: hsl(var(--muted) / 0.55) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Dial code text */
+.profile-phone-input .profile-phone-input-dropdown .country .dial-code {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* No results text */
+.profile-phone-input .profile-phone-input-dropdown .no-entries-message {
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--card)) !important;
+  padding: 10px 14px;
 }
 
 /* ===============================

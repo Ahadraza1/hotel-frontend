@@ -49,7 +49,7 @@ const MarketingHeader: React.FC = () => {
       <div className="lnd-nav-inner">
         <div className="lnd-logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           <span className="lnd-logo-icon">🏨</span>
-          <span className="lnd-logo-text">HotelOS</span>
+          <span className="lnd-logo-text">LUXURY HMS</span>
         </div>
 
         <div className="lnd-nav-links">

@@ -27,6 +27,7 @@ import SecurityAudit from "./pages/superadmin/SecurityAudit";
 import Integrations from "./pages/superadmin/Integrations";
 import SystemSettings from "./pages/superadmin/SystemSettings";
 import Login from "./pages/superadmin/Login";
+import ForgotPasswordPage from "./pages/superadmin/ForgotPasswordPage";
 import LandingPage from "./pages/LandingPage";
 import ContactUs from "./pages/ContactUs";
 import PricingPage from "./pages/PricingPage";
@@ -106,6 +107,11 @@ const App = () => {
                   path="/login"
                   element={<Login onLogin={handleLogin} />}
                 />
+                <Route
+                  path="/signin"
+                  element={<Login onLogin={handleLogin} />}
+                />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/signup" element={<OrganizationSignup />} />
                 <Route path="/accept-invite" element={<AcceptInvite />} />
 

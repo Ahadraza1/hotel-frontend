@@ -5,6 +5,7 @@ import api from "@/api/axios";
 import { useToast } from "@/components/confirm/ConfirmProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import "@/components/auth/forgot-password.css";
 import MarketingHeader from "@/components/layout/MarketingHeader.tsx";
 import "@/pages/landing.css";
 
@@ -197,6 +198,16 @@ const Login = ({ onLogin }: LoginProps) => {
               </div>
             </div>
 
+            <div className="luxury-login-forgot">
+              <button
+                type="button"
+                className="luxury-login-forgot-button"
+                onClick={() => navigate("/forgot-password")}
+              >
+                Forgot Password?
+              </button>
+            </div>
+
             {/* Remember me */}
             <div className="luxury-login-remember">
               <label className="luxury-login-remember-label">
@@ -242,6 +253,7 @@ const Login = ({ onLogin }: LoginProps) => {
           <span className="luxury-login-bold">Login Mode</span> · Enter your
           credentials to continue
         </p>
+
       </div>
     </div>
   );

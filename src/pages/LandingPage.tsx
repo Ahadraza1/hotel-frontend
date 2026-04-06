@@ -747,7 +747,7 @@ const LandingPage = () => {
           <div className="lnd-footer-brand">
             <div className="lnd-logo">
               <span className="lnd-logo-icon">🏨</span>
-              <span className="lnd-logo-text">HotelOS</span>
+              <span className="lnd-logo-text">LUXURY HMS</span>
             </div>
             <p className="lnd-footer-tagline">
               The all-in-one hotel management platform for modern hospitality
