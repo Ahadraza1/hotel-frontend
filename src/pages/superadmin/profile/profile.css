@@ -161,6 +161,60 @@
   box-shadow: 0 0 0 3px hsla(var(--grandeur-gold), 0.15);
 }
 
+.profile-phone-input {
+  margin-top: 6px;
+}
+
+.profile-phone-input .profile-phone-input-field {
+  width: 100%;
+  height: auto;
+  padding: 11px 12px 11px 72px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  font-size: 14px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-phone-input .profile-phone-input-field::placeholder {
+  color: hsl(var(--muted-foreground) / 0.6);
+}
+
+.profile-phone-input .profile-phone-input-field:focus {
+  outline: none;
+  border-color: hsl(var(--grandeur-gold));
+  box-shadow: 0 0 0 3px hsla(var(--grandeur-gold), 0.15);
+}
+
+.profile-phone-input .profile-phone-input-button {
+  width: 60px;
+  border: 1px solid hsl(var(--border));
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background: hsl(var(--background));
+}
+
+.profile-phone-input .profile-phone-input-button .selected-flag {
+  width: 100%;
+  padding: 0 0 0 18px;
+  border-radius: 10px 0 0 10px;
+}
+
+.profile-phone-input .profile-phone-input-button:hover,
+.profile-phone-input .profile-phone-input-button:focus,
+.profile-phone-input .profile-phone-input-button:focus-within {
+  background: hsl(var(--muted) / 0.55);
+}
+
+.profile-phone-input .profile-phone-input-dropdown {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  color: hsl(var(--foreground));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
 /* ===============================
    FOOTER
 ================================ */

@@ -1,10 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import api from "@/api/axios";
 import "@/pages/superadmin/profile/profile.css";
 import { useConfirm, useToast } from "@/components/confirm/ConfirmProvider";
 import { validateEmailField, validatePhoneField } from "@/lib/fieldValidation";
 import { useAuth } from "@/contexts/AuthContext";
+
+const normalizePhoneValue = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  return trimmed.startsWith("+") ? trimmed : `+${trimmed}`;
+};
 
 const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -47,7 +55,7 @@ const Profile = () => {
         setForm({
           name: data.name,
           email: data.email,
-          phone: data.phone || "",
+          phone: normalizePhoneValue(data.phone || ""),
           avatar: data.avatar || "",
         });
       } catch (error) {
@@ -124,7 +132,7 @@ const Profile = () => {
       await api.put("/users/me", {
         name: form.name,
         email: form.email,
-        phone: form.phone,
+        phone: normalizePhoneValue(form.phone),
       });
 
       toast.success("Profile updated successfully!");
@@ -340,24 +348,33 @@ const Profile = () => {
 
                 <div className="form-group">
                   <label htmlFor="profile-phone">Phone Number</label>
-                  <input
+                  <PhoneInput
                     id="profile-phone"
-                    type="text"
-                    placeholder="Enter your phone number"
                     value={form.phone}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setForm({ ...form, phone: value });
+                    country="in"
+                    enableSearch
+                    inputProps={{
+                      id: "profile-phone",
+                      name: "phone",
+                      placeholder: "Enter your phone number",
+                    }}
+                    containerClass="profile-phone-input"
+                    buttonClass="profile-phone-input-button"
+                    inputClass="profile-phone-input-field"
+                    dropdownClass="profile-phone-input-dropdown"
+                    onChange={(value) => {
+                      const normalizedValue = normalizePhoneValue(value);
+                      setForm({ ...form, phone: normalizedValue });
                       setFieldErrors((prev) => {
                         const next = { ...prev };
-                        const nextError = getFieldError("phone", value);
+                        const nextError = getFieldError("phone", normalizedValue);
                         if (nextError) next.phone = nextError;
                         else delete next.phone;
                         return next;
                       });
                     }}
-                    onBlur={(e) => {
-                      const nextError = getFieldError("phone", e.target.value);
+                    onBlur={() => {
+                      const nextError = getFieldError("phone", form.phone);
                       setFieldErrors((prev) => {
                         const next = { ...prev };
                         if (nextError) next.phone = nextError;
