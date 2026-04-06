@@ -137,7 +137,7 @@ const FinalizeOrderPage = () => {
       planId: orderSummary.planId,
       planName: orderSummary.planName,
       price: orderSummary.price,
-      billingCycle: orderSummary.billingCycle,
+      billingCycle: orderSummary.billingCycle as "yearly" | "monthly",
       email,
       name: customerName,
       paymentStatus: "failed",
@@ -264,7 +264,7 @@ const FinalizeOrderPage = () => {
             await persistFailedState({
               checkoutReference: checkoutData.checkoutReference,
               failureReason: message,
-              orderId: checkoutData.order.id,
+              orderId: checkoutData.order?.id || null,
             });
           }
         },

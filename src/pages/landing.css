@@ -156,8 +156,8 @@
 
 .lnd-nav-scrolled {
   background: var(--lnd-nav-scrolled-bg);
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
   box-shadow: var(--lnd-nav-scrolled-shadow);
   padding: 14px 0;
 }
@@ -516,6 +516,7 @@
     0 40px 100px rgba(0,0,0,0.7),
     0 0 0 1px rgba(201,168,92, 0.08),
     inset 0 1px 0 rgba(201,168,92, 0.07);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   width: 100%;
 }
@@ -1281,8 +1282,8 @@
   justify-content: center;
   padding: 24px;
   background: rgba(8, 6, 3, 0.72);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 
 .lnd-contact-page-shell {
@@ -1683,8 +1684,8 @@
   padding: 12px 24px 20px;
   border-top: 1px solid var(--lnd-border);
   background: var(--lnd-nav-scrolled-bg);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   animation: menu-drop 0.2s ease;
 }
 
@@ -1865,7 +1866,7 @@
   /* Hero */
   .lnd-hero {
     padding: 96px 20px 64px;
-    min-height: auto;
+    min-height: 0;
   }
   .lnd-hero-headline { font-size: 2.2rem; letter-spacing: -1px; }
   .lnd-hero-sub { font-size: 15px; max-width: 500px; }
