@@ -1,12 +1,15 @@
-import { useMemo, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import { formatDistanceToNow, format } from "date-fns";
 import { Bell, Search } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
+
+const NOTIFICATIONS_PER_PAGE = 20;
 
 const Notifications = () => {
   const { data, isLoading, isError } = useNotifications();
   const notifications = data?.notifications || [];
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const filteredNotifications = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -20,6 +23,33 @@ const Notifications = () => {
         .some((value) => String(value).toLowerCase().includes(query)),
     );
   }, [notifications, search]);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredNotifications.length / NOTIFICATIONS_PER_PAGE),
+  );
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedNotifications = useMemo(() => {
+    const startIndex = (safeCurrentPage - 1) * NOTIFICATIONS_PER_PAGE;
+    return filteredNotifications.slice(
+      startIndex,
+      startIndex + NOTIFICATIONS_PER_PAGE,
+    );
+  }, [filteredNotifications, safeCurrentPage]);
+  const showingFrom = filteredNotifications.length
+    ? (safeCurrentPage - 1) * NOTIFICATIONS_PER_PAGE + 1
+    : 0;
+  const showingTo = filteredNotifications.length
+    ? Math.min(
+        safeCurrentPage * NOTIFICATIONS_PER_PAGE,
+        filteredNotifications.length,
+      )
+    : 0;
+
+  useEffect(() => {
+    if (currentPage !== safeCurrentPage) {
+      setCurrentPage(safeCurrentPage);
+    }
+  }, [currentPage, safeCurrentPage]);
 
   return (
     <div className="ntf-root animate-fade-in">
@@ -83,10 +113,10 @@ const Notifications = () => {
             </div>
           </div>
 
-          <div className="ur-search-wrap" style={{ margin: "0 1.75rem 1rem" }}>
-            <Search className="ur-search-icon" />
+          <div className="ntf-search-wrap">
+            <Search className="ntf-search-icon" />
             <input
-              className="ur-search-input"
+              className="ntf-search-input"
               placeholder="Search notifications..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -108,7 +138,7 @@ const Notifications = () => {
                 </div>
               </div>
             ) : (
-              filteredNotifications.map((notification) => (
+              paginatedNotifications.map((notification) => (
                 <article key={notification._id} className="ntf-item">
                   <div className="ntf-item-accent" />
                   <div className="ntf-item-body">
@@ -121,7 +151,7 @@ const Notifications = () => {
                       </div>
 
                       <span className="ntf-item-time">
-                        {formatDistanceToNow(new Date(notification.createdAt), {
+                        {format(new Date(notification.createdAt), "MMM dd, yyyy")} • {formatDistanceToNow(new Date(notification.createdAt), {
                           addSuffix: true,
                         })}
                       </span>
@@ -133,6 +163,38 @@ const Notifications = () => {
               ))
             )}
           </div>
+
+          {filteredNotifications.length > 0 ? (
+            <div className="ntf-pagination">
+              <span className="ntf-pagination-summary">
+                Showing {showingFrom} to {showingTo} of {filteredNotifications.length} notifications
+              </span>
+
+              <div className="ntf-pagination-controls">
+                <button
+                  type="button"
+                  className="ntf-pagination-btn"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={safeCurrentPage === 1}
+                >
+                  Previous
+                </button>
+                <span className="ntf-pagination-page">
+                  Page {safeCurrentPage} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  className="ntf-pagination-btn"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={safeCurrentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
     </div>

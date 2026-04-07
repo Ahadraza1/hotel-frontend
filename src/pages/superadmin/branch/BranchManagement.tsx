@@ -13,6 +13,8 @@ interface Branch {
   organization?: {
     name?: string | null;
   } | null;
+  city?: string;
+  state?: string;
   country?: string;
   status?: "active" | "inactive" | "maintenance";
   rooms?: number;
@@ -58,6 +60,10 @@ const BranchManagement = () => {
     branch.organization?.name?.trim() ||
     branch.organizationName?.trim() ||
     "Unknown Organization";
+
+  const getBranchLocation = (branch: Branch) =>
+    [branch.city, branch.state, branch.country].filter(Boolean).join(", ") ||
+    "Location not set";
 
   const groupedBranches = useMemo<BranchGroup[]>(() => {
     const groups = new Map<string, BranchGroup>();
@@ -198,7 +204,7 @@ const BranchManagement = () => {
 
                       <div className="bm-branch-meta">
                         <MapPin className="bm-meta-icon" />
-                        <span>{branch.country || "Location not set"}</span>
+                        <span>{getBranchLocation(branch)}</span>
                         <span className="bm-meta-sep">|</span>
                         <span>{branch.rooms || branch.totalRooms || 0} rooms</span>
                       </div>

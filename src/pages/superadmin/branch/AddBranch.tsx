@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { City, Country, State } from "country-state-city";
 import {
   ArrowLeft,
   Building2,
@@ -16,8 +17,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/confirm/ConfirmProvider";
 import {
   validateCountryField,
+  validateCityField,
   validateEmailField,
   validatePhoneField,
+  validateStateField,
 } from "@/lib/fieldValidation";
 
 interface Organization {
@@ -25,6 +28,8 @@ interface Organization {
   organizationId: string; // ✅ ADD THIS
   name: string;
 }
+
+const COUNTRY_OPTIONS = Country.getAllCountries();
 
 const AddBranch = () => {
   const navigate = useNavigate();
@@ -41,6 +46,8 @@ const AddBranch = () => {
     name: "",
     organizationId: "",
     country: "",
+    state: "",
+    city: "",
     rooms: 0,
     floors: 1,
     status: "active",
@@ -51,6 +58,31 @@ const AddBranch = () => {
     managerEmail: "",
     managerPhone: "",
   });
+  const selectedCountry = useMemo(
+    () =>
+      COUNTRY_OPTIONS.find((country) => country.name === form.country) || null,
+    [form.country],
+  );
+
+  const stateOptions = useMemo(
+    () =>
+      selectedCountry ? State.getStatesOfCountry(selectedCountry.isoCode) : [],
+    [selectedCountry],
+  );
+
+  const selectedState = useMemo(
+    () => stateOptions.find((state) => state.name === form.state) || null,
+    [form.state, stateOptions],
+  );
+
+  const cityOptions = useMemo(
+    () =>
+      selectedCountry && selectedState
+        ? City.getCitiesOfState(selectedCountry.isoCode, selectedState.isoCode)
+        : [],
+    [selectedCountry, selectedState],
+  );
+
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
@@ -116,6 +148,10 @@ const AddBranch = () => {
     switch (name) {
       case "country":
         return validateCountryField(value);
+      case "state":
+        return value ? validateStateField(form.country, value) : "";
+      case "city":
+        return value ? validateCityField(form.country, form.state, value) : "";
       case "managerEmail":
         return value.trim() ? validateEmailField(value) : "";
       case "managerPhone":
@@ -131,10 +167,23 @@ const AddBranch = () => {
     const { name, value } = e.target;
     const nextValue = name === "rooms" || name === "floors" ? Number(value) : value;
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: nextValue,
-    }));
+    setForm((prev) => {
+      const nextForm = {
+        ...prev,
+        [name]: nextValue,
+      };
+
+      if (name === "country") {
+        nextForm.state = "";
+        nextForm.city = "";
+      }
+
+      if (name === "state") {
+        nextForm.city = "";
+      }
+
+      return nextForm;
+    });
 
     if (typeof nextValue === "string") {
       setFieldErrors((prev) => {
@@ -144,12 +193,23 @@ const AddBranch = () => {
         if (nextError) next[name] = nextError;
         else delete next[name];
 
+        if (name === "country") {
+          delete next.state;
+          delete next.city;
+        }
+
+        if (name === "state") {
+          delete next.city;
+        }
+
         return next;
       });
     }
   };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleBlur = (
+    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
 
     setFieldErrors((prev) => {
@@ -174,6 +234,12 @@ const AddBranch = () => {
     const countryError = getFieldError("country", form.country);
     if (countryError) nextErrors.country = countryError;
 
+    const stateError = getFieldError("state", form.state);
+    if (stateError) nextErrors.state = stateError;
+
+    const cityError = getFieldError("city", form.city);
+    if (cityError) nextErrors.city = cityError;
+
     const managerEmailError = getFieldError("managerEmail", form.managerEmail);
     if (managerEmailError) nextErrors.managerEmail = managerEmailError;
 
@@ -192,6 +258,8 @@ const AddBranch = () => {
         name: form.name,
         organizationId: form.organizationId,
         country: form.country,
+        state: form.state,
+        city: form.city,
         rooms: form.rooms,
         floors: form.floors,
         status: form.status,
@@ -302,19 +370,88 @@ const AddBranch = () => {
             </label>
             <div className="add-branch-input-wrap">
               <Globe className="add-branch-field-icon" />
-              <input
+              <select
                 id="branch-country"
                 name="country"
                 value={form.country}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                className="luxury-input add-branch-input-with-icon"
-                placeholder="e.g. United Arab Emirates"
-              />
+                className="luxury-input luxury-select add-branch-input-with-icon"
+              >
+                <option value="">Select Country</option>
+                {COUNTRY_OPTIONS.map((country) => (
+                  <option key={country.isoCode} value={country.name}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
             </div>
             {fieldErrors.country ? (
               <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
                 {fieldErrors.country}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="add-branch-field">
+            <label htmlFor="branch-state" className="add-branch-label">
+              State
+            </label>
+            <div className="add-branch-input-wrap">
+              <Building2 className="add-branch-field-icon" />
+              <select
+                id="branch-state"
+                name="state"
+                value={form.state}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                disabled={!form.country}
+                className="luxury-input luxury-select add-branch-input-with-icon"
+              >
+                <option value="">Select State</option>
+                {stateOptions.map((state) => (
+                  <option key={`${state.countryCode}-${state.isoCode}`} value={state.name}>
+                    {state.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {fieldErrors.state ? (
+              <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                {fieldErrors.state}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="add-branch-field">
+            <label htmlFor="branch-city" className="add-branch-label">
+              City
+            </label>
+            <div className="add-branch-input-wrap">
+              <Building2 className="add-branch-field-icon" />
+              <select
+                id="branch-city"
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                disabled={!form.country || !form.state}
+                className="luxury-input luxury-select add-branch-input-with-icon"
+              >
+                <option value="">Select City</option>
+                {cityOptions.map((city) => (
+                  <option
+                    key={`${city.countryCode}-${city.stateCode}-${city.name}`}
+                    value={city.name}
+                  >
+                    {city.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {fieldErrors.city ? (
+              <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                {fieldErrors.city}
               </span>
             ) : null}
           </div>
