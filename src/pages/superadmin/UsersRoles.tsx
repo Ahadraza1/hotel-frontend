@@ -76,6 +76,17 @@ const ROLE_DOT_CLASSES = [
   "dot-orange",
 ];
 
+const FALLBACK_ASSIGNABLE_ROLES = [
+  "CORPORATE_ADMIN",
+  "BRANCH_MANAGER",
+  "RESTAURANT_MANAGER",
+  "RECEPTIONIST",
+  "ACCOUNTANT",
+  "WAITER",
+  "HR_MANAGER",
+  "HOUSEKEEPING",
+];
+
 const buildRoleDistribution = (usersData: User[]): RoleDistribution[] => {
   const distributionMap: Record<string, number> = {};
 
@@ -118,14 +129,8 @@ const UsersRoles = () => {
   const [roleUpdatingIds, setRoleUpdatingIds] = useState<string[]>([]);
   const [roleEditor, setRoleEditor] = useState<RoleEditState | null>(null);
 
-  const fetchRoles = async (targetUser?: User) => {
-    const params = targetUser?.organizationId
-      ? {
-          organizationId: targetUser.organizationId,
-          ...(targetUser.branchId ? { branchId: targetUser.branchId } : {}),
-        }
-      : undefined;
-    const rolesRes = await api.get<{ data: Role[] }>("/roles", { params });
+  const fetchRoles = async () => {
+    const rolesRes = await api.get<{ data: Role[] }>("/roles");
     const rolesData = rolesRes.data.data || [];
 
     console.log("roles", rolesData);
@@ -175,6 +180,9 @@ const UsersRoles = () => {
 
   const canEditUserRole = (targetUser: User) =>
     canManageUser(targetUser) && hasPermission("UPDATE_USER");
+
+  const isProtectedSuperAdminUser = (targetUser: User) =>
+    targetUser.role === "SUPER_ADMIN";
 
   const syncUsers = (updater: (prev: User[]) => User[]) => {
     setUsers((prev) => {
@@ -252,7 +260,7 @@ const UsersRoles = () => {
     }
 
     try {
-      const rolesData = await fetchRoles(targetUser);
+      const rolesData = await fetchRoles();
 
       setRoleEditor({
         user: targetUser,
@@ -289,7 +297,7 @@ const UsersRoles = () => {
       return;
     }
 
-    const selectedRoleOption = roles.find(
+    const selectedRoleOption = [...roles, ...fallbackRoleOptions].find(
       (role) => (role.normalizedName || role.name) === selectedRole,
     );
 
@@ -349,6 +357,35 @@ const UsersRoles = () => {
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.isActive).length;
   const editableRoles = roles.filter((role) => !isSuperAdminRole(role));
+  const fallbackRoleOptions: Role[] = FALLBACK_ASSIGNABLE_ROLES.filter(
+    (roleName) =>
+      !editableRoles.some(
+        (role) => (role.normalizedName || role.name) === roleName,
+      ),
+  ).map((roleName) => ({
+    _id: `fallback-${roleName}`,
+    name: roleName,
+    normalizedName: roleName,
+  }));
+  const currentEditorRoleOption =
+    roleEditor?.selectedRole &&
+    !isSuperAdminRole(roleEditor.selectedRole) &&
+    ![...editableRoles, ...fallbackRoleOptions].some(
+      (role) => (role.normalizedName || role.name) === roleEditor.selectedRole,
+    )
+      ? [
+          {
+            _id: `current-${roleEditor.selectedRole}`,
+            name: roleEditor.selectedRole,
+            normalizedName: roleEditor.selectedRole,
+          },
+        ]
+      : [];
+  const roleOptions = [
+    ...currentEditorRoleOption,
+    ...editableRoles,
+    ...fallbackRoleOptions,
+  ];
 
   if (loading) {
     return (
@@ -496,6 +533,7 @@ const UsersRoles = () => {
                               className={`rpe-toggle ${u.isActive ? "rpe-toggle-on" : "rpe-toggle-off"}`}
                               onClick={() => handleToggleStatus(u)}
                               disabled={
+                                isProtectedSuperAdminUser(u) ||
                                 !canManageUser(u) ||
                                 statusUpdatingIds.includes(u._id) ||
                                 deletingIds.includes(u._id)
@@ -512,7 +550,7 @@ const UsersRoles = () => {
                               {u.isActive ? "active" : "inactive"}
                             </span>
 
-                            {canManageUser(u) ? (
+                            {canManageUser(u) && !isProtectedSuperAdminUser(u) ? (
                               <button
                                 type="button"
                                 className="ur-user-action-btn"
@@ -628,17 +666,14 @@ const UsersRoles = () => {
                           : prev,
                       )
                     }
-                    disabled={
-                      roleUpdatingIds.includes(roleEditor.user._id) ||
-                      roleEditor.user.role === "SUPER_ADMIN"
-                    }
+                    disabled={roleUpdatingIds.includes(roleEditor.user._id)}
                   >
                     {roleEditor.user.role === "SUPER_ADMIN" ? (
                       <option value={roleEditor.user.role}>
                         {roleEditor.user.role}
                       </option>
-                    ) : editableRoles.length > 0 ? (
-                      editableRoles.map((role) => (
+                    ) : roleOptions.length > 0 ? (
+                      roleOptions.map((role) => (
                         <option
                           key={role._id}
                           value={role.normalizedName || role.name}
