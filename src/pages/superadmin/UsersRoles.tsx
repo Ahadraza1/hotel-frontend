@@ -27,8 +27,15 @@ interface User {
       }
     | string;
   organizationId?: string | null;
-  branchId?: {
+  organization?: {
+    organizationId?: string;
     name?: string;
+  } | null;
+  branchId?: string | null;
+  branch?: {
+    _id?: string;
+    name?: string;
+    organizationId?: string;
   } | null;
   isActive: boolean;
 }
@@ -84,6 +91,19 @@ const buildRoleDistribution = (usersData: User[]): RoleDistribution[] => {
   }));
 };
 
+const getOrganizationName = (user: User) =>
+  user.organization?.name?.trim() || "N/A";
+
+const getBranchName = (user: User) => user.branch?.name?.trim() || "N/A";
+
+const getRoleKey = (role: Pick<Role, "name" | "normalizedName"> | string) =>
+  typeof role === "string"
+    ? role
+    : role.normalizedName || role.name;
+
+const isSuperAdminRole = (role: Pick<Role, "name" | "normalizedName"> | string) =>
+  getRoleKey(role) === "SUPER_ADMIN";
+
 const UsersRoles = () => {
   const toast = useToast();
   const confirm = useConfirm();
@@ -98,8 +118,14 @@ const UsersRoles = () => {
   const [roleUpdatingIds, setRoleUpdatingIds] = useState<string[]>([]);
   const [roleEditor, setRoleEditor] = useState<RoleEditState | null>(null);
 
-  const fetchRoles = async () => {
-    const rolesRes = await api.get<{ data: Role[] }>("/roles");
+  const fetchRoles = async (targetUser?: User) => {
+    const params = targetUser?.organizationId
+      ? {
+          organizationId: targetUser.organizationId,
+          ...(targetUser.branchId ? { branchId: targetUser.branchId } : {}),
+        }
+      : undefined;
+    const rolesRes = await api.get<{ data: Role[] }>("/roles", { params });
     const rolesData = rolesRes.data.data || [];
 
     console.log("roles", rolesData);
@@ -226,7 +252,7 @@ const UsersRoles = () => {
     }
 
     try {
-      const rolesData = await fetchRoles();
+      const rolesData = await fetchRoles(targetUser);
 
       setRoleEditor({
         user: targetUser,
@@ -322,6 +348,7 @@ const UsersRoles = () => {
 
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.isActive).length;
+  const editableRoles = roles.filter((role) => !isSuperAdminRole(role));
 
   if (loading) {
     return (
@@ -407,6 +434,7 @@ const UsersRoles = () => {
                     <th className="col-serial">#</th>
                     <th>Name</th>
                     <th>Role</th>
+                    <th>Organization</th>
                     <th>Branch</th>
                     <th>Status</th>
                   </tr>
@@ -414,7 +442,7 @@ const UsersRoles = () => {
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="gf-table-empty">
+                      <td colSpan={6} className="gf-table-empty">
                         No users found{search ? ` matching "${search}"` : ""}
                       </td>
                     </tr>
@@ -456,7 +484,8 @@ const UsersRoles = () => {
                             ) : null}
                           </div>
                         </td>
-                        <td className="user-email">{u.branchId?.name || "All"}</td>
+                        <td className="user-email">{getOrganizationName(u)}</td>
+                        <td className="user-email">{getBranchName(u)}</td>
                         <td>
                           <div className="flex items-center justify-between gap-3">
                             <button
@@ -599,16 +628,29 @@ const UsersRoles = () => {
                           : prev,
                       )
                     }
-                    disabled={roleUpdatingIds.includes(roleEditor.user._id)}
+                    disabled={
+                      roleUpdatingIds.includes(roleEditor.user._id) ||
+                      roleEditor.user.role === "SUPER_ADMIN"
+                    }
                   >
-                    {roles.map((role) => (
-                      <option
-                        key={role._id}
-                        value={role.normalizedName || role.name}
-                      >
-                        {role.normalizedName || role.name}
+                    {roleEditor.user.role === "SUPER_ADMIN" ? (
+                      <option value={roleEditor.user.role}>
+                        {roleEditor.user.role}
                       </option>
-                    ))}
+                    ) : editableRoles.length > 0 ? (
+                      editableRoles.map((role) => (
+                        <option
+                          key={role._id}
+                          value={role.normalizedName || role.name}
+                        >
+                          {role.normalizedName || role.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        No roles available
+                      </option>
+                    )}
                   </select>
                 </label>
 
