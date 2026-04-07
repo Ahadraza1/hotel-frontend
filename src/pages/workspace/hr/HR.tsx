@@ -294,7 +294,7 @@ const HR = () => {
           ? member.designation
           : "",
       role:
-        member.designation && member.designation !== "â€”"
+        member.designation && member.designation !== "—"
           ? member.designation
           : "",
       salary: String(member.salary ?? 0),

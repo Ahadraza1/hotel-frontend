@@ -1269,6 +1269,75 @@
   gap: 0.8rem;
 }
 
+.osd-discount-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.osd-discount-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.osd-discount-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.osd-discount-chip {
+  min-width: 3.1rem;
+  min-height: 2.2rem;
+  border-radius: 12px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.osd-discount-chip.is-active {
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.osd-billing-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid hsl(var(--border) / 0.55);
+  border-radius: 14px;
+  background: hsl(var(--muted) / 0.16);
+}
+
+.osd-billing-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.92rem;
+  color: hsl(var(--foreground));
+}
+
+.osd-billing-row-discount {
+  color: hsl(var(--primary));
+}
+
+.osd-billing-row-total {
+  padding-top: 0.55rem;
+  border-top: 1px solid hsl(var(--border) / 0.55);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
 .osd-transfer-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
@@ -1426,6 +1495,23 @@
 }
 
 .dark .osd-payment-summary {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: #27272a;
+}
+
+.dark .osd-discount-chip {
+  background: #18181b;
+  border-color: #27272a;
+  color: #f9fafb;
+}
+
+.dark .osd-discount-chip.is-active {
+  background: #c4a66a;
+  border-color: #c4a66a;
+  color: #111827;
+}
+
+.dark .osd-billing-summary {
   background: rgba(255, 255, 255, 0.03);
   border-color: #27272a;
 }

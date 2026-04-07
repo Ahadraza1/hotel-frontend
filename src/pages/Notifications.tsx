@@ -1,10 +1,25 @@
+import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Bell } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 
 const Notifications = () => {
   const { data, isLoading, isError } = useNotifications();
   const notifications = data?.notifications || [];
+  const [search, setSearch] = useState("");
+  const filteredNotifications = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) {
+      return notifications;
+    }
+
+    return notifications.filter((notification) =>
+      [notification.title, notification.message, notification.module]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query)),
+    );
+  }, [notifications, search]);
 
   return (
     <div className="ntf-root animate-fade-in">
@@ -64,34 +79,59 @@ const Notifications = () => {
               <h2 className="ntf-panel-title">Recent activity</h2>
             </div>
             <div className="ntf-count-badge">
-              {notifications.length} update{notifications.length === 1 ? "" : "s"}
+              {filteredNotifications.length} update{filteredNotifications.length === 1 ? "" : "s"}
             </div>
           </div>
 
+          <div className="ur-search-wrap" style={{ margin: "0 1.75rem 1rem" }}>
+            <Search className="ur-search-icon" />
+            <input
+              className="ur-search-input"
+              placeholder="Search notifications..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              aria-label="Search notifications"
+            />
+          </div>
+
           <div className="ntf-list">
-            {notifications.map((notification) => (
-              <article key={notification._id} className="ntf-item">
-                <div className="ntf-item-accent" />
-                <div className="ntf-item-body">
-                  <div className="ntf-item-top">
-                    <div className="ntf-item-heading">
-                      <h3 className="ntf-item-title">{notification.title}</h3>
-                      <span className="ntf-item-module">
-                        {notification.module}
+            {filteredNotifications.length === 0 ? (
+              <div className="ntf-empty-card" style={{ margin: "1.5rem" }}>
+                <div className="ntf-empty-icon-wrap">
+                  <Search className="ntf-empty-icon" />
+                </div>
+                <div>
+                  <p className="ntf-empty-title">No matching notifications</p>
+                  <p className="ntf-empty-copy">
+                    Try a different search term to find a notification.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              filteredNotifications.map((notification) => (
+                <article key={notification._id} className="ntf-item">
+                  <div className="ntf-item-accent" />
+                  <div className="ntf-item-body">
+                    <div className="ntf-item-top">
+                      <div className="ntf-item-heading">
+                        <h3 className="ntf-item-title">{notification.title}</h3>
+                        <span className="ntf-item-module">
+                          {notification.module}
+                        </span>
+                      </div>
+
+                      <span className="ntf-item-time">
+                        {formatDistanceToNow(new Date(notification.createdAt), {
+                          addSuffix: true,
+                        })}
                       </span>
                     </div>
 
-                    <span className="ntf-item-time">
-                      {formatDistanceToNow(new Date(notification.createdAt), {
-                        addSuffix: true,
-                      })}
-                    </span>
+                    <p className="ntf-item-message">{notification.message}</p>
                   </div>
-
-                  <p className="ntf-item-message">{notification.message}</p>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))
+            )}
           </div>
         </div>
       )}

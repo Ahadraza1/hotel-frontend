@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRightLeft, BedDouble, Plus, ReceiptText, Search, User, 
 import api from "@/api/axios";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 import { useToast } from "@/components/confirm/ConfirmProvider";
+import { useBranchWorkspace } from "@/contexts/BranchWorkspaceContext";
 import "./OrderSessionDetail.css"; // Import the CSS file for styling
 
 type SessionType = "DINE_IN" | "ROOM_SERVICE" | "TAKEAWAY";
@@ -62,6 +63,12 @@ interface SessionDetail {
   invoice?: {
     invoiceId: string;
     status: string;
+    totalAmount?: number;
+    taxAmount?: number;
+    serviceChargeAmount?: number;
+    discountAmount?: number;
+    finalAmount?: number;
+    dueAmount?: number;
   } | null;
   orders: SessionOrder[];
 }
@@ -77,6 +84,7 @@ const OrderSessionDetail = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const { formatCurrency } = useSystemSettings();
+  const { activeBranch } = useBranchWorkspace();
 
   const isCreating = !sessionId || sessionId === "new";
 
@@ -96,6 +104,7 @@ const OrderSessionDetail = () => {
   const [paymentMode, setPaymentMode] = useState<"CASH" | "CARD" | "UPI">("CASH");
   const [isEditingGuest, setIsEditingGuest] = useState(false);
   const [editGuestNameInput, setEditGuestNameInput] = useState("");
+  const [discount, setDiscount] = useState(0);
 
   const fetchLookupData = useCallback(async () => {
     const [categoryRes, itemRes, tableRes, roomRes] = await Promise.all([
@@ -124,6 +133,19 @@ const OrderSessionDetail = () => {
     void fetchSession();
   }, [fetchLookupData, fetchSession]);
 
+  useEffect(() => {
+    if (!session?.invoice?.invoiceId) {
+      return;
+    }
+
+    const invoiceSubtotal = Number(session.invoice.totalAmount || 0);
+    const invoiceDiscount = Number(session.invoice.discountAmount || 0);
+
+    if (invoiceSubtotal > 0 && invoiceDiscount >= 0) {
+      setDiscount(Math.round((invoiceDiscount / invoiceSubtotal) * 100));
+    }
+  }, [session?.invoice]);
+
   const categoriesWithAll = useMemo(
     () => [{ categoryId: ALL_CATEGORY_ID, name: "All" }, ...categories],
     [categories],
@@ -151,6 +173,32 @@ const OrderSessionDetail = () => {
   const canPay =
     !!session &&
     (session.status === "BILL_REQUESTED" || (session.status === "OPEN" && allOrdersServed));
+  const branchTaxPercentage = Number(
+    activeBranch?.financialSettings?.taxPercentage || 0,
+  );
+  const branchServiceChargePercentage = Number(
+    activeBranch?.financialSettings?.serviceChargePercentage || 0,
+  );
+  const billableOrders = session?.orders.filter(
+    (order) => order.orderStatus !== "CANCELLED",
+  ) || [];
+  const billingSubtotal = billableOrders.reduce(
+    (sum, order) => sum + Number(order.subTotal || 0),
+    0,
+  );
+  const billingDiscountAmount = session?.invoice?.invoiceId
+    ? Number(session.invoice.discountAmount || 0)
+    : (billingSubtotal * discount) / 100;
+  const billingTaxableBase = Math.max(billingSubtotal - billingDiscountAmount, 0);
+  const billingTaxAmount = session?.invoice?.invoiceId
+    ? Number(session.invoice.taxAmount || 0)
+    : (billingTaxableBase * branchTaxPercentage) / 100;
+  const billingServiceChargeAmount = session?.invoice?.invoiceId
+    ? Number(session.invoice.serviceChargeAmount || 0)
+    : (billingTaxableBase * branchServiceChargePercentage) / 100;
+  const billingTotal = session?.invoice?.invoiceId
+    ? Number(session.invoice.finalAmount || session.invoice.dueAmount || session.runningTotal || 0)
+    : billingTaxableBase + billingTaxAmount + billingServiceChargeAmount;
 
   const addItem = (item: MenuItem) => {
     setCart((current) => {
@@ -263,7 +311,9 @@ const OrderSessionDetail = () => {
     if (!session) return;
 
     if (!session.invoice?.invoiceId) {
-      await api.post(`/pos/sessions/${session.sessionId}/generate-bill`);
+      await api.post(`/pos/sessions/${session.sessionId}/generate-bill`, {
+        discountPercentage: discount,
+      });
     }
 
     await api.patch(`/pos/sessions/${session.sessionId}/pay`, {
@@ -287,9 +337,9 @@ const OrderSessionDetail = () => {
 
   const locationTitle = session
     ? session.type === "DINE_IN"
-      ? `Table ${session.tableNo || "â€”"}`
+      ? `Table ${session.tableNo || "-"}`
       : session.type === "ROOM_SERVICE"
-        ? `Room ${session.roomNo || "â€”"}`
+        ? `Room ${session.roomNo || "-"}`
         : session.guestName?.trim() || "Takeaway"
     : "New Session";
 
@@ -345,7 +395,7 @@ const OrderSessionDetail = () => {
 
   return (
     <div className="flex flex-col gap-8 animate-fade-in pb-12">
-      {/* â”€â”€ Page Header â”€â”€ */}
+      {/*  Page Header  */}
       {!isCreating && (
         <div className="bk-page-header">
           <div className="bk-title-group">
@@ -360,7 +410,7 @@ const OrderSessionDetail = () => {
               <h1 className="page-title">{locationTitle}</h1>
               <p className="page-subtitle">
                 {session
-                  ? `${session.status.replace("_", " ")} â€¢ ID: ${session.sessionId}`
+                  ? `${session.status.replace("_", " ")} ID: ${session.sessionId}`
                   : "Open a dine-in, room service, or takeaway session"}
               </p>
             </div>
@@ -563,7 +613,7 @@ const OrderSessionDetail = () => {
                               className="osd-qty-btn"
                               onClick={() => updateCartQty(item.itemId, -1)}
                             >
-                              âˆ’
+                              -
                             </button>
                             <span className="osd-qty-val">
                               {cartItem.quantity}
@@ -693,7 +743,7 @@ const OrderSessionDetail = () => {
                           <div key={`${order.orderId}-${item.itemId}`} className="osd-order-item-row flex justify-between items-center">
                             <div className="osd-item-row-left">
                               <span className="osd-item-qty-badge">
-                                {item.quantity}Ã—
+                                {item.quantity}
                               </span>
                               <span className="osd-item-row-name">{item.nameSnapshot}</span>
                             </div>
@@ -888,23 +938,92 @@ const OrderSessionDetail = () => {
                   </div>
 
                   {allOrdersServed && !session.invoice?.invoiceId && (
-                    <button
-                      className="luxury-btn luxury-btn-primary osd-section-btn osd-billing-btn"
-                      onClick={() => void api.post(`/pos/sessions/${session.sessionId}/generate-bill`).then(fetchSession)}
-                    >
-                      <ReceiptText size={18} />
-                      <span>Generate Bill</span>
-                    </button>
+                    <>
+                      <div className="osd-discount-block">
+                        <span className="osd-discount-label">% Discount</span>
+                        <div className="osd-discount-chips">
+                          {[0, 5, 10, 15, 20].map((value) => (
+                            <button
+                              key={value}
+                              type="button"
+                              className={`osd-discount-chip ${discount === value ? "is-active" : ""}`}
+                              onClick={() => setDiscount(value)}
+                            >
+                              {value}%
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="osd-billing-summary">
+                        <div className="osd-billing-row">
+                          <span>Subtotal ({billableOrders.length} items)</span>
+                          <span>{formatCurrency(billingSubtotal)}</span>
+                        </div>
+                        {billingDiscountAmount > 0 && (
+                          <div className="osd-billing-row osd-billing-row-discount">
+                            <span>Discount ({discount}%)</span>
+                            <span>-{formatCurrency(billingDiscountAmount)}</span>
+                          </div>
+                        )}
+                        <div className="osd-billing-row">
+                          <span>Tax ({branchTaxPercentage}%)</span>
+                          <span>{formatCurrency(billingTaxAmount)}</span>
+                        </div>
+                        {branchServiceChargePercentage > 0 && (
+                          <div className="osd-billing-row">
+                            <span>Service Charge ({branchServiceChargePercentage}%)</span>
+                            <span>{formatCurrency(billingServiceChargeAmount)}</span>
+                          </div>
+                        )}
+                        <div className="osd-billing-row osd-billing-row-total">
+                          <span>Total</span>
+                          <span>{formatCurrency(billingTotal)}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        className="luxury-btn luxury-btn-primary osd-section-btn osd-billing-btn"
+                        onClick={() =>
+                          void api.post(`/pos/sessions/${session.sessionId}/generate-bill`, {
+                            discountPercentage: discount,
+                          }).then(fetchSession)
+                        }
+                      >
+                        <ReceiptText size={18} />
+                        <span>Generate Bill</span>
+                      </button>
+                    </>
                   )}
 
                   {canPay && (
                     <div className="osd-payment-block">
+                      <div className="osd-billing-summary">
+                        <div className="osd-billing-row">
+                          <span>Subtotal</span>
+                          <span>{formatCurrency(Number(session.invoice?.totalAmount || billingSubtotal))}</span>
+                        </div>
+                        {billingDiscountAmount > 0 && (
+                          <div className="osd-billing-row osd-billing-row-discount">
+                            <span>Discount</span>
+                            <span>-{formatCurrency(billingDiscountAmount)}</span>
+                          </div>
+                        )}
+                        <div className="osd-billing-row">
+                          <span>Tax</span>
+                          <span>{formatCurrency(billingTaxAmount)}</span>
+                        </div>
+                        <div className="osd-billing-row">
+                          <span>Service Charge</span>
+                          <span>{formatCurrency(billingServiceChargeAmount)}</span>
+                        </div>
+                      </div>
                       <div className="osd-payment-summary">
                         <div>
                           <span className="osd-payment-label">Amount Due</span>
                           <p className="osd-payment-help">Select a payment method to complete settlement.</p>
                         </div>
-                        <span className="osd-payment-amount">{formatCurrency(session.runningTotal)}</span>
+                        <span className="osd-payment-amount">{formatCurrency(Number(session.invoice?.dueAmount || billingTotal))}</span>
                       </div>
                       <select
                         className="luxury-input osd-payment-select"

@@ -8,12 +8,14 @@ import {
   Search,
   SlidersHorizontal,
   ShoppingBag,
+  Trash2,
   User,
   Utensils,
   Wallet,
 } from "lucide-react";
 import api from "@/api/axios";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
+import { useConfirm } from "@/components/confirm/ConfirmProvider";
 
 type SessionStatus = "OPEN" | "BILL_REQUESTED" | "PAID" | "CLOSED";
 type SessionType = "DINE_IN" | "ROOM_SERVICE" | "TAKEAWAY";
@@ -59,12 +61,14 @@ const OrderSessions = () => {
   const { branchId } = useParams();
   const navigate = useNavigate();
   const { formatCurrency } = useSystemSettings();
+  const confirm = useConfirm();
 
   const [sessions, setSessions] = useState<OrderSession[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
+  const [deletingSessionIds, setDeletingSessionIds] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -151,6 +155,36 @@ const OrderSessions = () => {
     }
 
     return session.guestName?.trim() || "Takeaway Order";
+  };
+
+  const handleDeleteSession = async (session: OrderSession) => {
+    setDeletingSessionIds((prev) => [...prev, session.sessionId]);
+
+    const confirmed = await confirm({
+      title: "Delete Session",
+      message: `Are you sure you want to delete ${getSessionTitle(session)}?`,
+      confirmLabel: "Delete",
+      processingLabel: "Deleting...",
+      successMessage: "Session deleted successfully",
+      errorMessage: "Failed to delete session",
+      onConfirm: async () => {
+        await api.delete(`/pos/sessions/${session.sessionId}`);
+        setSessions((prev) =>
+          prev.filter((entry) => entry.sessionId !== session.sessionId),
+        );
+      },
+    });
+
+    if (!confirmed) {
+      setDeletingSessionIds((prev) =>
+        prev.filter((id) => id !== session.sessionId),
+      );
+      return;
+    }
+
+    setDeletingSessionIds((prev) =>
+      prev.filter((id) => id !== session.sessionId),
+    );
   };
 
   return (
@@ -387,16 +421,27 @@ const OrderSessions = () => {
                           </div>
                         </td>
                         <td className="text-right">
-                          <button
-                            onClick={() =>
-                              navigate(
-                                `/workspace/${branchId}/order-sessions/${session.sessionId}`,
-                              )
-                            }
-                            className="luxury-btn luxury-btn-primary !py-1.5 !px-4 text-xs font-bold opacity-0 group-hover:opacity-100 transition-all hover:scale-105"
-                          >
-                            Open
-                          </button>
+                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button
+                              type="button"
+                              onClick={() => void handleDeleteSession(session)}
+                              disabled={deletingSessionIds.includes(session.sessionId)}
+                              className="ur-user-action-btn"
+                              aria-label={`Delete session ${session.sessionId}`}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <button
+                              onClick={() =>
+                                navigate(
+                                  `/workspace/${branchId}/order-sessions/${session.sessionId}`,
+                                )
+                              }
+                              className="luxury-btn luxury-btn-primary !py-1.5 !px-4 text-xs font-bold transition-all hover:scale-105"
+                            >
+                              Open
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
