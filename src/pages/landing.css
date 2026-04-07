@@ -1650,14 +1650,15 @@
   justify-content: center;
   align-items: center;
   gap: 5px;
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   background: rgba(201,168,92, 0.07);
   border: 1px solid rgba(201,168,92, 0.2);
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .lnd-hamburger span {
@@ -1670,7 +1671,20 @@
   transform-origin: center;
 }
 
+.lnd-hamburger:hover {
+  background: rgba(201,168,92, 0.14);
+  border-color: rgba(201,168,92, 0.36);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  transform: translateY(-1px);
+}
+
 .lnd-hamburger:hover span { background: var(--lnd-gold); }
+
+.lnd-hamburger[aria-expanded="true"] {
+  background: rgba(201,168,92, 0.14);
+  border-color: rgba(201,168,92, 0.42);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+}
 
 /* X state */
 .lnd-hamburger span:nth-child(1).open { transform: translateY(7px) rotate(45deg); background: var(--lnd-gold); }
@@ -1681,11 +1695,15 @@
 .lnd-mobile-menu {
   display: none;
   flex-direction: column;
-  padding: 12px 24px 20px;
-  border-top: 1px solid var(--lnd-border);
+  width: min(100%, calc(100% - 48px));
+  margin: 12px auto 0;
+  padding: 12px;
+  border: 1px solid var(--lnd-border);
+  border-radius: 20px;
   background: var(--lnd-nav-scrolled-bg);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.16);
   animation: menu-drop 0.2s ease;
 }
 
@@ -1695,22 +1713,44 @@
 }
 
 .lnd-mobile-menu > button {
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
   color: var(--lnd-muted);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.3px;
-  padding: 12px 0;
+  padding: 14px 16px;
   text-align: left;
-  border-bottom: 1px solid var(--lnd-border);
+  border-radius: 14px;
   width: 100%;
-  transition: color 0.2s;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
 }
 
-.lnd-mobile-menu > button:last-of-type { border-bottom: none; }
-.lnd-mobile-menu > button:hover { color: var(--lnd-gold); }
+.lnd-mobile-menu > button:hover {
+  color: var(--lnd-gold);
+  background: rgba(201,168,92, 0.08);
+  border-color: rgba(201,168,92, 0.18);
+}
+
+.lnd-mobile-menu > button.lnd-contact-nav-active {
+  color: var(--lnd-gold);
+  background: rgba(201,168,92, 0.1);
+  border-color: rgba(201,168,92, 0.22);
+}
+
+.lnd-mobile-menu-divider {
+  height: 1px;
+  margin: 8px 4px;
+  background: var(--lnd-border);
+}
+
+.lnd-mobile-menu > .lnd-btn-primary {
+  justify-content: center;
+  margin-top: 6px;
+  min-height: 52px;
+  border-radius: 16px;
+}
 
 .lnd-mobile-menu-cta {
   display: flex;
@@ -1792,7 +1832,11 @@
 
   /* Navbar */
   .lnd-nav { padding: 14px 0; }
-  .lnd-nav-inner { justify-content: space-between; }
+  .lnd-nav-inner {
+    justify-content: space-between;
+    gap: 20px;
+    padding: 0 24px;
+  }
   .lnd-nav-links { display: none; }
   .lnd-desktop-only { display: none !important; }
   .lnd-hamburger { display: flex; }
@@ -1835,6 +1879,32 @@
 
 /* ── Tablet portrait / large mobile: 768px ── */
 @media (max-width: 768px) {
+  .lnd-nav-inner {
+    padding: 0 20px;
+    gap: 14px;
+  }
+
+  .lnd-logo {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .lnd-logo-text {
+    font-size: 18px;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .lnd-nav-cta {
+    gap: 10px;
+  }
+
+  .lnd-mobile-menu {
+    width: min(100%, calc(100% - 40px));
+  }
+
   .lnd-pricing-page-title {
     font-size: 2.3rem;
   }
@@ -1984,6 +2054,24 @@
   /* Nav */
   .lnd-nav-inner { padding: 0 16px; }
   .lnd-logo-text { font-size: 17px; }
+  .lnd-theme-toggle,
+  .lnd-hamburger {
+    width: 40px;
+    height: 40px;
+  }
+  .lnd-mobile-menu {
+    width: min(100%, calc(100% - 24px));
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 18px;
+  }
+  .lnd-mobile-menu > button {
+    font-size: 14px;
+    padding: 13px 14px;
+  }
+  .lnd-mobile-menu > .lnd-btn-primary {
+    min-height: 48px;
+  }
 
   /* Hero */
   .lnd-hero { padding: 88px 16px 48px; }
