@@ -16,6 +16,7 @@ export const AppLayout = ({ children, onLogout }: AppLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setNavigator } = useBranchWorkspace();
+  const isPosRoute = /\/workspace\/[^/]+\/pos(\/|$)/.test(location.pathname);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -71,7 +72,7 @@ export const AppLayout = ({ children, onLogout }: AppLayoutProps) => {
     <div
       className={`layout ${
         isCollapsed ? "sidebar-collapsed" : "sidebar-expanded"
-      } ${isMobileOpen ? "sidebar-open" : ""}`}
+      } ${isMobileOpen ? "sidebar-open" : ""} ${isPosRoute ? "layout-pos-route" : ""}`}
     >
       {isMobileOpen && (
         <div

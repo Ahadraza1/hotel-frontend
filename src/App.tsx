@@ -59,7 +59,7 @@ import AddGuest from "./pages/workspace/guest/AddGuest";
 import Housekeeping from "./pages/workspace/houseKeeping/Housekeeping";
 import CreateHousekeepingTask from "./pages/workspace/houseKeeping/CreateHousekeepingTask";
 import POS from "./pages/workspace/pos/POS";
-import Kitchen from "./pages/workspace/Kitchen";
+import Kitchen from "./pages/workspace/pos/Kitchen";
 import OrderSessions from "./pages/workspace/orderSession/OrderSessions";
 import OrderSessionDetail from "./pages/workspace/orderSession/OrderSessionDetail";
 import AddPOSCategory from "./pages/workspace/pos/AddPOSCategory";

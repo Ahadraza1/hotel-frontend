@@ -246,6 +246,10 @@ const POS = () => {
     categories.find((category) => category.categoryId === selectedCategory) ||
     null;
 
+  const getCategoryName = (categoryId: string) =>
+    categories.find((category) => category.categoryId === categoryId)?.name ||
+    "Menu Item";
+
   const selectedTable =
     tables.find((table) => table._id === selectedTableId) || null;
   const selectedRoom =
@@ -267,6 +271,7 @@ const POS = () => {
   const taxAmount = (taxableBase * branchTaxPercentage) / 100;
   const serviceCharge = (taxableBase * branchServiceChargePercentage) / 100;
   const total = subTotal - discountAmount + taxAmount + serviceCharge;
+  const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const addToCart = (item: POSItem) => {
     if (typeof window !== "undefined" && window.innerWidth <= 1024) {
@@ -457,144 +462,232 @@ const POS = () => {
   return (
     <div className="pos-layout">
       <div className="pos-menu-section">
-        <div className="pos-top-bar px-6 pt-6 pb-4">
-          <div className="pos-top-bar-content flex justify-between items-center w-full gap-4">
-            <div className="pos-search-wrapper flex-1">
-              <Search className="pos-search-icon" size={18} />
-              <input
-                type="text"
-                placeholder="Search menu items..."
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                className="pos-search-input-refined"
-              />
+        <div className="pos-page-shell">
+          <div className="pos-page-hero">
+            <div className="pos-page-hero-copy">
+              <span className="pos-page-eyebrow">Point Of Sale</span>
+              <h1 className="pos-page-title">Menu management workspace</h1>
+              <p className="pos-page-subtitle">
+                Browse categories, manage menu items, and keep service ready on
+                every screen size.
+              </p>
             </div>
-
-            <div className="pos-management-toolbar flex items-center gap-2">
-              {canCreate && (
-                <button
-                  className="pos-mgmt-btn add"
-                  onClick={() => navigate(`/workspace/${branchId}/pos/category/add`)}
-                  title="Add Category"
-                >
-                  <Plus size={16} />
-                  <span>Category</span>
-                </button>
-              )}
-              {canCreate && (
-                <button
-                  className="pos-mgmt-btn add"
-                  onClick={() => navigate(`/workspace/${branchId}/pos/menu/add`)}
-                  title="Add Menu Item"
-                >
-                  <Utensils size={16} />
-                  <span>Menu Item</span>
-                </button>
-              )}
-
-              {selectedCategory && (
-                <div className="flex items-center gap-2 ml-2 pl-4 border-l border-border/40">
-                  {canUpdate && (
-                    <button
-                      className="pos-mgmt-btn edit"
-                      onClick={editCategory}
-                      title="Edit Selected Category"
-                    >
-                      <Pencil size={15} />
-                    </button>
-                  )}
-                  {canDelete && (
-                    <button
-                      className="pos-mgmt-btn delete"
-                      onClick={deleteCategory}
-                      title="Delete Selected Category"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="pos-category-container px-6 mb-4">
-          <div className="pos-category-scroller scrollbar-hide">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={`pos-cat-pill ${selectedCategory === null ? "active" : ""}`}
-            >
-              All
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.categoryId}
-                onClick={() => setSelectedCategory(cat.categoryId)}
-                className={`pos-cat-pill ${selectedCategory === cat.categoryId ? "active" : ""}`}
-              >
-                <span>{getCategoryIcon(cat.name)}</span>
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="pos-menu-grid-container px-6 pb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredMenu.map((item, idx) => (
-              <div
-                key={item.itemId}
-                onClick={() => !item.isSoldOut && addToCart(item)}
-                className={`pos-item-card-refined group ${item.isSoldOut ? "sold-out" : ""}`}
-              >
-                <div
-                  className={`pos-item-visual bg-gradient-to-br pos-gradient-${(idx % 6) + 1}`}
-                >
-                  {item.isSoldOut && (
-                    <span className="pos-unavailable-badge">Unavailable</span>
-                  )}
-                </div>
-                <div className="pos-item-content">
-                  <h3 className="pos-item-name-refined">{item.name}</h3>
-                  <div className="pos-item-meta">
-                    <span className="pos-item-price-refined">
-                      {formatCurrency(item.price)}
-                    </span>
-                    <span className="pos-item-time-refined">
-                      <Clock size={12} className="inline mr-1 opacity-60" />
-                      {Math.floor(Math.random() * 20) + 5}m
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pos-item-actions-refined opacity-0 group-hover:opacity-100 transition-opacity">
-                  {canUpdate && (
-                    <button
-                      className="pos-item-action-btn-refined"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        editItem(item.itemId);
-                      }}
-                      title="Edit Menu Item"
-                    >
-                      <Pencil size={14} />
-                    </button>
-                  )}
-                  {canDelete && (
-                    <button
-                      className="pos-item-action-btn-refined text-destructive"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void deleteItem(item);
-                      }}
-                      title="Delete Menu Item"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </div>
+            <div className="pos-page-stats" aria-label="POS overview">
+              <div className="pos-stat-card">
+                <span className="pos-stat-label">Categories</span>
+                <strong className="pos-stat-value">{categories.length}</strong>
               </div>
-            ))}
+              <div className="pos-stat-card">
+                <span className="pos-stat-label">Visible Items</span>
+                <strong className="pos-stat-value">{filteredMenu.length}</strong>
+              </div>
+              <div className="pos-stat-card">
+                <span className="pos-stat-label">Active Orders</span>
+                <strong className="pos-stat-value">{activeOrders.length}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="pos-top-bar">
+            <div className="pos-top-bar-content">
+              <div className="pos-search-wrapper flex-1">
+                <Search className="pos-search-icon" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search menu items..."
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  className="pos-search-input-refined"
+                />
+              </div>
+
+              <div className="pos-management-toolbar">
+                {canCreate && (
+                  <button
+                    className="pos-mgmt-btn add"
+                    onClick={() =>
+                      navigate(`/workspace/${branchId}/pos/category/add`)
+                    }
+                    title="Add Category"
+                  >
+                    <Plus size={16} />
+                    <span>Category</span>
+                  </button>
+                )}
+                {canCreate && (
+                  <button
+                    className="pos-mgmt-btn add"
+                    onClick={() => navigate(`/workspace/${branchId}/pos/menu/add`)}
+                    title="Add Menu Item"
+                  >
+                    <Utensils size={16} />
+                    <span>Menu Item</span>
+                  </button>
+                )}
+
+                {selectedCategory && (
+                  <div className="pos-management-divider">
+                    {canUpdate && (
+                      <button
+                        className="pos-mgmt-btn edit"
+                        onClick={editCategory}
+                        title="Edit Selected Category"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        className="pos-mgmt-btn delete"
+                        onClick={deleteCategory}
+                        title="Delete Selected Category"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="pos-category-container">
+            <div className="pos-section-head">
+              <div>
+                <h2 className="pos-section-title">Categories</h2>
+                <p className="pos-section-subtitle">
+                  Filter the menu by course or item group.
+                </p>
+              </div>
+              <div className="pos-section-badge">
+                {selectedCategoryDetails?.name || "All categories"}
+              </div>
+            </div>
+
+            <div className="pos-category-scroller scrollbar-hide">
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`pos-cat-pill ${selectedCategory === null ? "active" : ""}`}
+              >
+                All
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat.categoryId}
+                  onClick={() => setSelectedCategory(cat.categoryId)}
+                  className={`pos-cat-pill ${selectedCategory === cat.categoryId ? "active" : ""}`}
+                >
+                  <span>{getCategoryIcon(cat.name)}</span>
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pos-menu-grid-container">
+            <div className="pos-section-head">
+              <div>
+                <h2 className="pos-section-title">Menu items</h2>
+                <p className="pos-section-subtitle">
+                  {filteredMenu.length} item{filteredMenu.length === 1 ? "" : "s"}{" "}
+                  available for the current filter.
+                </p>
+              </div>
+              <div className="pos-section-badge">
+                Cart {cartItemsCount} item{cartItemsCount === 1 ? "" : "s"}
+              </div>
+            </div>
+
+            {filteredMenu.length === 0 ? (
+              <div className="pos-empty-results">
+                <div className="pos-empty-results-icon">
+                  <Search size={22} />
+                </div>
+                <h3>No menu items found</h3>
+                <p>Try another search term or switch to a different category.</p>
+              </div>
+            ) : (
+              <div className="pos-menu-grid">
+                {filteredMenu.map((item, idx) => (
+                  <div
+                    key={item.itemId}
+                    onClick={() => !item.isSoldOut && addToCart(item)}
+                    className={`pos-item-card-refined group ${item.isSoldOut ? "sold-out" : ""}`}
+                  >
+                    <div
+                      className={`pos-item-visual bg-gradient-to-br pos-gradient-${(idx % 6) + 1}`}
+                    >
+                      <div className="pos-item-visual-inner">
+                        <span className="pos-item-category-tag">
+                          {selectedCategoryDetails?.name ||
+                            getCategoryName(item.categoryId)}
+                        </span>
+                        <span className="pos-item-visual-mark">
+                          {item.name.slice(0, 1).toUpperCase()}
+                        </span>
+                      </div>
+
+                      {item.isSoldOut && (
+                        <span className="pos-unavailable-badge">Unavailable</span>
+                      )}
+                    </div>
+                    <div className="pos-item-content">
+                      <div className="pos-item-copy">
+                        <h3 className="pos-item-name-refined">{item.name}</h3>
+                        {item.description && (
+                          <p className="pos-item-description">{item.description}</p>
+                        )}
+                      </div>
+                      <div className="pos-item-meta">
+                        <span className="pos-item-price-refined">
+                          {formatCurrency(item.price)}
+                        </span>
+                        <span className="pos-item-time-refined">
+                          <Clock size={12} className="inline mr-1 opacity-60" />
+                          {Math.floor(Math.random() * 20) + 5}m
+                        </span>
+                      </div>
+                      <div className="pos-item-footer">
+                        <span className="pos-item-status">
+                          {item.isSoldOut ? "Currently unavailable" : "Tap to add"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pos-item-actions-refined">
+                      {canUpdate && (
+                        <button
+                          type="button"
+                          className="pos-item-action-btn-refined"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            editItem(item.itemId);
+                          }}
+                          title="Edit Menu Item"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          type="button"
+                          className="pos-item-action-btn-refined text-destructive"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            void deleteItem(item);
+                          }}
+                          title="Delete Menu Item"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

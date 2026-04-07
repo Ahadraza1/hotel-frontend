@@ -477,13 +477,13 @@ const AddRoom = () => {
               <div className="ar-summary-row">
                 <span className="ar-summary-key">Bed Type</span>
                 <span className="ar-summary-val">
-                  {bedTypeOptions.find((option) => option.value === form.bedType)?.label || <span className="ar-empty">â€”</span>}
+                  {bedTypeOptions.find((option) => option.value === form.bedType)?.label || <span className="ar-empty">—</span>}
                 </span>
               </div>
               <div className="ar-summary-row">
                 <span className="ar-summary-key">Amenities</span>
                 <span className="ar-summary-val">
-                  {form.amenities.length ? form.amenities.length : <span className="ar-empty">â€”</span>}
+                  {form.amenities.length ? form.amenities.length : <span className="ar-empty">—</span>}
                 </span>
               </div>
               <div className="ar-summary-row ar-summary-price-row">

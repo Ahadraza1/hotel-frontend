@@ -150,7 +150,7 @@ const workspaceMenuGroups: MenuGroup[] = [
   {
     title: "Restaurant",
     items: [
-      { title: "POS", route: "pos", icon: Plug, permissionKey: "ACCESS_POS" },
+      { title: "Menu", route: "pos", icon: Plug, permissionKey: "ACCESS_POS" },
       {
         title: "Order Sessions",
         route: "order-sessions",
