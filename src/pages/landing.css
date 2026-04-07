@@ -1003,11 +1003,11 @@
   border: 1px solid var(--lnd-border);
   border-radius: 18px; padding: 36px 32px;
   position: relative; overflow: hidden;
-  transition: transform 0.25s, box-shadow 0.25s;
+  transition: box-shadow 0.25s, border-color 0.25s;
 }
 
 .lnd-pricing-card:hover {
-  transform: translateY(-8px);
+  transform: none;
   box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 20px rgba(201,168,92,0.06);
 }
 
@@ -1015,7 +1015,7 @@
   background: var(--lnd-card-2);
   border-color: rgba(201,168,92, 0.5);
   box-shadow: 0 0 40px rgba(201,168,92, 0.1);
-  transform: scale(1.025);
+  transform: none;
 }
 
 .lnd-pricing-selected {
@@ -1023,7 +1023,7 @@
   box-shadow: 0 0 0 1px rgba(201,168,92, 0.22), 0 0 36px rgba(201,168,92, 0.12);
 }
 
-.lnd-pricing-popular:hover { transform: scale(1.025) translateY(-8px); }
+.lnd-pricing-popular:hover { transform: none; }
 
 .lnd-popular-badge {
   display: inline-flex; align-items: center; gap: 6px;
@@ -1081,6 +1081,16 @@
   width: 100%; padding: 14px; border-radius: 10px;
   font-size: 13px; font-weight: 700; cursor: pointer;
   text-align: center; letter-spacing: 0.5px; text-transform: uppercase;
+}
+
+.lnd-plan-cta:hover,
+.lnd-plan-cta:active {
+  transform: none;
+}
+
+.lnd-plan-cta.lnd-btn-primary,
+.lnd-plan-cta.lnd-btn-outline {
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, color 0.2s;
 }
 
 /* ================================================================
@@ -1801,7 +1811,7 @@
   .lnd-kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .lnd-pricing-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
   .lnd-pricing-popular { transform: none; }
-  .lnd-pricing-popular:hover { transform: translateY(-8px); }
+  .lnd-pricing-popular:hover { transform: none; }
   .lnd-testimonials-grid { grid-template-columns: 1fr; }
 
   /* Steps */
@@ -2565,6 +2575,10 @@
   flex-wrap: wrap;
   gap: 1rem;
   margin-top: 1.5rem;
+}
+
+.lnd-checkout-actions .lnd-plan-cta {
+  justify-content: center;
 }
 
 .org-signup-billing-toggle button:disabled,

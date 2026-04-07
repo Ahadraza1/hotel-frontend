@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, ArrowRight, BadgeCheck, CreditCard, LoaderCircle, Mail, ShieldCheck, UserRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, BadgeCheck, CreditCard, LoaderCircle, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/api/axios";
 import MarketingHeader from "@/components/layout/MarketingHeader";
@@ -351,7 +351,7 @@ const FinalizeOrderPage = () => {
 
               <div className="lnd-checkout-note">
                 <ShieldCheck />
-                <span>Signup will only be unlocked after a successful payment.</span>
+                <span>We will use this to set up your Corporate admin account.</span>
               </div>
             </div>
 
@@ -399,10 +399,22 @@ const FinalizeOrderPage = () => {
                 )}
               </button>
 
-              <div className="lnd-checkout-footnote">
+              <div className="lnd-checkout-actions">
+                <button
+                  type="button"
+                  className="lnd-plan-cta lnd-btn-outline"
+                  onClick={() => navigate("/pricing")}
+                  disabled={processing}
+                >
+                  <ArrowLeft />
+                  Back to Plans
+                </button>
+              </div>
+
+              {/* <div className="lnd-checkout-footnote">
                 <AlertCircle />
                 <span>If payment fails, you’ll land on a summary page with a quick path back to plans.</span>
-              </div>
+              </div> */}
             </div>
           </section>
         </div>
