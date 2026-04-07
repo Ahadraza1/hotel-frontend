@@ -599,7 +599,7 @@ const POS = () => {
         </div>
       </div>
 
-      <div className={`pos-order-panel ${showCart ? "active" : ""}`}>
+      {/* <div className={`pos-order-panel ${showCart ? "active" : ""}`}>
         <div className="pos-order-panel-header p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="pos-panel-title">Current Order</h2>
@@ -851,7 +851,7 @@ const POS = () => {
           </div>
 
         </div>
-      </div>
+      </div> */}
 
       {showPayment && (
         <div className="pos-modal-overlay">
