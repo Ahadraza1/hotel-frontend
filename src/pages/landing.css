@@ -337,26 +337,6 @@
   background: rgba(201,168,92, 0.07);
 }
 
-.lnd-btn-ghost-light {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(201,168,92, 0.07);
-  border: 1px solid rgba(201,168,92, 0.25);
-  color: var(--lnd-text);
-  border-radius: 10px;
-  padding: 14px 30px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.lnd-btn-ghost-light:hover {
-  background: rgba(201,168,92, 0.13);
-  transform: translateY(-1px);
-}
-
 .lnd-btn-arrow { transition: transform 0.2s; }
 .lnd-btn-primary:hover .lnd-btn-arrow { transform: translateX(4px); }
 
@@ -963,7 +943,6 @@
    PRICING
 ================================================================ */
 .lnd-pricing-section { position: relative; }
-.lnd-orb-pricing { display: none; }
 
 /* ── Billing toggle (Pill style) ── */
 .lnd-billing-toggle-pill {
@@ -1421,11 +1400,6 @@
   font-weight: 600;
 }
 
-.lnd-pricing-page-toggle {
-  margin-top: 34px;
-  justify-content: center;
-}
-
 .lnd-pricing-page-plans .lnd-pricing-grid {
   align-items: stretch;
 }
@@ -1752,40 +1726,6 @@
   border-radius: 16px;
 }
 
-.lnd-mobile-menu-cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-}
-
-.lnd-mobile-menu-cta .lnd-btn-ghost {
-  padding: 0;
-  background: none;
-  border: none;
-  color: var(--lnd-muted);
-  font-weight: 600;
-}
-
-.lnd-mobile-menu-cta .lnd-btn-ghost:hover {
-  background: none;
-}
-
-.lnd-mobile-menu-cta .lnd-btn-primary {
-  background: transparent;
-  color: var(--lnd-muted);
-  border: 1px solid var(--lnd-border);
-  box-shadow: none;
-  padding: 10px 24px;
-  min-width: unset;
-  flex: none;
-}
-
-.lnd-mobile-menu-cta .lnd-btn-primary:hover {
-  background: rgba(201,168,92, 0.05);
-  border-color: var(--lnd-gold);
-}
-
 /* ── Desktop-only helper — visible by default, hidden in mobile media query ── */
 .lnd-desktop-only { display: inline-flex; }
 
@@ -1968,8 +1908,6 @@
 
   /* Pricing */
   .lnd-pricing-grid { max-width: 420px; }
-  .lnd-billing-toggle { flex-wrap: wrap; justify-content: center; }
-
   /* Testimonials */
   .lnd-testimonials-grid { grid-template-columns: 1fr; }
   .lnd-testimonial-card { padding: 24px; }

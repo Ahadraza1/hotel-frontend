@@ -207,11 +207,6 @@ function DashboardMockup() {
     <div className="lnd-mockup-shell">
       {/* Top bar */}
       <div className="lnd-mock-topbar">
-        <div className="lnd-mock-dots">
-          <span className="lnd-bg-dot-red" />
-          <span className="lnd-bg-dot-yellow" />
-          <span className="lnd-bg-dot-green" />
-        </div>
         <div className="lnd-mock-breadcrumb">
           HotelOS · Grand Palace · Dashboard
         </div>
@@ -658,13 +653,6 @@ const LandingPage = () => {
                 <div className="lnd-step-icon">{s.icon}</div>
                 <h3 className="lnd-step-title">{s.title}</h3>
                 <p className="lnd-step-desc">{s.desc}</p>
-                {i < steps.length - 1 && (
-                  <div className="lnd-step-connector">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                )}
               </div>
             ))}
           </div>
