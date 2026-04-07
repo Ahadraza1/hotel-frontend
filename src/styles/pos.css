@@ -729,6 +729,19 @@
   z-index: 6;
 }
 
+[data-theme="dark"] .pos-item-action-btn-refined {
+  background: rgba(255, 255, 255, 0.98);
+  color: #374151;
+}
+
+[data-theme="dark"] .pos-item-action-btn-refined.text-destructive {
+  color: hsl(var(--destructive));
+}
+
+[data-theme="dark"] .pos-item-action-btn-refined svg {
+  opacity: 1;
+}
+
 .pos-item-action-btn-refined:hover {
   transform: scale(1.1);
 }
