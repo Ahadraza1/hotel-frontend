@@ -97,6 +97,10 @@
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
+  width: 100vw;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   background-color: var(--lnd-dark-bg) !important;
 }
 
@@ -145,27 +149,32 @@
 ================================================================ */
 .lnd-nav {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 3rem);
+  max-width: 1440px;
   z-index: 1000;
-  padding: 20px 0;
-  transition: background 0.35s ease, backdrop-filter 0.35s ease,
-    box-shadow 0.35s ease, padding 0.35s ease;
+  padding: 16px 0;
+  border-radius: 24px;
+  background: transparent;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 }
 
 .lnd-nav-scrolled {
+  top: 1rem;
   background: var(--lnd-nav-scrolled-bg);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
   box-shadow: var(--lnd-nav-scrolled-shadow);
-  padding: 14px 0;
+  padding: 12px 0;
+  border: 1px solid var(--lnd-border);
 }
 
 .lnd-nav-inner {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 48px;
+  width: 100%;
+  padding: 0 32px;
   display: flex;
   align-items: center;
   gap: 40px;
@@ -362,7 +371,7 @@
 .lnd-hero-inner {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -697,7 +706,7 @@
 .lnd-section { position: relative; padding: 100px 24px; }
 
 .lnd-section-inner {
-  max-width: 1200px; margin: 0 auto; position: relative; z-index: 1;
+  max-width: 1440px; margin: 0 auto; position: relative; z-index: 1;
 }
 
 .lnd-section-header {
@@ -1194,7 +1203,7 @@
 }
 
 .lnd-footer-inner {
-  max-width: 1200px; margin: 0 auto;
+  max-width: 1440px; margin: 0 auto;
   display: grid; grid-template-columns: 1.5fr 2fr; gap: 64px;
   padding-bottom: 48px;
   border-bottom: 1px solid rgba(201,168,92, 0.1);
@@ -1253,7 +1262,7 @@
 .lnd-footer-link-button:hover { color: var(--lnd-gold-light); }
 
 .lnd-footer-bottom {
-  max-width: 1200px; margin: 0 auto; padding: 24px 0;
+  max-width: 1440px; margin: 0 auto; padding: 24px 0;
   display: flex; align-items: center; justify-content: space-between;
 }
 
@@ -1829,6 +1838,18 @@
 
 /* ── Tablet portrait / large mobile: 768px ── */
 @media (max-width: 768px) {
+  .lnd-nav {
+    top: 0.75rem;
+    width: calc(100% - 1.5rem);
+    border-radius: 16px;
+    padding: 12px 0;
+  }
+  
+  .lnd-nav-scrolled {
+    top: 0.5rem;
+    padding: 10px 0;
+  }
+
   .lnd-nav-inner {
     padding: 0 20px;
     gap: 14px;

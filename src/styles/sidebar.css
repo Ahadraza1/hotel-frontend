@@ -2,18 +2,22 @@
 
 .app-sidebar {
   position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
+  left: 1rem;
+  top: 1rem;
+  bottom: 1rem;
+  height: calc(100vh - 2rem);
   z-index: 1100;
   width: 270px;
   display: flex;
   flex-direction: column;
-  background-color: hsl(var(--grandeur-gold)); /* Matte Gold #B08D57 */
-  color: #fff;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: hsl(var(--card) / 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: hsl(var(--grandeur-gold-dark));
+  border: 1px solid hsl(var(--grandeur-gold) / 0.18);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Changed from overflow: hidden to allow floating toggle */
   overflow: visible;
   max-width: min(270px, calc(100vw - 2.5rem));
 }
@@ -31,6 +35,11 @@
 @media (max-width: 1199px) {
   /* Off-canvas behavior for Master-tier Tablet & Mobile */
   .app-sidebar {
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100vh;
+    border-radius: 0 20px 20px 0;
     width: min(270px, calc(100vw - 2.5rem)); /* Full width when drawer is open */
     transform: translateX(-100%);
   }
@@ -47,7 +56,7 @@
   align-items: center;
   gap: 1rem;
   padding: 0 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid hsl(var(--grandeur-gold) / 0.12);
   flex-shrink: 0;
   position: relative;
 }
@@ -60,7 +69,7 @@
 .sidebar-logo {
   height: 1.75rem;
   width: 1.75rem;
-  color: #fff;
+  color: hsl(var(--grandeur-gold));
   flex-shrink: 0;
   transition: transform 0.3s;
 }
@@ -87,9 +96,9 @@
 /* Master-Tier Floating Desktop Toggle */
 .desktop-toggle-btn {
   display: none;
-  background-color: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: hsl(var(--grandeur-gold));
+  background-color: hsl(var(--grandeur-gold));
+  border: 1px solid hsl(var(--grandeur-gold-dark));
+  color: #fff;
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;
@@ -109,7 +118,7 @@
 }
 
 .desktop-toggle-btn:hover {
-  background-color: hsl(var(--grandeur-beige));
+  background-color: hsl(var(--grandeur-gold-dark));
   transform: scale(1.1);
 }
 
@@ -141,7 +150,7 @@
   display: none;
   background: none;
   border: none;
-  color: #fff;
+  color: hsl(var(--grandeur-gold));
   cursor: pointer;
 }
 
@@ -175,6 +184,7 @@
   .app-sidebar {
     max-width: calc(100vw - 1rem);
     width: min(270px, calc(100vw - 1rem));
+    border-radius: 0 16px 16px 0;
   }
 
   .sidebar-brand {
@@ -249,7 +259,7 @@
   font-size: 0.5625rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.4);
+  color: hsl(var(--grandeur-gold-dark) / 0.52);
   font-weight: 700;
   transition: opacity 0.3s, visibility 0.3s, height 0.3s;
   white-space: nowrap;
@@ -289,7 +299,7 @@
   font-size: 0.5625rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.45);
+  color: hsl(var(--grandeur-gold-dark) / 0.58);
   font-weight: 700;
   white-space: nowrap;
   transition: opacity 0.3s, visibility 0.3s, height 0.3s, margin 0.3s, padding 0.3s;
@@ -323,7 +333,7 @@
   border-radius: 12px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  color: hsl(var(--grandeur-gold-dark));
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 0;
@@ -339,8 +349,8 @@
 }
 
 .sidebar-item:hover:not(.restricted) {
-  background-color: rgba(0, 0, 0, 0.15); /* Darkens the gold for clear hover feedback */
-  color: #fff;
+  background-color: hsl(var(--grandeur-gold) / 0.12);
+  color: hsl(var(--grandeur-gold-dark));
   transform: translateY(-1px);
 }
 
@@ -353,6 +363,16 @@
 .sidebar-collapsed .sidebar-item:hover:not(.active):not(.restricted) {
   background-color: rgba(255, 255, 255, 0.08);
   transform: scale(1.05);
+}
+
+.sidebar-item.active {
+  background-color: hsl(var(--grandeur-gold));
+  color: #fff;
+  box-shadow: 0 2px 10px hsl(var(--grandeur-gold) / 0.28);
+}
+
+.sidebar-collapsed .sidebar-item:hover:not(.active):not(.restricted) {
+  background-color: hsl(var(--grandeur-gold) / 0.12);
 }
 
 .sidebar-item-icon {
@@ -380,7 +400,7 @@
 /* Footer */
 .sidebar-footer {
   padding: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid hsl(var(--grandeur-gold) / 0.12);
   flex-shrink: 0;
   transition: opacity 0.3s, height 0.3s;
 }
@@ -395,14 +415,15 @@
 
 .footer-copyright {
   font-size: 0.6875rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: hsl(var(--grandeur-gold-dark) / 0.68);
   font-weight: 500;
 }
 
 /* Dark Mode Overrides for Professional Master-tier */
 [data-theme="dark"] .app-sidebar {
-  background-color: hsl(var(--grandeur-charcoal));
-  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: hsl(var(--grandeur-charcoal) / 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="dark"] .sidebar-brand {
@@ -458,5 +479,5 @@
 
 /* Scrollbar */
 .sidebar-nav::-webkit-scrollbar { width: 3px; }
-.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: hsl(var(--grandeur-gold) / 0.22); border-radius: 2px; }
 
