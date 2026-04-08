@@ -146,15 +146,29 @@ const HR = () => {
   // Default generating parameters for Payroll
   const [selectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear] = useState<number>(new Date().getFullYear());
-  const visibleRoleOptions = useMemo(
-    () =>
-      roleOptions.filter(
-        (role) =>
-          !HIDDEN_HR_ROLES.has(role.normalizedName) &&
-          !HIDDEN_HR_ROLES.has(role.name),
-      ),
-    [roleOptions],
-  );
+  const visibleRoleOptions = useMemo(() => {
+    const seenRoles = new Set<string>();
+
+    return roleOptions.filter((role) => {
+      if (
+        HIDDEN_HR_ROLES.has(role.normalizedName) ||
+        HIDDEN_HR_ROLES.has(role.name)
+      ) {
+        return false;
+      }
+
+      const dedupeKey = (role.normalizedName || role.name || "")
+        .trim()
+        .toUpperCase();
+
+      if (!dedupeKey || seenRoles.has(dedupeKey)) {
+        return false;
+      }
+
+      seenRoles.add(dedupeKey);
+      return true;
+    });
+  }, [roleOptions]);
 
   const fetchStaff = useCallback(async () => {
     if (!branchId) return;
