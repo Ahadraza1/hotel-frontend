@@ -13,6 +13,7 @@ import {
   Pencil,
   Trash2,
   MoreVertical,
+  Mail,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "@/api/axios";
@@ -31,8 +32,14 @@ interface Staff {
   staffId: string;
   firstName: string;
   lastName: string;
+  email?: string;
+  phone?: string;
   department: string;
   designation: string;
+  shift?: string;
+  employmentType?: string;
+  status?: string;
+  invitationId?: string | null;
   salary: number;
   attendanceStatus?: string;
 }
@@ -102,13 +109,22 @@ const HR = () => {
   const [inviteRole, setInviteRole] = useState("");
   const [inviteJoinedDate, setInviteJoinedDate] = useState("");
   const [inviteSalary, setInviteSalary] = useState("");
+  const [invitePhone, setInvitePhone] = useState("");
+  const [inviteDepartment, setInviteDepartment] = useState("");
+  const [inviteShift, setInviteShift] = useState("Morning");
+  const [inviteEmploymentType, setInviteEmploymentType] = useState("Full-time");
+  const [inviteStatus, setInviteStatus] = useState("Invited");
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [editingPayroll, setEditingPayroll] = useState<Payroll | null>(null);
   const [staffForm, setStaffForm] = useState({
     firstName: "",
     lastName: "",
+    phone: "",
     department: "",
     designation: "",
+    shift: "Morning",
+    employmentType: "Full-time",
+    status: "Active",
     role: "",
     salary: "",
   });
@@ -120,6 +136,7 @@ const HR = () => {
   });
   const [openStaffId, setOpenStaffId] = useState<string | null>(null);
   const [openPayrollId, setOpenPayrollId] = useState<string | null>(null);
+  const [resendingInviteId, setResendingInviteId] = useState<string | null>(null);
 
   // Optimistic tracking for attendance status
   const [attendanceStatus, setAttendanceStatus] = useState<
@@ -287,12 +304,16 @@ const HR = () => {
     setStaffForm({
       firstName: member.firstName || "",
       lastName: member.lastName || "",
+      phone: member.phone || "",
       department:
         member.department && member.department !== "—" ? member.department : "",
       designation:
         member.designation && member.designation !== "—"
           ? member.designation
           : "",
+      shift: member.shift || "Morning",
+      employmentType: member.employmentType || "Full-time",
+      status: member.status || "Active",
       role:
         member.designation && member.designation !== "—"
           ? member.designation
@@ -324,8 +345,12 @@ const HR = () => {
       const payload = {
         firstName: staffForm.firstName.trim(),
         lastName: staffForm.lastName.trim(),
+        phone: staffForm.phone.trim(),
         department: staffForm.department.trim(),
         designation: staffForm.designation.trim(),
+        shift: staffForm.shift,
+        employmentType: staffForm.employmentType,
+        status: staffForm.status,
         role: staffForm.designation.trim(),
         salary: salaryValue,
       };
@@ -413,6 +438,19 @@ const HR = () => {
     }
   };
 
+  const resetInviteForm = () => {
+    setInviteName("");
+    setInviteEmail("");
+    setInviteRole("");
+    setInviteJoinedDate("");
+    setInviteSalary("");
+    setInvitePhone("");
+    setInviteDepartment("");
+    setInviteShift("Morning");
+    setInviteEmploymentType("Full-time");
+    setInviteStatus("Invited");
+  };
+
   const handleInviteStaff = async () => {
     try {
       console.log("🚀 Starting Invite Flow");
@@ -422,7 +460,9 @@ const HR = () => {
         !inviteName ||
         !inviteEmail ||
         !inviteRole ||
-        !inviteJoinedDate
+        !inviteJoinedDate ||
+        !invitePhone ||
+        !inviteDepartment
       ) {
         toast.warning("All fields are required");
         return;
@@ -439,6 +479,11 @@ const HR = () => {
         role: inviteRole,
         branchId,
         salary: salaryValue,
+        phone: invitePhone,
+        department: inviteDepartment,
+        shift: inviteShift,
+        employmentType: inviteEmploymentType,
+        status: inviteStatus,
       });
 
       const inviteRes = await api.post("/invitations", {
@@ -447,6 +492,11 @@ const HR = () => {
         role: inviteRole,
         branchId,
         salary: salaryValue, // ✅ IMPORTANT FIX
+        phone: invitePhone.trim(),
+        department: inviteDepartment.trim(),
+        shift: inviteShift,
+        employmentType: inviteEmploymentType,
+        status: inviteStatus,
         joinedDate: inviteJoinedDate,
       });
 
@@ -455,11 +505,7 @@ const HR = () => {
       await fetchStaff();
       toast.success("Staff invited successfully.");
 
-      setInviteName("");
-      setInviteEmail("");
-      setInviteRole("");
-      setInviteJoinedDate("");
-      setInviteSalary("");
+      resetInviteForm();
       setShowInviteForm(false);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
@@ -468,6 +514,24 @@ const HR = () => {
       console.error("❌ Invite Error Response:", err.response?.data);
 
       toast.error(err.response?.data?.message || "Error inviting staff");
+    }
+  };
+
+  const handleResendInvite = async (member: Staff) => {
+    if (!member.invitationId) return;
+
+    try {
+      setResendingInviteId(member.staffId);
+      await api.post(`/invitations/${member.invitationId}/resend`);
+      toast.success("Invitation resent successfully");
+      await fetchStaff();
+    } catch (error) {
+      const apiError = error as AxiosError<ApiErrorResponse>;
+      toast.error(
+        apiError.response?.data?.message || "Failed to resend invitation",
+      );
+    } finally {
+      setResendingInviteId(null);
     }
   };
   /* ── KPI Derivatives ── */
@@ -547,11 +611,7 @@ const HR = () => {
             aria-label="Close"
             onClick={() => {
               setShowInviteForm(false);
-              setInviteName("");
-              setInviteEmail("");
-              setInviteRole("");
-              setInviteJoinedDate("");
-              setInviteSalary("");
+              resetInviteForm();
             }}
           >
             <X size={16} />
@@ -627,6 +687,75 @@ const HR = () => {
                 title="Monthly Salary"
               />
             </div>
+
+            <div className="hr-invite-field">
+              <label className="hr-invite-label" htmlFor="invite-phone">Phone Number</label>
+              <input
+                id="invite-phone"
+                className="luxury-input"
+                value={invitePhone}
+                onChange={(e) => setInvitePhone(e.target.value)}
+                placeholder="e.g. +1 555 123 4567"
+                title="Phone Number"
+              />
+            </div>
+
+            <div className="hr-invite-field">
+              <label className="hr-invite-label" htmlFor="invite-department">Department</label>
+              <input
+                id="invite-department"
+                className="luxury-input"
+                value={inviteDepartment}
+                onChange={(e) => setInviteDepartment(e.target.value)}
+                placeholder="e.g. Front Office"
+                title="Department"
+              />
+            </div>
+
+            <div className="hr-invite-field">
+              <label className="hr-invite-label" htmlFor="invite-shift">Shift</label>
+              <select
+                id="invite-shift"
+                className="luxury-input"
+                value={inviteShift}
+                onChange={(e) => setInviteShift(e.target.value)}
+                title="Shift"
+              >
+                <option value="Morning">Morning</option>
+                <option value="Evening">Evening</option>
+                <option value="Night">Night</option>
+              </select>
+            </div>
+
+            <div className="hr-invite-field">
+              <label className="hr-invite-label" htmlFor="invite-employment-type">Employment Type</label>
+              <select
+                id="invite-employment-type"
+                className="luxury-input"
+                value={inviteEmploymentType}
+                onChange={(e) => setInviteEmploymentType(e.target.value)}
+                title="Employment Type"
+              >
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
+              </select>
+            </div>
+
+            <div className="hr-invite-field">
+              <label className="hr-invite-label" htmlFor="invite-status">Status</label>
+              <select
+                id="invite-status"
+                className="luxury-input"
+                value={inviteStatus}
+                onChange={(e) => setInviteStatus(e.target.value)}
+                title="Status"
+              >
+                <option value="Invited">Invited</option>
+                <option value="Active">Active</option>
+                <option value="Suspended">Suspended</option>
+              </select>
+            </div>
           </div>
 
           <hr className="hr-invite-divider" />
@@ -635,11 +764,7 @@ const HR = () => {
             <button
               onClick={() => {
                 setShowInviteForm(false);
-                setInviteName("");
-                setInviteEmail("");
-                setInviteRole("");
-                setInviteJoinedDate("");
-                setInviteSalary("");
+                resetInviteForm();
               }}
               className="luxury-btn luxury-btn-ghost"
             >
@@ -711,6 +836,18 @@ const HR = () => {
               </select>
             </div>
             <div className="hr-invite-field">
+              <label className="hr-invite-label" htmlFor="edit-staff-phone">Phone Number</label>
+              <input
+                id="edit-staff-phone"
+                className="luxury-input"
+                value={staffForm.phone}
+                onChange={(e) =>
+                  setStaffForm((prev) => ({ ...prev, phone: e.target.value }))
+                }
+                title="Phone Number"
+              />
+            </div>
+            <div className="hr-invite-field">
               <label className="hr-invite-label" htmlFor="edit-staff-designation">Designation</label>
               <select
                 id="edit-staff-designation"
@@ -748,6 +885,57 @@ const HR = () => {
                 }
                 title="Salary"
               />
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label" htmlFor="edit-staff-shift">Shift</label>
+              <select
+                id="edit-staff-shift"
+                className="luxury-input"
+                value={staffForm.shift}
+                onChange={(e) =>
+                  setStaffForm((prev) => ({ ...prev, shift: e.target.value }))
+                }
+                title="Shift"
+              >
+                <option value="Morning">Morning</option>
+                <option value="Evening">Evening</option>
+                <option value="Night">Night</option>
+              </select>
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label" htmlFor="edit-staff-employment-type">Employment Type</label>
+              <select
+                id="edit-staff-employment-type"
+                className="luxury-input"
+                value={staffForm.employmentType}
+                onChange={(e) =>
+                  setStaffForm((prev) => ({
+                    ...prev,
+                    employmentType: e.target.value,
+                  }))
+                }
+                title="Employment Type"
+              >
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
+              </select>
+            </div>
+            <div className="hr-invite-field">
+              <label className="hr-invite-label" htmlFor="edit-staff-status">Status</label>
+              <select
+                id="edit-staff-status"
+                className="luxury-input"
+                value={staffForm.status}
+                onChange={(e) =>
+                  setStaffForm((prev) => ({ ...prev, status: e.target.value }))
+                }
+                title="Status"
+              >
+                <option value="Invited">Invited</option>
+                <option value="Active">Active</option>
+                <option value="Suspended">Suspended</option>
+              </select>
             </div>
           </div>
           <hr className="hr-invite-divider" />
@@ -897,6 +1085,7 @@ const HR = () => {
               <tr>
                 <th className="col-serial">#</th>
                 <th>Name</th>
+                <th>Email</th>
                 <th>Department</th>
                 <th>Designation</th>
                 <th>Salary</th>
@@ -910,7 +1099,7 @@ const HR = () => {
               {paginatedStaff.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={10}
                     className="text-center py-6 text-muted-foreground"
                   >
                     No staff members found.
@@ -926,6 +1115,9 @@ const HR = () => {
                       {s.firstName} {s.lastName}
                     </td>
                     <td className="text-muted-foreground">
+                      {s.email || "—"}
+                    </td>
+                    <td className="text-muted-foreground">
                       {s.department || "—"}
                     </td>
                     <td>
@@ -939,7 +1131,7 @@ const HR = () => {
 
                     <td>
                       <span
-                        className={`luxury-badge ${attendanceStatus[s.staffId] === "Checked In" ? "badge-active" : attendanceStatus[s.staffId] === "Checked Out" ? "badge-danger" : "badge-info"} text-[0.65rem]`}
+                        className={`luxury-badge ${s.status === "Active" ? "badge-active" : s.status === "Suspended" ? "badge-danger" : "badge-warning"} text-[0.65rem]`}
                       >
                         {attendanceStatus[s.staffId] || "—"}
                       </span>

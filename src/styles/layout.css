@@ -5,7 +5,6 @@
   min-height: 100vh;
   width: 100%;
   background-color: var(--grandeur-charcoal); /* 7-Star Charcoal Base */
-  overflow-x: clip;
   transition: filter 0.24s ease-out;
 }
 
@@ -14,7 +13,9 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   margin-left: calc(270px + 1rem); /* Sidebar expanded width + margin */
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background-color: var(--grandeur-charcoal);
@@ -27,7 +28,6 @@
 .main {
   flex: 1;
   padding: 2rem; /* Luxury padding */
-  overflow: auto;
   min-width: 0;
 }
 
@@ -72,12 +72,11 @@
   }
 
   .main-wrapper {
-    min-height: 100dvh;
+    height: 100dvh;
   }
 
   .main {
     padding: 1rem;
-    overflow-x: hidden;
   }
 }
 
