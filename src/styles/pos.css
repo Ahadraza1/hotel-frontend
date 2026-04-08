@@ -34,7 +34,7 @@
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
 }
 
 .pos-category-btn:hover {
@@ -106,7 +106,7 @@
 
 .pos-clear-btn:hover {
   background: hsl(var(--destructive));
-  color: white;
+  color: hsl(210 20% 98%);
   border-color: hsl(var(--destructive));
 }
 
@@ -145,7 +145,7 @@
 
 .pos-order-item-remove-btn:hover {
   background: hsl(var(--destructive));
-  color: white;
+  color: hsl(210 20% 98%);
   border-color: hsl(var(--destructive));
   transform: scale(1.05);
 }
@@ -499,7 +499,7 @@
   color: hsl(var(--foreground));
   font-size: 12px;
   font-weight: 700;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
 }
 
 .pos-category-scroller {
@@ -517,7 +517,7 @@
   border: 1px solid hsl(var(--border) / 0.8);
   font-size: 13px;
   font-weight: 700;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -531,7 +531,7 @@
 
 .pos-cat-pill.active {
   background: hsl(var(--primary));
-  color: white;
+  color: hsl(210 20% 98%);
   border-color: hsl(var(--primary));
   box-shadow: 0 4px 12px hsla(var(--primary), 0.2);
 }
@@ -581,7 +581,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(15, 23, 42, 0.08));
+  background: linear-gradient(180deg, hsla(210, 20%, 98%, 0.06), rgba(15, 23, 42, 0.08));
 }
 
 .pos-item-visual-inner {
@@ -598,7 +598,7 @@
   align-self: flex-start;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
+  background: hsla(210, 20%, 98%, 0.82);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   color: rgba(15, 23, 42, 0.75);
@@ -622,7 +622,7 @@
   top: 16px;
   right: 16px;
   z-index: 2;
-  background: rgba(255,255,255,0.9);
+  background: hsla(210, 20%, 98%,0.9);
   padding: 6px 12px;
   border-radius: 100px;
   font-size: 10px;
@@ -718,7 +718,7 @@
 .pos-item-action-btn-refined {
   width: 32px;
   height: 32px;
-  background: rgba(255,255,255,0.95);
+  background: hsla(210, 20%, 98%,0.95);
   border: none;
   border-radius: 50%;
   display: flex;
@@ -732,7 +732,7 @@
 }
 
 [data-theme="dark"] .pos-item-action-btn-refined {
-  background: rgba(255, 255, 255, 0.98);
+  background: hsla(210, 20%, 98%, 0.98);
   color: #374151;
 }
 
@@ -982,7 +982,7 @@
 
 .pos-order-remove-refined:hover {
   background: hsl(var(--danger));
-  color: white;
+  color: hsl(210 20% 98%);
   transform: scale(1.1) rotate(8deg);
   box-shadow: 0 4px 12px -2px hsla(var(--danger), 0.3);
 }
@@ -1043,7 +1043,7 @@
   border-radius: 14px;
   border: none;
   background: hsl(var(--primary));
-  color: white;
+  color: hsl(210 20% 98%);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -1095,7 +1095,7 @@
 .pos-management-actions button:hover {
   transform: scale(1.1);
   background: hsl(var(--primary));
-  color: white;
+  color: hsl(210 20% 98%);
   border-color: hsl(var(--primary));
 }
 
@@ -1105,7 +1105,7 @@
   right: 16px;
   left: auto;
   background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
-  color: white;
+  color: hsl(210 20% 98%);
   width: 56px;
   height: 56px;
   min-width: 56px;
@@ -1149,7 +1149,7 @@
 .pos-mobile-cart-btn-label {
   font-size: 9px;
   line-height: 1.1;
-  color: rgba(255, 255, 255, 0.78);
+  color: hsla(210, 20%, 98%, 0.78);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -1417,7 +1417,7 @@
   padding: 18px;
   border-radius: 20px;
   background: hsl(var(--gold));
-  color: white;
+  color: hsl(210 20% 98%);
   font-size: 16px;
   font-weight: 800;
   border: none;
@@ -1480,7 +1480,7 @@
 
 .pos-discount-chip.active {
   background: hsl(var(--primary));
-  color: white;
+  color: hsl(210 20% 98%);
   border-color: hsl(var(--primary));
   box-shadow: 0 4px 12px hsla(var(--primary), 0.3);
   transform: translateY(-1px);
@@ -1529,7 +1529,7 @@
 
 .pos-mgmt-btn.add {
   background: hsl(var(--primary));
-  color: white;
+  color: hsl(210 20% 98%);
   border-color: hsl(var(--primary));
 }
 
@@ -1570,7 +1570,7 @@
 }
 
 .pos-mgmt-btn span {
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
 }
 
 @media (max-width: 1100px) {

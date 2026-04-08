@@ -57,7 +57,7 @@ interface OverviewData {
 
 /* ── Site luxury palette ── */
 const THEME_COLORS = [
-  "hsl(41, 55%, 57%)", // gold
+  "hsl(215, 55%, 45%)", // gold
   "hsl(160, 59%, 30%)", // emerald
   "hsl(210, 40%, 50%)", // blue
   "hsl(280, 40%, 50%)", // violet
@@ -284,7 +284,7 @@ const GlobalFinance = () => {
                 />
                 <Bar
                   dataKey="revenue"
-                  fill="hsl(41, 55%, 57%)"
+                  fill="hsl(215, 55%, 45%)"
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>

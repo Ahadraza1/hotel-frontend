@@ -59,7 +59,7 @@ interface RoleEditState {
 }
 
 const ROLE_CHART_COLORS = [
-  "hsl(41, 55%, 57%)",
+  "hsl(215, 55%, 45%)",
   "hsl(160, 59%, 30%)",
   "hsl(210, 40%, 50%)",
   "hsl(0, 58%, 39%)",

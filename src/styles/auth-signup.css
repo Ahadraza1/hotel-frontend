@@ -40,7 +40,7 @@
 }
 
 .org-signup-topbar-label {
-  color: hsl(var(--gold, 41 55% 57%));
+  color: hsl(var(--gold, 215 55% 45%));
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 0.6875rem;
@@ -67,7 +67,7 @@
   color: hsl(var(--gold));
   font-weight: 600;
   font-size: 0.875rem;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   padding: 0.5rem 1rem;
   border-radius: 999px;
   background: hsl(var(--gold) / 0.06);
@@ -98,7 +98,7 @@
   min-width: 180px;
   border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: 16px;
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: hsla(210, 20%, 98%, 0.03);
   padding: 1.25rem;
   display: flex;
   align-items: center;
@@ -213,7 +213,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: hsl(41, 55%, 57%); /* Refined Luxury Gold */
+  color: hsl(215, 55%, 45%); /* Refined Luxury Gold */
 }
 
 .org-signup-input-wrap {
@@ -237,10 +237,10 @@
   width: 100%;
   border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: hsla(210, 20%, 98%, 0.04);
   padding: 0.75rem 1rem 0.75rem 2.75rem;
   font-size: 0.9375rem;
-  color: var(--lnd-text, #ffffff);
+  color: var(--lnd-text, hsl(210 20% 98%));
   transition: all 0.2s;
 }
 
@@ -258,7 +258,7 @@
 }
 
 .org-signup-input-wrap select:disabled {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: hsla(210, 20%, 98%, 0.02);
   color: rgba(237, 232, 223, 0.45);
 }
 
@@ -266,7 +266,7 @@
 .org-signup-input-wrap select:focus,
 .org-signup-input-wrap textarea:focus {
   border-color: rgba(255, 215, 0, 0.5);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: hsla(210, 20%, 98%, 0.05);
   box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
   outline: none;
 }
@@ -292,13 +292,13 @@
   background-color: rgba(24, 22, 18, 0.96);
   padding: 0.75rem 1rem 0.75rem 4rem;
   font-size: 0.9375rem;
-  color: var(--lnd-text, #ffffff);
+  color: var(--lnd-text, hsl(210 20% 98%));
   transition: all 0.2s;
 }
 
 .org-signup-phone-wrap .form-control.org-signup-phone-input:focus {
   border-color: rgba(255, 215, 0, 0.5);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: hsla(210, 20%, 98%, 0.05);
   box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
 }
 
@@ -306,7 +306,7 @@
   border: 1px solid rgba(255, 215, 0, 0.1);
   border-right: none;
   border-radius: 10px 0 0 10px;
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: hsla(210, 20%, 98%, 0.04);
 }
 
 .org-signup-phone-wrap .selected-flag {
@@ -345,7 +345,7 @@
   margin: 0.5rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 215, 0, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  background: hsla(210, 20%, 98%, 0.04);
   color: #f3ecdf;
 }
 
@@ -355,7 +355,7 @@
 }
 
 .lnd-root[data-theme="light"] .org-signup-phone-wrap .form-control.org-signup-phone-input {
-  background: rgba(255, 255, 255, 0.98);
+  background: hsla(210, 20%, 98%, 0.98);
   color: #34240f;
 }
 
@@ -375,7 +375,7 @@
 }
 .lnd-root[data-theme="light"] .org-signup-input-wrap select {
   color-scheme: light;
-  background-color: rgba(255, 255, 255, 0.98);
+  background-color: hsla(210, 20%, 98%, 0.98);
   color: #34240f;
 }
 
@@ -463,7 +463,7 @@
 }
 
 .org-signup-billing-toggle button.is-selected {
-  background-color: #ffffff;
+  background-color: hsl(210 20% 98%);
   color: hsl(var(--gold));
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
@@ -476,7 +476,7 @@
 
 .org-signup-plan-card {
   border: 1px solid rgba(255, 215, 0, 0.1);
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: hsla(210, 20%, 98%, 0.03);
   border-radius: 18px;
   padding: 1.5rem;
   text-align: left;
@@ -582,13 +582,13 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  box-shadow: 0 10px 20px hsla(41, 55%, 57%, 0.2);
+  box-shadow: 0 10px 20px hsla(215, 55%, 45%, 0.2);
 }
 
 .org-signup-btn-primary:hover {
   background-color: hsl(var(--gold-dark, 41 55% 50%));
   transform: translateY(-1.5px);
-  box-shadow: 0 12px 24px hsla(41, 55%, 57%, 0.25);
+  box-shadow: 0 12px 24px hsla(215, 55%, 45%, 0.25);
 }
 
 .org-signup-btn-secondary {

@@ -82,7 +82,7 @@
 
 .kt-filter-btn.active {
   background: hsl(var(--grandeur-gold));
-  color: #ffffff;
+  color: hsl(210 20% 98%);
 }
 
 /* ── Orders Grid ── */

@@ -109,7 +109,7 @@
 .page-btn.active {
     background-color: #c9a24d !important;   /* luxury gold tone */
     border-color: #c9a24d !important;
-    color: #ffffff !important;
+    color: hsl(210 20% 98%) !important;
 } 
 
 .user-cell {
@@ -328,7 +328,7 @@
 
   .luxury-table th,
   .luxury-table td {
-    white-space: nowrap;
+    hsl(210 20% 98%)-space: nowrap;
   }
 
   .luxury-table th {

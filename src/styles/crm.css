@@ -28,7 +28,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -466,7 +466,7 @@
   color: hsl(var(--muted-foreground));
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   flex: 1;
 }
 
@@ -486,7 +486,7 @@
   cursor: pointer;
   text-decoration: none;
   transition: all 0.15s;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
 }
 .crm-doc-btn:hover {
   background: hsl(var(--muted));
@@ -545,7 +545,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   border: 1px solid transparent;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   flex-shrink: 0;
 }
 .crm-booking-status.confirmed {

@@ -245,15 +245,15 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={revenueData}>
                 <defs>
-                  <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop
                       offset="0%"
-                      stopColor="hsl(41, 55%, 57%)"
+                      stopColor="hsl(215, 55%, 45%)"
                       stopOpacity={0.22}
                     />
                     <stop
                       offset="100%"
-                      stopColor="hsl(41, 55%, 57%)"
+                      stopColor="hsl(215, 55%, 45%)"
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -293,9 +293,9 @@ const Dashboard = () => {
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stroke="hsl(41, 55%, 57%)"
+                  stroke="hsl(215, 55%, 45%)"
                   strokeWidth={2}
-                  fill="url(#goldGrad)"
+                  fill="url(#blueGrad)"
                 />
               </AreaChart>
             </ResponsiveContainer>

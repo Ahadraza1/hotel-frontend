@@ -83,7 +83,7 @@
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   transition: opacity 0.3s, visibility 0.3s, width 0.3s;
 }
 
@@ -112,7 +112,7 @@
 
 [data-theme="dark"] .desktop-toggle-btn {
   background-color: #222;
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: hsla(210, 20%, 98%, 0.1);
   color: hsl(var(--grandeur-gold));
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
@@ -231,7 +231,7 @@
 .workspace-name {
   font-size: 0.8125rem;
   font-weight: 600;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   color: hsl(var(--sidebar-accent-foreground));
 }
 
@@ -262,7 +262,7 @@
   color: hsl(var(--grandeur-gold-dark) / 0.52);
   font-weight: 700;
   transition: opacity 0.3s, visibility 0.3s, height 0.3s;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
 }
 
 .sidebar-collapsed .sidebar-section-label {
@@ -301,7 +301,7 @@
   letter-spacing: 0.2em;
   color: hsl(var(--grandeur-gold-dark) / 0.58);
   font-weight: 700;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   transition: opacity 0.3s, visibility 0.3s, height 0.3s, margin 0.3s, padding 0.3s;
 }
 
@@ -355,13 +355,13 @@
 }
 
 .sidebar-item.active {
-  background-color: rgba(255, 255, 255, 0.92); /* White pill — crisp contrast on gold */
-  color: #4A2C0A; /* Rich dark brown for legibility */
+  background-color: hsla(210, 20%, 98%, 0.92); /* hsl(210 20% 98%) pill — crisp contrast on gold */
+  color: #0A2C4A; /* Rich dark brown for legibility */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
 }
 
 .sidebar-collapsed .sidebar-item:hover:not(.active):not(.restricted) {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: hsla(210, 20%, 98%, 0.08);
   transform: scale(1.05);
 }
 
@@ -382,7 +382,7 @@
 }
 
 .sidebar-item-text {
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   transition: opacity 0.3s, visibility 0.3s, width 0.3s, padding 0.3s;
 }
 
@@ -422,12 +422,12 @@
 /* Dark Mode Overrides for Professional Master-tier */
 [data-theme="dark"] .app-sidebar {
   background-color: hsl(var(--grandeur-charcoal) / 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid hsla(210, 20%, 98%, 0.08);
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="dark"] .sidebar-brand {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid hsla(210, 20%, 98%, 0.05);
 }
 
 [data-theme="dark"] .sidebar-logo {
@@ -439,7 +439,7 @@
 }
 
 [data-theme="dark"] .sidebar-item {
-  color: rgba(255, 255, 255, 0.6);
+  color: hsla(210, 20%, 98%, 0.6);
 }
 
 [data-theme="dark"] .sidebar-item:hover:not(.restricted) {
@@ -474,7 +474,7 @@
 }
 
 [data-theme="dark"] .sidebar-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid hsla(210, 20%, 98%, 0.05);
 }
 
 /* Scrollbar */

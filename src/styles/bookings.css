@@ -29,7 +29,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -196,7 +196,7 @@
 .bk-cell-dates {
   font-size: 0.8rem;
   color: hsl(var(--muted-foreground));
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
 }
 
 .bk-cell-amount {
@@ -243,7 +243,7 @@
   border-radius: 7px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
-  white-space: nowrap;
+  hsl(210 20% 98%)-space: nowrap;
   border: 1px solid hsl(var(--border) / 0.7);
   background: transparent;
   color: hsl(var(--muted-foreground));
@@ -626,7 +626,7 @@
 
 .bvd-btn-green {
   background: hsl(var(--premium-green));
-  color: white;
+  color: hsl(210 20% 98%);
 }
 
 .bvd-btn-green:hover:not(:disabled) {
@@ -635,7 +635,7 @@
 
 .bvd-btn-gold {
   background: hsl(var(--grandeur-gold));
-  color: white;
+  color: hsl(210 20% 98%);
   border-color: hsl(var(--grandeur-gold));
 }
 

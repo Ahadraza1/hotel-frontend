@@ -536,8 +536,8 @@ const BranchOverview = () => {
             >
               <defs>
                 <linearGradient id="roomAreaGold" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#B08D57" stopOpacity={0.18} />
-                  <stop offset="100%" stopColor="#B08D57" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#3266B3" stopOpacity={0.18} />
+                  <stop offset="100%" stopColor="#3266B3" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -572,7 +572,7 @@ const BranchOverview = () => {
               <Tooltip
                 contentStyle={{
                   background: "#fff",
-                  border: "1px solid rgba(176,141,87,0.25)",
+                  border: "1px solid rgba(65, 105, 175,0.25)",
                   borderRadius: "10px",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                   padding: "10px 14px",
@@ -583,16 +583,16 @@ const BranchOverview = () => {
                   formatCurrency(value),
                   "Revenue",
                 ]}
-                cursor={{ stroke: "rgba(176,141,87,0.3)", strokeWidth: 1, strokeDasharray: "4 4" }}
+                cursor={{ stroke: "rgba(65, 105, 175,0.3)", strokeWidth: 1, strokeDasharray: "4 4" }}
               />
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#B08D57"
+                stroke="#3266B3"
                 strokeWidth={2.5}
                 fill="url(#roomAreaGold)"
-                dot={{ r: 4, fill: "#B08D57", stroke: "#fff", strokeWidth: 2 }}
-                activeDot={{ r: 6, fill: "#B08D57", stroke: "#fff", strokeWidth: 2 }}
+                dot={{ r: 4, fill: "#3266B3", stroke: "#fff", strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: "#3266B3", stroke: "#fff", strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -660,8 +660,8 @@ const BranchOverview = () => {
             >
               <defs>
                 <linearGradient id="restaurantAreaGold" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#B08D57" stopOpacity={0.18} />
-                  <stop offset="100%" stopColor="#B08D57" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#3266B3" stopOpacity={0.18} />
+                  <stop offset="100%" stopColor="#3266B3" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -696,7 +696,7 @@ const BranchOverview = () => {
               <Tooltip
                 contentStyle={{
                   background: "#fff",
-                  border: "1px solid rgba(176,141,87,0.25)",
+                  border: "1px solid rgba(65, 105, 175,0.25)",
                   borderRadius: "10px",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                   padding: "10px 14px",
@@ -707,16 +707,16 @@ const BranchOverview = () => {
                   formatCurrency(value),
                   "Revenue",
                 ]}
-                cursor={{ stroke: "rgba(176,141,87,0.3)", strokeWidth: 1, strokeDasharray: "4 4" }}
+                cursor={{ stroke: "rgba(65, 105, 175,0.3)", strokeWidth: 1, strokeDasharray: "4 4" }}
               />
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#B08D57"
+                stroke="#3266B3"
                 strokeWidth={2.5}
                 fill="url(#restaurantAreaGold)"
-                dot={{ r: 4, fill: "#B08D57", stroke: "#fff", strokeWidth: 2 }}
-                activeDot={{ r: 6, fill: "#B08D57", stroke: "#fff", strokeWidth: 2 }}
+                dot={{ r: 4, fill: "#3266B3", stroke: "#fff", strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: "#3266B3", stroke: "#fff", strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>

@@ -235,25 +235,25 @@ function DashboardMockup() {
               {
                 label: "Revenue",
                 value: formatCompactCurrency(124000),
-                color: "#C9A85C",
+                color: "#4470bc",
                 trend: "+18%",
               },
               {
                 label: "Bookings",
                 value: "847",
-                color: "#DFC48A",
+                color: "#7b9fdb",
                 trend: "+12%",
               },
               {
                 label: "Occupancy",
                 value: "91%",
-                color: "#B08D57",
+                color: "#3266B3",
                 trend: "+5%",
               },
               {
                 label: "Guests",
                 value: "1,203",
-                color: "#A07830",
+                color: "#274780",
                 trend: "+8%",
               },
             ].map((k) => (
@@ -280,7 +280,7 @@ function DashboardMockup() {
                 <span>Weekly</span>
               </div>
             </div>
-            <SparklineChart color="#C9A85C" />
+            <SparklineChart color="#4470bc" />
           </div>
 
           {/* Bottom row */}
@@ -318,7 +318,7 @@ function DashboardMockup() {
                     cy="40"
                     r="30"
                     fill="none"
-                    stroke="rgba(201,168,92,0.12)"
+                    stroke="rgba(68,112,188,0.12)"
                     strokeWidth="10"
                   />
                   <circle
@@ -326,7 +326,7 @@ function DashboardMockup() {
                     cy="40"
                     r="30"
                     fill="none"
-                    stroke="#C9A85C"
+                    stroke="#4470bc"
                     strokeWidth="10"
                     strokeDasharray="170 188"
                     strokeDashoffset="47"

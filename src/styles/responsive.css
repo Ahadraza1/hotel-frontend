@@ -197,7 +197,7 @@
   }
 
   .rpe-perm-name {
-    white-space: normal;
+    hsl(210 20% 98%)-space: normal;
     overflow: visible;
     text-overflow: unset;
     overflow-wrap: anywhere;
