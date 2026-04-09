@@ -54,8 +54,8 @@
   display: flex;
   flex-direction: column;
   /* Fixed height forces the scroll zone to activate */
-  height: 26rem;
-  max-height: calc(100vh - 20rem);
+  height: var(--app-table-card-height);
+  max-height: var(--app-table-card-height);
   /* ⚠️  Do NOT add overflow:hidden — it kills position:sticky */
 }
 
@@ -134,7 +134,7 @@
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .sa-tables-row     { grid-template-columns: 1fr; }
-  .sa-table-card     { height: 24rem; max-height: calc(100vh - 16rem); }
+  .sa-table-card     { height: var(--app-table-card-height-mobile); max-height: var(--app-table-card-height-mobile); }
 }
 
 @media (max-width: 640px) {

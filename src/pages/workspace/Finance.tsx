@@ -485,7 +485,7 @@ const Finance = () => {
             </div>
 
             {roomTotalPages > 1 && (
-              <div className="table-footer border-t border-[hsl(var(--border))] mt-0">
+              <div className="table-footer room-invoices-pagination border-t border-[hsl(var(--border))] mt-0">
                 <span className="pagination-info">
                   Showing {(roomCurrentPage - 1) * itemsPerPage + 1} to{" "}
                   {Math.min(
@@ -494,22 +494,27 @@ const Finance = () => {
                   )}{" "}
                   of {filteredRoomInvoices.length} entries
                 </span>
-                <div className="pagination">
+                <div className="pagination room-invoices-pagination-controls">
                   <button
-                    className="page-btn"
+                    className="page-btn pagination-nav-btn"
                     disabled={roomCurrentPage === 1}
                     onClick={() =>
                       setRoomCurrentPage((p) => Math.max(1, p - 1))
                     }
+                    aria-label="Previous room invoice page"
                   >
                     Previous
                   </button>
+                  <span className="pagination-page-indicator">
+                    Page {roomCurrentPage} of {roomTotalPages}
+                  </span>
                   <button
-                    className="page-btn"
+                    className="page-btn pagination-nav-btn"
                     disabled={roomCurrentPage === roomTotalPages}
                     onClick={() =>
                       setRoomCurrentPage((p) => Math.min(roomTotalPages, p + 1))
                     }
+                    aria-label="Next room invoice page"
                   >
                     Next
                   </button>
@@ -518,7 +523,7 @@ const Finance = () => {
             )}
           </div>
 
-          <div className="luxury-card finance-table-card mt-6">
+          <div className="luxury-card finance-table-card restaurant-invoices-card mt-6">
             <h2 className="text-lg font-semibold mb-3">
               Restaurant POS Invoices
             </h2>
@@ -585,7 +590,7 @@ const Finance = () => {
             </div>
 
             {restaurantTotalPages > 1 && (
-              <div className="table-footer border-t border-[hsl(var(--border))] mt-0">
+              <div className="table-footer restaurant-invoices-pagination border-t border-[hsl(var(--border))] mt-0">
                 <span className="pagination-info">
                   Showing {(restaurantCurrentPage - 1) * itemsPerPage + 1} to{" "}
                   {Math.min(
@@ -594,24 +599,29 @@ const Finance = () => {
                   )}{" "}
                   of {filteredRestaurantInvoices.length} entries
                 </span>
-                <div className="pagination">
+                <div className="pagination restaurant-invoices-pagination-controls">
                   <button
-                    className="page-btn"
+                    className="page-btn pagination-nav-btn"
                     disabled={restaurantCurrentPage === 1}
                     onClick={() =>
                       setRestaurantCurrentPage((p) => Math.max(1, p - 1))
                     }
+                    aria-label="Previous restaurant invoice page"
                   >
                     Previous
                   </button>
+                  <span className="pagination-page-indicator">
+                    Page {restaurantCurrentPage} of {restaurantTotalPages}
+                  </span>
                   <button
-                    className="page-btn"
+                    className="page-btn pagination-nav-btn"
                     disabled={restaurantCurrentPage === restaurantTotalPages}
                     onClick={() =>
                       setRestaurantCurrentPage((p) =>
                         Math.min(restaurantTotalPages, p + 1),
                       )
                     }
+                    aria-label="Next restaurant invoice page"
                   >
                     Next
                   </button>

@@ -68,6 +68,8 @@ const Housekeeping = () => {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7;
 
   const fetchTasks = async () => {
     try {
@@ -86,6 +88,19 @@ const Housekeeping = () => {
   useEffect(() => {
     fetchTasks();
   }, [branchId]);
+
+  /* ── Pagination ── */
+  const totalPages = Math.ceil(tasks.length / itemsPerPage) || 1;
+  const currentTasks = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return tasks.slice(startIndex, startIndex + itemsPerPage);
+  }, [tasks, currentPage]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [tasks.length, totalPages, currentPage]);
 
   const updateStatus = async (id: string, status: string) => {
     await api.patch(`/housekeeping/${id}/status`, { status });
@@ -222,7 +237,7 @@ const Housekeeping = () => {
               </tr>
             </thead>
             <tbody>
-              {tasks.length === 0 ? (
+              {currentTasks.length === 0 ? (
                 <tr>
                   <td
                     colSpan={7}
@@ -232,9 +247,9 @@ const Housekeeping = () => {
                   </td>
                 </tr>
               ) : (
-                tasks.map((task, i) => (
+                currentTasks.map((task, i) => (
                   <tr key={task.housekeepingId}>
-                    <td className="col-serial">{i + 1}</td>
+                    <td className="col-serial">{(currentPage - 1) * itemsPerPage + i + 1}</td>
                     <td className="hk-cell-bold">
                       Room {task.roomId?.roomNumber || "—"}
                     </td>
@@ -302,6 +317,33 @@ const Housekeeping = () => {
           </table>
         </div>
       </div>
+
+      {/* ── Pagination Footer ── */}
+      {tasks.length > 0 && (
+        <div className="table-footer">
+          <div className="pagination-info">
+            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+            {Math.min(currentPage * itemsPerPage, tasks.length)} of {tasks.length} entries
+          </div>
+          <div className="pagination">
+            <button
+              className="page-btn pagination-nav-btn"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((c) => Math.max(1, c - 1))}
+              aria-label="Previous page"
+            />
+            <div className="pagination-page-indicator">
+              Page {currentPage} of {totalPages}
+            </div>
+            <button
+              className="page-btn pagination-nav-btn"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((c) => Math.min(totalPages, c + 1))}
+              aria-label="Next page"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

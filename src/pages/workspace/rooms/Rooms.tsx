@@ -405,16 +405,21 @@ const Rooms = () => {
             </span>
             <div className="pagination">
               <button
-                className="page-btn"
+                className="page-btn pagination-nav-btn"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => p - 1)}
+                aria-label="Previous page"
               >
                 Previous
               </button>
+              <span className="pagination-page-indicator">
+                Page {currentPage} of {totalPages}
+              </span>
               <button
-                className="page-btn"
+                className="page-btn pagination-nav-btn"
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage((p) => p + 1)}
+                aria-label="Next page"
               >
                 Next
               </button>

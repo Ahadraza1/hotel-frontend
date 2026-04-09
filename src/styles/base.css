@@ -259,6 +259,7 @@ select {
   gap: 0.65rem;
   margin-bottom: 2rem;
   padding: 0 0.5rem;
+  -webkit-user-select: none;
   user-select: none;
 }
 

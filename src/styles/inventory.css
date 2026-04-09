@@ -185,8 +185,9 @@
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
-  max-height: calc(100vh - 22rem);
-  min-height: 12rem;
+  height: var(--app-table-card-height);
+  max-height: var(--app-table-card-height);
+  min-height: var(--app-table-card-height);
 }
 
 .inv-table-scroll {

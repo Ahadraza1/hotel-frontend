@@ -4,7 +4,6 @@ import {
   Users,
   DollarSign,
   Percent,
-  Activity,
   TrendingUp,
   TrendingDown,
   AlertTriangle,
@@ -38,7 +37,6 @@ interface KPIData {
   activeUsers: number;
   globalRevenue: number;
   occupancy: number;
-  systemHealth: number;
 }
 
 interface RevenueItem {
@@ -183,14 +181,6 @@ const Dashboard = () => {
       up: false,
       icon: Percent,
       colorClass: "gf-kpi-icon-muted",
-    },
-    {
-      label: "System Health",
-      value: `${kpiData.systemHealth}%`,
-      trend: "Stable",
-      up: true,
-      icon: Activity,
-      colorClass: "gf-kpi-icon-green",
     },
   ];
 

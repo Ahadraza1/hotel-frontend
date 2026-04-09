@@ -542,7 +542,7 @@ const OrderSessionDetail = () => {
       ) : session ? (
         <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_360px]">
           <div className="flex flex-col gap-8">
-            {/* â”€â”€ Order Submission â”€â”€ */}
+            {/* Order Submission */}
             <div className="osd-menu-wrapper">
               <div className="osd-menu-header">
                 <div className="osd-menu-title-wrap">
@@ -668,13 +668,13 @@ const OrderSessionDetail = () => {
               )}
             </div>
 
-            {/* â”€â”€ Order History â”€â”€ */}
+            {/* Order History */}
             <div className="osd-history-wrapper">
               <div className="osd-history-header">
-                <div className="osd-history-icon-box">
+                {/* <div className="osd-history-icon-box">
                   <UtensilsCrossed size={18} strokeWidth={2.5} />
                 </div>
-                <h2 className="osd-history-title">Session Orders</h2>
+                <h2 className="osd-history-title">Session Orders</h2> */}
               </div>
               
               {session.orders.length === 0 ? (
@@ -804,7 +804,7 @@ const OrderSessionDetail = () => {
             </div>
           </div>
 
-          {/* â”€â”€ Sidebar Actions â”€â”€ */}
+          {/* Sidebar Actions */}
           <div className="flex flex-col gap-8">
             <div className="luxury-card osd-actions-card sticky top-6">
               <div className="osd-actions-header">
@@ -998,26 +998,6 @@ const OrderSessionDetail = () => {
 
                   {canPay && (
                     <div className="osd-payment-block">
-                      <div className="osd-billing-summary">
-                        <div className="osd-billing-row">
-                          <span>Subtotal</span>
-                          <span>{formatCurrency(Number(session.invoice?.totalAmount || billingSubtotal))}</span>
-                        </div>
-                        {billingDiscountAmount > 0 && (
-                          <div className="osd-billing-row osd-billing-row-discount">
-                            <span>Discount</span>
-                            <span>-{formatCurrency(billingDiscountAmount)}</span>
-                          </div>
-                        )}
-                        <div className="osd-billing-row">
-                          <span>Tax</span>
-                          <span>{formatCurrency(billingTaxAmount)}</span>
-                        </div>
-                        <div className="osd-billing-row">
-                          <span>Service Charge</span>
-                          <span>{formatCurrency(billingServiceChargeAmount)}</span>
-                        </div>
-                      </div>
                       <div className="osd-payment-summary">
                         <div>
                           <span className="osd-payment-label">Amount Due</span>

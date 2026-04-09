@@ -143,11 +143,11 @@ const PricingPage = () => {
                 onClick={() => setBilling("yearly")}
               >
                 Yearly
-                {yearlySavingsPercentage !== null ? (
+                {/* {yearlySavingsPercentage !== null ? (
                   <span className="lnd-save-badge-pill">
                     Save {yearlySavingsPercentage}%
                   </span>
-                ) : null}
+                ) : null} */}
               </button>
             </div>
           </section>

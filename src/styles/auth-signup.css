@@ -8,8 +8,8 @@
   position: relative;
   z-index: 10;
   background-color: rgba(26, 26, 26, 0.6);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: 32px;
   padding: 4rem;
@@ -67,7 +67,7 @@
   color: hsl(var(--gold));
   font-weight: 600;
   font-size: 0.875rem;
-  hsl(210 20% 98%)-space: nowrap;
+  white-space: nowrap;
   padding: 0.5rem 1rem;
   border-radius: 999px;
   background: hsl(var(--gold) / 0.06);
@@ -245,9 +245,9 @@
 }
 
 .org-signup-input-wrap select {
-  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  appearance: none;
   color-scheme: dark;
   background-color: rgba(24, 22, 18, 0.96);
 }
@@ -569,20 +569,28 @@
   color: hsl(var(--muted-foreground));
 }
 
+.org-signup-actions-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .org-signup-btn-primary {
   background-color: hsl(var(--gold));
   color: #fff;
   border: none;
-  padding: 0.875rem 2rem;
+  padding: 0.75rem 1.75rem;
   border-radius: 10px;
   font-weight: 700;
   font-size: 0.9375rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
-  box-shadow: 0 10px 20px hsla(215, 55%, 45%, 0.2);
+  box-shadow: 0 10px 20px hsla(215, 55%, 45%, 0.18);
+  min-width: 140px;
 }
 
 .org-signup-btn-primary:hover {
@@ -592,14 +600,19 @@
 }
 
 .org-signup-btn-secondary {
-  background: transparent;
-  color: hsl(var(--muted-foreground));
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
   border: 1px solid hsl(var(--border));
-  padding: 0.875rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 10px;
   font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
 }
 
 .org-signup-btn-secondary:hover {
@@ -618,7 +631,8 @@
   .org-signup-topbar { flex-direction: column; align-items: stretch; gap: 1rem; }
   .org-signup-grid,
   .org-signup-plan-grid { grid-template-columns: 1fr; }
-  .org-signup-actions { flex-direction: column; align-items: stretch; }
-  .org-signup-actions-buttons { display: flex; flex-direction: column; gap: 0.75rem; }
-  .org-signup-btn-primary, .org-signup-btn-secondary { width: 100%; }
+  .org-signup-actions { flex-direction: column; align-items: stretch; gap: 1.5rem; }
+  .org-signup-actions-buttons { flex-direction: row; justify-content: flex-end; width: 100%; gap: 1rem; }
+  .org-signup-btn-primary { flex: 2; min-width: 0; }
+  .org-signup-btn-secondary { flex: 1; min-width: 0; }
 }

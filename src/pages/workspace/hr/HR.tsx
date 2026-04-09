@@ -556,7 +556,7 @@ const HR = () => {
   /* ── Pagination ── */
   const [staffPage, setStaffPage] = useState(1);
   const [payrollPage, setPayrollPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 4;
 
   const totalStaffPages = Math.ceil(staff.length / itemsPerPage);
   const paginatedStaff = staff.slice(
@@ -1245,16 +1245,21 @@ const HR = () => {
             </span>
             <div className="pagination">
               <button
-                className="page-btn"
+                className="page-btn pagination-nav-btn"
                 disabled={staffPage === 1}
                 onClick={() => setStaffPage((p) => p - 1)}
+                aria-label="Previous staff page"
               >
                 Previous
               </button>
+              <span className="pagination-page-indicator">
+                Page {staffPage} of {totalStaffPages}
+              </span>
               <button
-                className="page-btn"
+                className="page-btn pagination-nav-btn"
                 disabled={staffPage === totalStaffPages}
                 onClick={() => setStaffPage((p) => p + 1)}
+                aria-label="Next staff page"
               >
                 Next
               </button>
@@ -1387,16 +1392,21 @@ const HR = () => {
             </span>
             <div className="pagination">
               <button
-                className="page-btn"
+                className="page-btn pagination-nav-btn"
                 disabled={payrollPage === 1}
                 onClick={() => setPayrollPage((p) => p - 1)}
+                aria-label="Previous payroll page"
               >
                 Previous
               </button>
+              <span className="pagination-page-indicator">
+                Page {payrollPage} of {totalPayrollPages}
+              </span>
               <button
-                className="page-btn"
+                className="page-btn pagination-nav-btn"
                 disabled={payrollPage === totalPayrollPages}
                 onClick={() => setPayrollPage((p) => p + 1)}
+                aria-label="Next payroll page"
               >
                 Next
               </button>

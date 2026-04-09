@@ -376,12 +376,18 @@ const Organizations = () => {
 
           <div className="pagination">
             <button
-              className="page-btn"
+              className="page-btn pagination-nav-btn"
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
+              aria-label="Previous page"
             >
               Previous
             </button>
+
+            <span className="pagination-page-indicator">
+              Page {Math.min(currentPage, Math.max(totalPages, 1))} of{" "}
+              {Math.max(totalPages, 1)}
+            </span>
 
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
@@ -394,11 +400,12 @@ const Organizations = () => {
             ))}
 
             <button
-              className="page-btn"
+              className="page-btn pagination-nav-btn"
               onClick={() =>
                 setCurrentPage((prev) => Math.min(totalPages, prev + 1))
               }
               disabled={currentPage === totalPages || totalPages === 0}
+              aria-label="Next page"
             >
               Next
             </button>
