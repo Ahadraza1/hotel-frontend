@@ -14,6 +14,20 @@ interface Room {
 }
 
 const BOOKING_SOURCE_OPTIONS = ["Walk-in", "Pre-booking", "Online"] as const;
+const MEAL_TYPE_OPTIONS = [
+  { value: "INCLUDED", label: "Included" },
+  { value: "NOT_INCLUDED", label: "Not Included" },
+] as const;
+const INCLUDED_MEAL_OPTIONS = [
+  { value: "BREAKFAST", label: "Breakfast" },
+  { value: "LUNCH", label: "Lunch" },
+  { value: "DINNER", label: "Dinner" },
+] as const;
+const PAYMENT_MODE_OPTIONS = [
+  { value: "POSTPAID", label: "Postpaid" },
+  { value: "PREPAID", label: "Prepaid" },
+  { value: "OTHER", label: "Other" },
+] as const;
 
 const AddBooking = () => {
   const { branchId } = useParams();
@@ -33,6 +47,9 @@ const AddBooking = () => {
     guestName: "",
     guestType: "",
     bookingSource: "Walk-in",
+    mealType: "NOT_INCLUDED",
+    includedMeals: [] as string[],
+    paymentMode: "POSTPAID",
     email: "",
     phone: "",
     totalGuests: 1,
@@ -82,12 +99,20 @@ const AddBooking = () => {
   ) => {
     const { name, value } = e.target;
 
-    setForm({ ...form, [name]: value });
+    const nextForm =
+      name === "mealType" && value !== "INCLUDED"
+        ? { ...form, [name]: value, includedMeals: [] }
+        : { ...form, [name]: value };
+
+    setForm(nextForm);
     setFieldErrors((prev) => {
       const next = { ...prev };
       const nextError = validateRequired(name === "totalGuests" ? Number(value) : value);
       if (nextError) next[name] = nextError;
       else delete next[name];
+      if (name === "mealType" && value !== "INCLUDED") {
+        delete next.includedMeals;
+      }
       return next;
     });
 
@@ -103,6 +128,39 @@ const AddBooking = () => {
 
       setGuests(newGuests);
     }
+  };
+
+  const handleIncludedMealsChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const selectedValues = Array.from(e.target.selectedOptions, (option) => option.value);
+    setForm((prev) => ({ ...prev, includedMeals: selectedValues }));
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      if ((form.mealType === "INCLUDED") && selectedValues.length === 0) {
+        next.includedMeals = "Select at least one meal";
+      } else {
+        delete next.includedMeals;
+      }
+      return next;
+    });
+  };
+
+  const handleIncludedMealToggle = (mealValue: string, checked: boolean) => {
+    const selectedValues = checked
+      ? [...form.includedMeals, mealValue]
+      : form.includedMeals.filter((meal) => meal !== mealValue);
+
+    setForm((prev) => ({ ...prev, includedMeals: selectedValues }));
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      if (form.mealType === "INCLUDED" && selectedValues.length === 0) {
+        next.includedMeals = "Select at least one meal";
+      } else {
+        delete next.includedMeals;
+      }
+      return next;
+    });
   };
 
   const handleGuestChange = (index: number, field: string, value: string) => {
@@ -169,6 +227,8 @@ const AddBooking = () => {
       "guestName",
       "guestType",
       "bookingSource",
+      "mealType",
+      "paymentMode",
       "email",
       "phone",
       "totalGuests",
@@ -183,6 +243,10 @@ const AddBooking = () => {
       const nextError = validateRequired(form[field]);
       if (nextError) nextErrors[field] = nextError;
     });
+
+    if (form.mealType === "INCLUDED" && form.includedMeals.length === 0) {
+      nextErrors.includedMeals = "Select at least one meal";
+    }
 
     const mainGuestIdentityError = validateRequired(mainGuestIdentity);
     if (mainGuestIdentityError) {
@@ -219,6 +283,9 @@ const AddBooking = () => {
       formData.append("guestName", form.guestName.trim());
       formData.append("guestType", form.guestType);
       formData.append("bookingSource", form.bookingSource);
+      formData.append("mealType", form.mealType);
+      form.includedMeals.forEach((meal) => formData.append("includedMeals[]", meal));
+      formData.append("paymentMode", form.paymentMode);
       formData.append("guestEmail", form.email);
       formData.append("guestPhone", form.phone);
       formData.append("totalGuests", String(form.totalGuests));
@@ -363,6 +430,102 @@ const AddBooking = () => {
                 {fieldErrors.bookingSource ? (
                   <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
                     {fieldErrors.bookingSource}
+                  </span>
+                ) : null}
+              </div>
+              <div className="ab-field">
+                <label htmlFor="ab-mealType" className="ab-label">
+                  Meal Type <span className="ab-required">*</span>
+                </label>
+                <select
+                  id="ab-mealType"
+                  name="mealType"
+                  value={form.mealType}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className="luxury-input"
+                  style={fieldErrors.mealType ? { borderColor: "#dc2626" } : undefined}
+                  required
+                >
+                  {MEAL_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.mealType ? (
+                  <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                    {fieldErrors.mealType}
+                  </span>
+                ) : null}
+              </div>
+              {form.mealType === "INCLUDED" ? (
+                <div className="ab-field">
+                  <label className="ab-label">
+                    Included Meals <span className="ab-required">*</span>
+                  </label>
+                  <div
+                    className="luxury-input"
+                    style={{
+                      ...(fieldErrors.includedMeals ? { borderColor: "#dc2626" } : undefined),
+                      minHeight: "auto",
+                      padding: "0.9rem 1rem",
+                    }}
+                  >
+                    {INCLUDED_MEAL_OPTIONS.map((option) => (
+                      <label
+                        key={option.value}
+                        htmlFor={`ab-included-meal-${option.value}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.65rem",
+                          cursor: "pointer",
+                          padding: "0.35rem 0",
+                        }}
+                      >
+                        <input
+                          id={`ab-included-meal-${option.value}`}
+                          type="checkbox"
+                          checked={form.includedMeals.includes(option.value)}
+                          onChange={(e) =>
+                            handleIncludedMealToggle(option.value, e.target.checked)
+                          }
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {fieldErrors.includedMeals ? (
+                    <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                      {fieldErrors.includedMeals}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+              <div className="ab-field">
+                <label htmlFor="ab-paymentMode" className="ab-label">
+                  Payment Mode <span className="ab-required">*</span>
+                </label>
+                <select
+                  id="ab-paymentMode"
+                  name="paymentMode"
+                  value={form.paymentMode}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className="luxury-input"
+                  style={fieldErrors.paymentMode ? { borderColor: "#dc2626" } : undefined}
+                  required
+                >
+                  {PAYMENT_MODE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.paymentMode ? (
+                  <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                    {fieldErrors.paymentMode}
                   </span>
                 ) : null}
               </div>
@@ -765,6 +928,33 @@ const AddBooking = () => {
                 <span className="ab-summary-key">Source</span>
                 <span className="ab-summary-val">
                   {form.bookingSource || <span className="ab-empty">—</span>}
+                </span>
+              </div>
+              <div className="ab-summary-row">
+                <span className="ab-summary-key">Meal Type</span>
+                <span className="ab-summary-val">
+                  {MEAL_TYPE_OPTIONS.find((option) => option.value === form.mealType)?.label || <span className="ab-empty">â€”</span>}
+                </span>
+              </div>
+              {form.mealType === "INCLUDED" ? (
+                <div className="ab-summary-row">
+                  <span className="ab-summary-key">Included Meals</span>
+                  <span className="ab-summary-val">
+                    {form.includedMeals.length
+                      ? form.includedMeals
+                          .map(
+                            (meal) =>
+                              INCLUDED_MEAL_OPTIONS.find((option) => option.value === meal)?.label || meal,
+                          )
+                          .join(", ")
+                      : <span className="ab-empty">â€”</span>}
+                  </span>
+                </div>
+              ) : null}
+              <div className="ab-summary-row">
+                <span className="ab-summary-key">Payment Mode</span>
+                <span className="ab-summary-val">
+                  {PAYMENT_MODE_OPTIONS.find((option) => option.value === form.paymentMode)?.label || <span className="ab-empty">â€”</span>}
                 </span>
               </div>
               <div className="ab-summary-row">

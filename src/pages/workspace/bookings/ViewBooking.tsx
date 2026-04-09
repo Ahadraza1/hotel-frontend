@@ -26,6 +26,14 @@ import PermissionNotice from "@/components/auth/PermissionNotice";
 type BookingStatus = "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
 type PaymentStatus = "PENDING" | "PARTIAL" | "PAID";
 type PaymentMethod = "CASH" | "CARD" | "UPI";
+type MealType = "INCLUDED" | "NOT_INCLUDED";
+type PaymentMode = "POSTPAID" | "PREPAID" | "OTHER";
+
+const INCLUDED_MEAL_LABELS: Record<string, string> = {
+  BREAKFAST: "Breakfast",
+  LUNCH: "Lunch",
+  DINNER: "Dinner",
+};
 
 interface BookingServiceItem {
   _id: string;
@@ -40,6 +48,9 @@ interface BookingDetail {
   bookingId: string;
   status: BookingStatus;
   bookingSource?: string;
+  mealType?: MealType;
+  includedMeals?: Array<"BREAKFAST" | "LUNCH" | "DINNER">;
+  paymentMode?: PaymentMode;
   createdAt: string;
   guestName: string;
   totalGuests?: number;
@@ -86,6 +97,9 @@ interface BookingDetail {
     taxPercentage: number;
     paymentStatus: PaymentStatus;
     paymentMethod?: PaymentMethod | null;
+    mealType?: MealType | null;
+    includedMeals?: Array<"BREAKFAST" | "LUNCH" | "DINNER">;
+    paymentMode?: PaymentMode | null;
     paymentDate?: string | null;
   };
 }
@@ -149,6 +163,24 @@ const formatScheduledDateTime = (date?: string | null, time?: string | null) => 
 
 const formatStatusText = (status?: string | null) =>
   status ? status.replace("_", "-") : "—";
+
+const formatMealType = (mealType?: MealType | null) => {
+  if (mealType === "INCLUDED") return "Included";
+  if (mealType === "NOT_INCLUDED") return "Not Included";
+  return "â€”";
+};
+
+const formatPaymentMode = (paymentMode?: PaymentMode | null) => {
+  if (paymentMode === "POSTPAID") return "Postpaid";
+  if (paymentMode === "PREPAID") return "Prepaid";
+  if (paymentMode === "OTHER") return "Other";
+  return "â€”";
+};
+
+const formatIncludedMeals = (includedMeals?: string[] | null) => {
+  if (!includedMeals?.length) return "-";
+  return includedMeals.map((meal) => INCLUDED_MEAL_LABELS[meal] || meal).join(", ");
+};
 
 const getDocumentUrl = (documentPath?: string | null) => {
   if (!documentPath) return null;
@@ -568,6 +600,11 @@ const ViewBooking = () => {
               <span>
                 {booking.totalGuests || 1} guest{(booking.totalGuests || 1) !== 1 ? "s" : ""} staying
               </span>
+              <span>Meal Type: {formatMealType(booking.mealType || summary?.mealType)}</span>
+              {((booking.mealType || summary?.mealType) === "INCLUDED") ? (
+                <span>Included Meals: {formatIncludedMeals(booking.includedMeals || summary?.includedMeals)}</span>
+              ) : null}
+              <span>Payment Mode: {formatPaymentMode(booking.paymentMode || summary?.paymentMode)}</span>
               <span>{booking.guestPhone || "No phone added"}</span>
               {booking.identityProof?.url ? (
                 <button

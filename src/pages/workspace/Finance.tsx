@@ -23,6 +23,8 @@ interface Invoice {
   type: "ROOM" | "RESTAURANT";
   bookingId?: string | null;
   guestName?: string;
+  mealType?: "INCLUDED" | "NOT_INCLUDED" | null;
+  paymentMode?: "POSTPAID" | "PREPAID" | "OTHER" | null;
   orderType?: "DINE_IN" | "ROOM_SERVICE" | "TAKEAWAY" | null;
   totalAmount: number;
   taxAmount: number;
@@ -102,6 +104,22 @@ const getInvoiceOrderType = (invoice: Invoice) =>
   invoice.orderType
     ? orderTypeLabelMap[invoice.orderType] || invoice.orderType
     : "Room Service";
+
+const getMealTypeLabel = (mealType?: Invoice["mealType"]) =>
+  mealType === "INCLUDED"
+    ? "Included"
+    : mealType === "NOT_INCLUDED"
+      ? "Not Included"
+      : "—";
+
+const getPaymentModeLabel = (paymentMode?: Invoice["paymentMode"]) =>
+  paymentMode === "POSTPAID"
+    ? "Postpaid"
+    : paymentMode === "PREPAID"
+      ? "Prepaid"
+      : paymentMode === "OTHER"
+        ? "Other"
+        : "—";
 
 const createInvoiceForm = (invoice: Invoice): InvoiceFormState => ({
   totalAmount: String(invoice.totalAmount ?? 0),
@@ -435,6 +453,8 @@ const Finance = () => {
                     <th className="col-serial">#</th>
                     <th>Invoice ID</th>
                     <th>Guest Name</th>
+                    <th>Meal Type</th>
+                    <th>Payment Mode</th>
                     <th>Order Type</th>
                     <th>Total</th>
                     <th>Tax</th>
@@ -449,7 +469,7 @@ const Finance = () => {
                   {paginatedRoomInvoices.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={11}
+                        colSpan={13}
                         className="text-center py-6 text-muted-foreground"
                       >
                         No invoices found.
@@ -463,6 +483,8 @@ const Finance = () => {
                         </td>
                         <td className="font-mono text-xs">{inv.invoiceId}</td>
                         <td>{getInvoiceGuestName(inv)}</td>
+                        <td>{getMealTypeLabel(inv.mealType)}</td>
+                        <td>{getPaymentModeLabel(inv.paymentMode)}</td>
                         <td>{getInvoiceOrderType(inv)}</td>
                         <td className="font-medium">
                           {formatCurrency(inv.totalAmount)}
