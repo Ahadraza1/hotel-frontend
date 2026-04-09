@@ -640,6 +640,9 @@
 }
 
 .bvd-btn-gold:hover:not(:disabled) {
+  background: hsl(var(--grandeur-gold));
+  color: hsl(210 20% 98%);
+  border-color: hsl(var(--grandeur-gold));
   filter: brightness(1.05);
 }
 
@@ -872,6 +875,12 @@
   gap: 0.5rem;
 }
 
+.bvd-preset-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .bvd-preset-btn {
   border: 1px solid hsl(var(--border));
   background: transparent;
@@ -885,6 +894,26 @@
 .bvd-preset-btn:hover {
   color: hsl(var(--foreground));
   background: hsl(var(--secondary));
+}
+
+.bvd-preset-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bvd-preset-delete:hover {
+  color: hsl(var(--danger));
+  border-color: hsl(var(--danger) / 0.4);
+  background: hsl(var(--danger) / 0.08);
 }
 
 .bvd-modal-total,

@@ -43,6 +43,13 @@ interface BookingServiceItem {
   total: number;
 }
 
+interface ServiceTemplate {
+  _id: string;
+  name: string;
+  category: string;
+  price: number;
+}
+
 interface BookingDetail {
   _id: string;
   bookingId: string;
@@ -215,6 +222,7 @@ const ViewBooking = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<BookingServiceItem | null>(null);
   const [serviceForm, setServiceForm] = useState<ServiceFormState>(emptyServiceForm);
+  const [serviceTemplates, setServiceTemplates] = useState<ServiceTemplate[]>([]);
 
   const canProcessPayment = hasPermission("RECORD_PAYMENT") || canUpdate;
   const shouldHideContent = canAccess && !canView;
@@ -266,6 +274,24 @@ const ViewBooking = () => {
     [booking?.identityProof?.url],
   );
 
+  useEffect(() => {
+    if (!serviceModalOpen || !branchId) return;
+
+    const fetchServices = async () => {
+      try {
+        const response = await api.get<{ data: ServiceTemplate[] }>("/services", {
+          params: { branchId },
+        });
+        setServiceTemplates(response.data.data || []);
+      } catch (error) {
+        console.error("Failed to load services", error);
+        toast.error("Failed to load services.");
+      }
+    };
+
+    void fetchServices();
+  }, [serviceModalOpen, branchId, toast]);
+
   const resetServiceModal = () => {
     setServiceModalOpen(false);
     setEditingService(null);
@@ -286,6 +312,39 @@ const ViewBooking = () => {
       quantity: String(service.quantity),
     });
     setServiceModalOpen(true);
+  };
+
+  const handleSelectService = (service: ServiceTemplate) => {
+    const displayName =
+      service.category && service.category !== "Custom"
+        ? `${service.category} — ${service.name}`
+        : service.name;
+
+    setServiceForm({
+      name: displayName,
+      price: String(service.price),
+      quantity: "1",
+    });
+  };
+
+  const handleDeleteServiceTemplate = async (service: ServiceTemplate) => {
+    const confirmed = await confirm({
+      title: "Delete Service",
+      message: `Delete ${service.category} — ${service.name}?`,
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/services/${service._id}`);
+      setServiceTemplates((prev) => prev.filter((item) => item._id !== service._id));
+      toast.success("Service deleted successfully.");
+    } catch (error) {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || "Failed to delete service.");
+    }
   };
 
   const runStatusUpdate = async (status: BookingStatus) => {
@@ -359,6 +418,30 @@ const ViewBooking = () => {
 
     try {
       setBusyAction(editingService ? "UPDATE_SERVICE" : "ADD_SERVICE");
+
+      if (!editingService) {
+        const normalizedName = payload.name.trim().toLowerCase();
+        const matchedTemplate = serviceTemplates.find((service) => {
+          const displayName =
+            service.category && service.category !== "Custom"
+              ? `${service.category} — ${service.name}`
+              : service.name;
+
+          return (
+            displayName.trim().toLowerCase() === normalizedName &&
+            Number(service.price) === Number(payload.price)
+          );
+        });
+
+        if (!matchedTemplate) {
+          const createdServiceResponse = await api.post<{ data: ServiceTemplate }>("/services", {
+            name: payload.name,
+            price: payload.price,
+          });
+
+          setServiceTemplates((prev) => [...prev, createdServiceResponse.data.data]);
+        }
+      }
 
       const response = editingService
         ? await api.patch<{ data: BookingDetail }>(
@@ -776,21 +859,25 @@ const ViewBooking = () => {
           <div className="bvd-modal-card">
             <h3 className="bvd-modal-title">{editingService ? "Edit Service" : "Add Service"}</h3>
             <div className="bvd-preset-grid">
-              {PRESET_SERVICES.map((service) => (
-                <button
-                  key={service.name}
+              {serviceTemplates.map((service) => (
+                <div key={service._id} className="bvd-preset-item">
+                  <button
                   type="button"
                   className="bvd-preset-btn"
-                  onClick={() =>
-                    setServiceForm({
-                      name: service.name,
-                      price: String(service.price),
-                      quantity: serviceForm.quantity || "1",
-                    })
-                  }
+                  onClick={() => handleSelectService(service)}
                 >
-                  {service.name} ({formatCurrency(service.price)})
-                </button>
+                  {service.category} — {service.name} ({formatCurrency(service.price)})
+                  </button>
+                  <button
+                    type="button"
+                    className="bvd-preset-delete"
+                    onClick={() => void handleDeleteServiceTemplate(service)}
+                    aria-label={`Delete ${service.category} ${service.name}`}
+                    title="Delete service"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               ))}
             </div>
             <div className="ab-field">
