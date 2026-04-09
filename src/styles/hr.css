@@ -192,6 +192,13 @@
   padding-right: 0.75rem;
 }
 
+.hr-inline-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+}
+
 /* ── Specific Button styles ── */
 .hr-generate-btn {
   padding: 0.35rem 0.6rem;

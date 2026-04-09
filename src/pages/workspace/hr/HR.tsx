@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { AxiosError } from "axios";
 import {
   Plus,
   CheckCircle,
@@ -13,7 +12,7 @@ import {
   Pencil,
   Trash2,
   MoreVertical,
-  Mail,
+  RotateCcw,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "@/api/axios";
@@ -53,8 +52,30 @@ interface Payroll {
   status: string;
 }
 
+interface PendingInvitation {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  salary: number;
+  phone?: string;
+  department?: string;
+  shift?: string;
+  employmentType?: string;
+  staffStatus?: string;
+  joinedDate?: string;
+  expiresAt?: string;
+  createdAt?: string;
+}
+
 interface ApiErrorResponse {
   message?: string;
+}
+
+interface ApiClientError {
+  response?: {
+    data?: ApiErrorResponse;
+  };
 }
 
 interface RoleOption {
@@ -99,6 +120,9 @@ const HR = () => {
   const canManageRecords = canUpdate || canDelete || canAccess;
 
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<
+    PendingInvitation[]
+  >([]);
   const [payrolls, setPayrolls] = useState<Payroll[]>([]);
   const [roleOptions, setRoleOptions] = useState<RoleOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,6 +139,8 @@ const HR = () => {
   const [inviteEmploymentType, setInviteEmploymentType] = useState("Full-time");
   const [inviteStatus, setInviteStatus] = useState("Invited");
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
+  const [editingInvitation, setEditingInvitation] =
+    useState<PendingInvitation | null>(null);
   const [editingPayroll, setEditingPayroll] = useState<Payroll | null>(null);
   const [staffForm, setStaffForm] = useState({
     firstName: "",
@@ -209,6 +235,25 @@ const HR = () => {
     }
   }, [branchId]);
 
+  const fetchPendingInvitations = useCallback(async () => {
+    if (!branchId) return;
+
+    try {
+      const res = await api.get<PendingInvitation[] | { data: PendingInvitation[] }>(
+        "/invitations/pending",
+        {
+          params: { branchId },
+        },
+      );
+      const invitationList = Array.isArray(res.data)
+        ? res.data
+        : res.data.data || [];
+      setPendingInvitations(invitationList);
+    } catch {
+      console.error("Failed to load pending invitations");
+    }
+  }, [branchId]);
+
   const fetchRoleOptions = useCallback(async () => {
     try {
       const res = await api.get<{ data: RoleOption[] }>("/hr/roles");
@@ -219,8 +264,8 @@ const HR = () => {
   }, []);
 
   const refreshHrData = useCallback(async () => {
-    await Promise.all([fetchStaff(), fetchPayroll()]);
-  }, [fetchPayroll, fetchStaff]);
+    await Promise.all([fetchStaff(), fetchPayroll(), fetchPendingInvitations()]);
+  }, [fetchPayroll, fetchPendingInvitations, fetchStaff]);
 
   useEffect(() => {
     const handleClickOutside = () => {
@@ -242,8 +287,9 @@ const HR = () => {
 
     fetchStaff();
     fetchPayroll();
+    fetchPendingInvitations();
     fetchRoleOptions();
-  }, [branchId, fetchPayroll, fetchStaff, fetchRoleOptions]);
+  }, [branchId, fetchPayroll, fetchPendingInvitations, fetchStaff, fetchRoleOptions]);
 
   /* ── Actions ── */
   const checkIn = async (staffId: string, statusKey: string) => {
@@ -259,7 +305,7 @@ const HR = () => {
       setAttendanceStatus((prev) => ({ ...prev, [statusKey]: "Checked In" }));
       toast.success("Checked In");
     } catch (error) {
-      const apiError = error as AxiosError<ApiErrorResponse>;
+      const apiError = error as ApiClientError;
       toast.error(apiError.response?.data?.message || "Error checking in");
     }
   };
@@ -277,7 +323,7 @@ const HR = () => {
       setAttendanceStatus((prev) => ({ ...prev, [statusKey]: "Checked Out" }));
       toast.success("Checked Out");
     } catch (error) {
-      const apiError = error as AxiosError<ApiErrorResponse>;
+      const apiError = error as ApiClientError;
       toast.error(apiError.response?.data?.message || "Error checking out");
     }
   };
@@ -291,7 +337,7 @@ const HR = () => {
       fetchPayroll();
       toast.success("Payroll generated successfully.");
     } catch (error) {
-      const apiError = error as AxiosError<ApiErrorResponse>;
+      const apiError = error as ApiClientError;
       toast.error(
         apiError.response?.data?.message || "Failed to generate payroll",
       );
@@ -304,7 +350,7 @@ const HR = () => {
       fetchPayroll();
       toast.success("Payroll marked as paid.");
     } catch (error) {
-      const apiError = error as AxiosError<ApiErrorResponse>;
+      const apiError = error as ApiClientError;
       toast.error(
         apiError.response?.data?.message || "Failed to update payroll",
       );
@@ -334,6 +380,24 @@ const HR = () => {
           : "",
       salary: String(member.salary ?? 0),
     });
+  };
+
+  const handleOpenInvitationEdit = (invitation: PendingInvitation) => {
+    void fetchRoleOptions();
+    setEditingInvitation(invitation);
+    setShowInviteForm(true);
+    setInviteName(invitation.name || "");
+    setInviteEmail(invitation.email || "");
+    setInviteRole(invitation.role || "");
+    setInviteJoinedDate(
+      invitation.joinedDate ? invitation.joinedDate.slice(0, 10) : "",
+    );
+    setInviteSalary(String(invitation.salary ?? 0));
+    setInvitePhone(invitation.phone || "");
+    setInviteDepartment(invitation.department || "");
+    setInviteShift(invitation.shift || "Morning");
+    setInviteEmploymentType(invitation.employmentType || "Full-time");
+    setInviteStatus(invitation.staffStatus || "Invited");
   };
 
   const handleUpdateStaff = async () => {
@@ -376,7 +440,7 @@ const HR = () => {
       await refreshHrData();
       toast.success("Staff updated successfully.");
     } catch (error) {
-      const apiError = error as AxiosError<ApiErrorResponse>;
+      const apiError = error as ApiClientError;
       toast.error(
         apiError.response?.data?.message || "Failed to update staff.",
       );
@@ -426,7 +490,7 @@ const HR = () => {
       await refreshHrData();
       toast.success("Payroll updated successfully.");
     } catch (error) {
-      const apiError = error as AxiosError<ApiErrorResponse>;
+      const apiError = error as ApiClientError;
       toast.error(
         apiError.response?.data?.message || "Failed to update payroll.",
       );
@@ -453,6 +517,7 @@ const HR = () => {
   };
 
   const resetInviteForm = () => {
+    setEditingInvitation(null);
     setInviteName("");
     setInviteEmail("");
     setInviteRole("");
@@ -488,8 +553,8 @@ const HR = () => {
       }
 
       console.log("📤 Sending invite payload:", {
-        name: inviteName,
-        email: inviteEmail,
+        name: inviteName.trim(),
+        email: inviteEmail.trim(),
         role: inviteRole,
         branchId,
         salary: salaryValue,
@@ -499,10 +564,11 @@ const HR = () => {
         employmentType: inviteEmploymentType,
         status: inviteStatus,
       });
+      let inviteRes = { data: null as unknown };
 
-      const inviteRes = await api.post("/invitations", {
-        name: inviteName,
-        email: inviteEmail,
+      const payload = {
+        name: inviteName.trim(),
+        email: inviteEmail.trim(),
         role: inviteRole,
         branchId,
         salary: salaryValue, // ✅ IMPORTANT FIX
@@ -512,12 +578,24 @@ const HR = () => {
         employmentType: inviteEmploymentType,
         status: inviteStatus,
         joinedDate: inviteJoinedDate,
-      });
+      };
 
       console.log("🎉 Invitation response:", inviteRes.data);
 
-      await fetchStaff();
-      toast.success("Staff invited successfully.");
+      inviteRes = { data: payload };
+
+      if (editingInvitation) {
+        await api.patch(`/invitations/${editingInvitation._id}`, payload);
+      } else {
+        await api.post("/invitations", payload);
+      }
+
+      await refreshHrData();
+      toast.success(
+        editingInvitation
+          ? "Invitation updated successfully."
+          : "Staff invited successfully.",
+      );
 
       resetInviteForm();
       setShowInviteForm(false);
@@ -527,20 +605,23 @@ const HR = () => {
       console.error("❌ Invite Error Full Object:", error);
       console.error("❌ Invite Error Response:", err.response?.data);
 
-      toast.error(err.response?.data?.message || "Error inviting staff");
+      toast.error(
+        err.response?.data?.message ||
+          (editingInvitation
+            ? "Error updating invitation"
+            : "Error inviting staff"),
+      );
     }
   };
 
-  const handleResendInvite = async (member: Staff) => {
-    if (!member.invitationId) return;
-
+  const handleResendPendingInvitation = async (invitation: PendingInvitation) => {
     try {
-      setResendingInviteId(member.staffId);
-      await api.post(`/invitations/${member.invitationId}/resend`);
+      setResendingInviteId(invitation._id);
+      await api.post(`/invitations/${invitation._id}/resend`);
       toast.success("Invitation resent successfully");
-      await fetchStaff();
+      await fetchPendingInvitations();
     } catch (error) {
-      const apiError = error as AxiosError<ApiErrorResponse>;
+      const apiError = error as ApiClientError;
       toast.error(
         apiError.response?.data?.message || "Failed to resend invitation",
       );
@@ -548,18 +629,50 @@ const HR = () => {
       setResendingInviteId(null);
     }
   };
+
+  const handleDeleteInvitation = async (invitation: PendingInvitation) => {
+    const confirmed = await confirm({
+      title: "Delete Invitation",
+      message: `Delete the invitation for ${invitation.name}? The current invite link will stop working immediately.`,
+      successMessage: "Invitation deleted successfully.",
+      errorMessage: "Failed to delete invitation.",
+      onConfirm: async () => {
+        await api.delete(`/invitations/${invitation._id}`);
+      },
+    });
+
+    if (confirmed) {
+      if (editingInvitation?._id === invitation._id) {
+        resetInviteForm();
+        setShowInviteForm(false);
+      }
+      await refreshHrData();
+    }
+  };
   /* ── KPI Derivatives ── */
+  const activeStaff = useMemo(
+    () => staff.filter((member) => !member.invitationId),
+    [staff],
+  );
+
   const totalSalary = useMemo(() => {
-    return staff.reduce((sum, s) => sum + (s.salary || 0), 0);
-  }, [staff]);
+    return activeStaff.reduce((sum, s) => sum + (s.salary || 0), 0);
+  }, [activeStaff]);
 
   /* ── Pagination ── */
   const [staffPage, setStaffPage] = useState(1);
+  const [invitationPage, setInvitationPage] = useState(1);
   const [payrollPage, setPayrollPage] = useState(1);
   const itemsPerPage = 4;
 
-  const totalStaffPages = Math.ceil(staff.length / itemsPerPage);
-  const paginatedStaff = staff.slice(
+  const totalInvitationPages = Math.ceil(pendingInvitations.length / itemsPerPage);
+  const paginatedInvitations = pendingInvitations.slice(
+    (invitationPage - 1) * itemsPerPage,
+    invitationPage * itemsPerPage,
+  );
+
+  const totalStaffPages = Math.ceil(activeStaff.length / itemsPerPage);
+  const paginatedStaff = activeStaff.slice(
     (staffPage - 1) * itemsPerPage,
     staffPage * itemsPerPage,
   );
@@ -608,6 +721,7 @@ const HR = () => {
             className="luxury-btn luxury-btn-primary hr-add-btn"
             onClick={() => {
               void fetchRoleOptions();
+              resetInviteForm();
               setShowInviteForm(true);
             }}
           >
@@ -631,7 +745,9 @@ const HR = () => {
             <X size={16} />
           </button>
 
-          <h3 className="hr-invite-title">Register New Staff</h3>
+          <h3 className="hr-invite-title">
+            {editingInvitation ? "Edit Invited Staff" : "Register New Staff"}
+          </h3>
 
           <div className="hr-invite-grid">
             <div className="hr-invite-field">
@@ -788,7 +904,7 @@ const HR = () => {
               onClick={handleInviteStaff}
               className="luxury-btn luxury-btn-primary"
             >
-              Add to System
+              {editingInvitation ? "Save Changes" : "Add to System"}
             </button>
           </div>
         </div>
@@ -1060,7 +1176,7 @@ const HR = () => {
       <div className="hr-kpi-grid">
         <div className="hr-kpi-card">
           <Briefcase size={16} className="text-foreground mb-1" />
-          <span className="hr-kpi-value">{staff.length}</span>
+          <span className="hr-kpi-value">{activeStaff.length}</span>
           <span className="hr-kpi-label">Total Staff</span>
         </div>
 
@@ -1088,6 +1204,146 @@ const HR = () => {
       </div>
 
       {/* ── Staff List Table ── */}
+      <div className="luxury-card hr-table-card">
+        <div className="hr-section-header">
+          <h3 className="hr-section-title">Pending Invitations</h3>
+        </div>
+
+        <div className="hr-table-scroll">
+          <table className="luxury-table">
+            <thead>
+              <tr>
+                <th className="col-serial">#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Role</th>
+                <th>Salary</th>
+                <th>Status</th>
+                <th>Expires</th>
+                <th className="hr-th-actions">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedInvitations.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={9}
+                    className="text-center py-6 text-muted-foreground"
+                  >
+                    No pending invitations found.
+                  </td>
+                </tr>
+              ) : (
+                paginatedInvitations.map((invitation, i) => (
+                  <tr key={invitation._id}>
+                    <td className="col-serial">
+                      {(invitationPage - 1) * itemsPerPage + i + 1}
+                    </td>
+                    <td className="hr-cell-bold">{invitation.name}</td>
+                    <td className="text-muted-foreground">
+                      {invitation.email}
+                    </td>
+                    <td className="text-muted-foreground">
+                      {invitation.department || "â€”"}
+                    </td>
+                    <td>
+                      <span className="luxury-badge badge-info">
+                        {invitation.role}
+                      </span>
+                    </td>
+                    <td className="hr-cell-bold">
+                      {formatCurrency(invitation.salary || 0)}
+                    </td>
+                    <td>
+                      <span className="luxury-badge badge-warning text-[0.65rem]">
+                        {invitation.staffStatus || "Invited"}
+                      </span>
+                    </td>
+                    <td className="text-muted-foreground">
+                      {invitation.expiresAt
+                        ? new Date(invitation.expiresAt).toLocaleString()
+                        : "â€”"}
+                    </td>
+                    <td>
+                      <div className="hr-inline-actions">
+                        {canUpdate && (
+                          <>
+                            <button
+                              className="hr-icon-btn"
+                              onClick={() => handleOpenInvitationEdit(invitation)}
+                              title="Edit Staff Details"
+                              aria-label={`Edit ${invitation.name}`}
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              className="hr-icon-btn hr-icon-btn-success"
+                              onClick={() =>
+                                handleResendPendingInvitation(invitation)
+                              }
+                              title="Resend Invite"
+                              aria-label={`Resend invite to ${invitation.name}`}
+                              disabled={resendingInviteId === invitation._id}
+                            >
+                              <RotateCcw size={15} />
+                            </button>
+                          </>
+                        )}
+                        {canDelete && (
+                          <button
+                            className="hr-icon-btn hr-icon-btn-danger"
+                            onClick={() => handleDeleteInvitation(invitation)}
+                            title="Delete Invitation"
+                            aria-label={`Delete invitation for ${invitation.name}`}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {totalInvitationPages > 1 && (
+          <div className="table-footer border-t border-[hsl(var(--border))]">
+            <span className="pagination-info">
+              Showing {(invitationPage - 1) * itemsPerPage + 1} to{" "}
+              {Math.min(
+                invitationPage * itemsPerPage,
+                pendingInvitations.length,
+              )}{" "}
+              of {pendingInvitations.length} entries
+            </span>
+            <div className="pagination">
+              <button
+                className="page-btn pagination-nav-btn"
+                disabled={invitationPage === 1}
+                onClick={() => setInvitationPage((p) => p - 1)}
+                aria-label="Previous invitation page"
+              >
+                Previous
+              </button>
+              <span className="pagination-page-indicator">
+                Page {invitationPage} of {totalInvitationPages}
+              </span>
+              <button
+                className="page-btn pagination-nav-btn"
+                disabled={invitationPage === totalInvitationPages}
+                onClick={() => setInvitationPage((p) => p + 1)}
+                aria-label="Next invitation page"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="luxury-card hr-table-card">
         <div className="hr-section-header">
           <h3 className="hr-section-title">Staff List</h3>
@@ -1240,8 +1496,8 @@ const HR = () => {
           <div className="table-footer border-t border-[hsl(var(--border))]">
             <span className="pagination-info">
               Showing {(staffPage - 1) * itemsPerPage + 1} to{" "}
-              {Math.min(staffPage * itemsPerPage, staff.length)} of{" "}
-              {staff.length} entries
+              {Math.min(staffPage * itemsPerPage, activeStaff.length)} of{" "}
+              {activeStaff.length} entries
             </span>
             <div className="pagination">
               <button
