@@ -42,12 +42,15 @@ interface Plan {
 
 interface SubscriptionSummary {
   status: "active" | "expired" | "trial" | "cancelled";
+  planId?: string | null;
+  planType?: "monthly" | "yearly" | null;
   billingCycle: "monthly" | "yearly" | null;
   expiryDate: string | null;
   canAddBranch: boolean;
   restrictionReason: string | null;
   expiryWarning: boolean;
   activePlan: {
+    planId?: string;
     name: string;
     branchLimit: number | null;
     features: string[];
@@ -145,6 +148,9 @@ const getPlanHierarchyIndex = (plan?: Pick<Plan, "name"> | null) => {
   return normalizedName ? PLAN_HIERARCHY.indexOf(normalizedName) : -1;
 };
 
+const isFreeTierPlan = (plan?: Pick<Plan, "name"> | null) =>
+  getPlanHierarchyIndex(plan) === 0;
+
 const comparePlans = (currentPlan?: Plan | null, selectedPlan?: Plan | null) => {
   const currentIndex = getPlanHierarchyIndex(currentPlan);
   const selectedIndex = getPlanHierarchyIndex(selectedPlan);
@@ -172,6 +178,10 @@ const comparePlans = (currentPlan?: Plan | null, selectedPlan?: Plan | null) => 
   );
 };
 
+type BillingCycle = "monthly" | "yearly";
+
+type PlanActionState = "current" | "upgrade" | "downgrade" | "select";
+
 const loadRazorpayScript = async () => {
   if (window.Razorpay) return true;
 
@@ -193,9 +203,7 @@ const SubscriptionPlans = () => {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
-    "monthly",
-  );
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [planModalOpen, setPlanModalOpen] = useState(false);
   const [planForm, setPlanForm] = useState<PlanFormState>(emptyPlanForm);
@@ -205,9 +213,8 @@ const SubscriptionPlans = () => {
     string | null
   >(null);
   const [assignPlanId, setAssignPlanId] = useState("");
-  const [assignBillingCycle, setAssignBillingCycle] = useState<
-    "monthly" | "yearly"
-  >("monthly");
+  const [assignBillingCycle, setAssignBillingCycle] =
+    useState<BillingCycle>("monthly");
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
 
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
@@ -281,16 +288,23 @@ const SubscriptionPlans = () => {
   }, [dashboard?.plans]);
 
   const currentPlan = useMemo(() => {
-    const activePlanName = currentOrganization?.subscription.activePlan?.name;
+    const activePlanId =
+      currentOrganization?.subscription.planId ||
+      currentOrganization?.subscription.activePlan?.planId ||
+      null;
+    const activePlanName =
+      currentOrganization?.subscription.activePlan?.name || null;
 
-    if (!activePlanName) {
+    if (!activePlanId && !activePlanName) {
       return null;
     }
 
     return (
-      sortedPlans.find((plan) => plan.name === activePlanName) || {
+      sortedPlans.find(
+        (plan) => plan._id === activePlanId || plan.name === activePlanName,
+      ) || {
         _id: "current-plan",
-        name: activePlanName,
+        name: activePlanName || "",
         description:
           currentOrganization?.subscription.activePlan?.description || "",
         monthlyPrice: 0,
@@ -301,7 +315,66 @@ const SubscriptionPlans = () => {
         isActive: true,
       }
     );
-  }, [currentOrganization?.subscription.activePlan, sortedPlans]);
+  }, [
+    currentOrganization?.subscription.activePlan,
+    currentOrganization?.subscription.planId,
+    sortedPlans,
+  ]);
+
+  const currentPlanType =
+    currentOrganization?.subscription.planType ||
+    currentOrganization?.subscription.billingCycle ||
+    null;
+
+  const getPlanActionState = useCallback(
+    (plan: Plan, selectedBillingType: BillingCycle): PlanActionState => {
+      if (!currentPlan) {
+        return "select";
+      }
+
+      const currentPlanId =
+        currentOrganization?.subscription.planId ||
+        currentOrganization?.subscription.activePlan?.planId ||
+        currentPlan._id;
+      const isMatchingPlan = currentPlanId === plan._id;
+      const isCurrentPlanInSelectedTab =
+        isMatchingPlan && currentPlanType === selectedBillingType;
+
+      if (isCurrentPlanInSelectedTab) {
+        return "current";
+      }
+
+      if (isFreeTierPlan(plan) && !isFreeTierPlan(currentPlan)) {
+        return "downgrade";
+      }
+
+      if (currentPlanType === "yearly" && selectedBillingType === "monthly") {
+        return "downgrade";
+      }
+
+      if (currentPlanType === "monthly" && selectedBillingType === "yearly") {
+        return "upgrade";
+      }
+
+      const planComparison = comparePlans(currentPlan, plan);
+
+      if (planComparison < 0) {
+        return "downgrade";
+      }
+
+      if (planComparison > 0) {
+        return "upgrade";
+      }
+
+      return "select";
+    },
+    [
+      currentOrganization?.subscription.activePlan?.planId,
+      currentOrganization?.subscription.planId,
+      currentPlan,
+      currentPlanType,
+    ],
+  );
 
   const planFormSavings = useMemo(() => {
     const monthlyPrice = Number(planForm.monthlyPrice || 0);
@@ -773,12 +846,10 @@ const SubscriptionPlans = () => {
 
       <div className="sb-plan-grid sb-plan-grid-wide">
         {sortedPlans.map((plan, index) => {
-          const isCurrentPlan =
-            currentOrganization?.subscription.activePlan?.name === plan.name;
-          const planComparison = currentPlan ? comparePlans(currentPlan, plan) : 1;
-          const isDowngrade = !!currentPlan && planComparison < 0;
-          const isSamePlan = !!currentPlan && planComparison === 0;
-          const isSelectable = !isDowngrade && !isSamePlan;
+          const planActionState = getPlanActionState(plan, billingCycle);
+          const isCurrentPlan = planActionState === "current";
+          const isSelectable =
+            planActionState === "upgrade" || planActionState === "select";
           const planPrice =
             billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
           const showPopular = sortedPlans.length >= 3 && index === 1;
@@ -851,15 +922,15 @@ const SubscriptionPlans = () => {
                 </button>
               ) : (
                 <button
-                  className={`luxury-btn ${isSamePlan ? "luxury-btn-outline" : "luxury-btn-primary"} sb-plan-btn`}
+                  className={`luxury-btn ${isCurrentPlan ? "luxury-btn-outline" : "luxury-btn-primary"} sb-plan-btn`}
                   disabled={processingPlanId === plan._id || !isSelectable}
                   onClick={() => upgradePlan(plan)}
                 >
                   {processingPlanId === plan._id
                     ? "Processing..."
-                    : isSamePlan
+                    : planActionState === "current"
                       ? "Current Plan"
-                      : isDowngrade
+                      : planActionState === "downgrade"
                         ? "Downgrade not allowed"
                         : currentPlan
                           ? "Upgrade Plan"
@@ -923,9 +994,6 @@ const SubscriptionPlans = () => {
                           <span
                             className={`luxury-badge ${organization.status === "active" ? "badge-active" : "badge-warning"}`}
                           >
-                            {organization.status === "active" && (
-                              <span className="badge-dot" />
-                            )}
                             {organization.status}
                           </span>
                         </div>
@@ -998,7 +1066,7 @@ const SubscriptionPlans = () => {
                                 Edit Plan
                               </button>
 
-                              <button
+                              {/* <button
                                 style={{
                                   display: "flex",
                                   alignItems: "center",
@@ -1017,7 +1085,7 @@ const SubscriptionPlans = () => {
                               >
                                 <XCircle size={16} />
                                 Cancel Plan
-                              </button>
+                              </button> */}
                             </div>
                           ) : null}
                         </div>
