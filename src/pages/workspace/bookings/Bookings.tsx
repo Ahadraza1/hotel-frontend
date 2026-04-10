@@ -43,6 +43,18 @@ interface Booking {
   paymentStatus: string;
 }
 
+const isBookedStatus = (status?: string) =>
+  status === "BOOKED" || status === "CONFIRMED";
+
+const isCompletedStatus = (status?: string) =>
+  status === "COMPLETED" || status === "CHECKED_OUT";
+
+const formatBookingStatus = (status?: string) => {
+  if (isBookedStatus(status)) return "BOOKED";
+  if (isCompletedStatus(status)) return "COMPLETED";
+  return status?.replace("_", " ") || "-";
+};
+
 const getDocumentUrl = (documentPath?: string | null) => {
   if (!documentPath) return null;
 
@@ -61,8 +73,10 @@ const getDocumentUrl = (documentPath?: string | null) => {
 };
 
 const statusBadge: Record<string, string> = {
+  BOOKED: "badge-warning",
   CONFIRMED: "badge-warning",
   CHECKED_IN: "badge-active",
+  COMPLETED: "badge-info",
   CHECKED_OUT: "badge-info",
   CANCELLED: "badge-danger",
 };
@@ -162,13 +176,14 @@ const Bookings = () => {
   const kpi = useMemo(() => {
     const today = new Date().toDateString();
     return {
+      total: bookings.length,
       checkIns: bookings.filter(
         (b) => new Date(b.checkInDate).toDateString() === today,
       ).length,
       checkOuts: bookings.filter(
         (b) => new Date(b.checkOutDate).toDateString() === today,
       ).length,
-      confirmed: bookings.filter((b) => b.status === "CONFIRMED").length,
+      confirmed: bookings.filter((b) => isBookedStatus(b.status)).length,
       checkedIn: bookings.filter((b) => b.status === "CHECKED_IN").length,
     };
   }, [bookings]);
@@ -251,6 +266,17 @@ const Bookings = () => {
 
       {/* ── KPI Cards ── */}
       <div className="bk-kpi-grid">
+        <div className="bk-kpi-card">
+          <BookOpen
+            size={16}
+            style={{
+              color: "hsl(var(--foreground))",
+              marginBottom: "0.25rem",
+            }}
+          />
+          <span className="bk-kpi-value">{kpi.total}</span>
+          <span className="bk-kpi-label">Total Bookings</span>
+        </div>
         <div className="bk-kpi-card">
           <CalendarCheck
             size={16}
@@ -426,7 +452,7 @@ const Bookings = () => {
                       <span
                         className={`luxury-badge ${statusBadge[b.status] ?? "badge-info"}`}
                       >
-                        {b.status.replace("_", " ")}
+                        {formatBookingStatus(b.status)}
                       </span>
                     </td>
                     <td>
@@ -500,7 +526,7 @@ const Bookings = () => {
                                 </button>
                               )}
 
-                              {b.status === "CONFIRMED" && (
+                              {isBookedStatus(b.status) && (
                                 <>
                                   <button
                                     className="bk-action-item"
@@ -529,7 +555,7 @@ const Bookings = () => {
                                 <button
                                   className="bk-action-item"
                                   onClick={() => {
-                                    updateStatus(b.bookingId, "CHECKED_OUT");
+                                    updateStatus(b.bookingId, "COMPLETED");
                                     setOpenActionId(null);
                                   }}
                                 >

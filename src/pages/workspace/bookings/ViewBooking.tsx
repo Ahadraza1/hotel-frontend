@@ -23,7 +23,13 @@ import { useModulePermissions } from "@/hooks/useModulePermissions";
 import { useAuth } from "@/contexts/AuthContext";
 import PermissionNotice from "@/components/auth/PermissionNotice";
 
-type BookingStatus = "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
+type BookingStatus =
+  | "BOOKED"
+  | "CONFIRMED"
+  | "CHECKED_IN"
+  | "COMPLETED"
+  | "CHECKED_OUT"
+  | "CANCELLED";
 type PaymentStatus = "PENDING" | "PARTIAL" | "PAID";
 type PaymentMethod = "CASH" | "CARD" | "UPI";
 type MealType = "INCLUDED" | "NOT_INCLUDED";
@@ -136,16 +142,26 @@ const emptyServiceForm: ServiceFormState = {
   quantity: "1",
 };
 
+const isBookedStatus = (status?: string) =>
+  status === "BOOKED" || status === "CONFIRMED";
+
+const isCompletedStatus = (status?: string) =>
+  status === "COMPLETED" || status === "CHECKED_OUT";
+
 const statusLabelMap: Record<BookingStatus, string> = {
+  BOOKED: "Booked",
   CONFIRMED: "Booked",
   CHECKED_IN: "Checked-In",
+  COMPLETED: "Completed",
   CHECKED_OUT: "Checked-Out",
   CANCELLED: "Cancelled",
 };
 
 const statusBadgeMap: Record<BookingStatus, string> = {
+  BOOKED: "badge-warning",
   CONFIRMED: "badge-warning",
   CHECKED_IN: "badge-active",
+  COMPLETED: "badge-info",
   CHECKED_OUT: "badge-info",
   CANCELLED: "badge-danger",
 };
@@ -255,9 +271,9 @@ const ViewBooking = () => {
 
   const summary = booking?.financialSummary;
   const services = booking?.services || [];
-  const isBooked = booking?.status === "CONFIRMED";
+  const isBooked = isBookedStatus(booking?.status);
   const isCheckedIn = booking?.status === "CHECKED_IN";
-  const isCheckedOut = booking?.status === "CHECKED_OUT";
+  const isCheckedOut = isCompletedStatus(booking?.status);
   const isCancelled = booking?.status === "CANCELLED";
   const isPaid = booking?.paymentStatus === "PAID";
   const canEditBooking = canUpdate && !isCheckedOut && !isCancelled;
@@ -358,7 +374,7 @@ const ViewBooking = () => {
 
       if (status === "CHECKED_IN") {
         toast.success("Guest checked in successfully.");
-      } else if (status === "CHECKED_OUT") {
+      } else if (status === "COMPLETED") {
         toast.success("Guest has been checked out.");
       } else if (status === "CANCELLED") {
         toast.success("Booking cancelled successfully.");
@@ -394,7 +410,7 @@ const ViewBooking = () => {
       return;
     }
 
-    await runStatusUpdate("CHECKED_OUT");
+    await runStatusUpdate("COMPLETED");
   };
 
   const handleSubmitService = async () => {

@@ -453,7 +453,7 @@ const AddRoom = () => {
 
             <div className="ar-summary-rows">
               <div className="ar-summary-row">
-                <span className="ar-summary-key">Room #</span>
+                <span className="ar-summary-key">Room No</span>
                 <span className="ar-summary-val">{form.roomNumber || <span className="ar-empty">—</span>}</span>
               </div>
               <div className="ar-summary-row">

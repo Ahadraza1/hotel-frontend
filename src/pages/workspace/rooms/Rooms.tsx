@@ -43,6 +43,7 @@ const bedTypeLabels: Record<string, string> = {
 
 const statusBadgeClass: Record<string, string> = {
   AVAILABLE: "badge-active",
+  BOOKED: "badge-warning",
   OCCUPIED: "badge-danger",
   MAINTENANCE: "badge-warning",
   BLOCKED: "badge-info",
@@ -50,13 +51,21 @@ const statusBadgeClass: Record<string, string> = {
 
 const kpiConfig = [
   { status: "AVAILABLE", colorClass: "green" },
+  { status: "BOOKED", colorClass: "gold" },
   { status: "OCCUPIED", colorClass: "gold" },
   { status: "MAINTENANCE", colorClass: "danger" },
   { status: "BLOCKED", colorClass: "muted" },
 ] as const;
 
 const roomTypes = ["STANDARD", "DELUXE", "SUITE", "PRESIDENTIAL"];
-const statusOptions = ["AVAILABLE", "OCCUPIED", "MAINTENANCE", "BLOCKED"];
+const roomStatusOptions = [
+  "AVAILABLE",
+  "BOOKED",
+  "OCCUPIED",
+  "MAINTENANCE",
+  "BLOCKED",
+];
+const manualStatusOptions = ["AVAILABLE", "MAINTENANCE", "BLOCKED"];
 
 const Rooms = () => {
   const { branchId } = useParams();
@@ -277,7 +286,7 @@ const Rooms = () => {
               aria-label="Filter rooms by status"
             >
               <option value="ALL">All Statuses</option>
-              {statusOptions.map((s) => (
+              {roomStatusOptions.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
@@ -291,7 +300,7 @@ const Rooms = () => {
             <thead>
               <tr>
                 <th className="col-serial">#</th>
-                <th>Room #</th>
+                <th>Room No</th>
                 <th>Type</th>
                 <th>Floor</th>
                 <th>Capacity</th>
@@ -348,7 +357,12 @@ const Rooms = () => {
                           }
                           className="luxury-input rm-status-select"
                         >
-                          {statusOptions.map((s) => (
+                          {[
+                            ...(manualStatusOptions.includes(room.status)
+                              ? []
+                              : [room.status]),
+                            ...manualStatusOptions,
+                          ].map((s) => (
                             <option key={s}>{s}</option>
                           ))}
                         </select>
