@@ -1,13 +1,15 @@
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
-import { Crown, Eye, EyeOff, Shield, Globe } from "lucide-react";
+import { Crown, Eye, EyeOff, Lock } from "lucide-react";
 import api from "@/api/axios";
 import { useToast } from "@/components/confirm/ConfirmProvider";
+import { useTheme } from "@/contexts/ThemeContext";
+import MarketingHeader from "@/components/layout/MarketingHeader";
+import "@/pages/landing.css";
 
 const AcceptInvite = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-
   const token = searchParams.get("token");
 
   const [password, setPassword] = useState("");
@@ -16,22 +18,30 @@ const AcceptInvite = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
+  const { theme } = useTheme();
 
   if (!token) {
     return (
-      <div className="lp-root">
-        <div className="flex items-center justify-center w-full min-h-screen relative p-6">
-          <div className="lp-form-card" style={{ maxWidth: 460 }}>
-            <h2 className="lp-form-title text-center text-[hsl(var(--danger))]">
+      <div className="lnd-root" data-theme={theme}>
+        <MarketingHeader />
+        <div className="luxury-login-root">
+          <div className="luxury-login-glow" aria-hidden="true" />
+
+          <div className="luxury-login-card">
+            <div className="luxury-login-crown-wrap">
+              <Crown className="luxury-login-crown-icon" />
+            </div>
+
+            <h2 className="luxury-login-title text-center text-[hsl(var(--danger))]">
               Invalid Invitation Link
             </h2>
-            <p className="lp-form-subtitle text-center">
+            <p className="luxury-login-subtitle text-center">
               The invitation link you clicked is missing or has expired. Please
               request a new invitation from your administrator.
             </p>
             <button
               onClick={() => navigate("/login")}
-              className="lp-submit-btn cursor-pointer"
+              className="luxury-login-btn cursor-pointer"
             >
               Return to Login
             </button>
@@ -62,15 +72,11 @@ const AcceptInvite = () => {
     try {
       setLoading(true);
 
-      const response = await api.post<{ email?: string }>(
-        "/auth/accept-invite",
-        {
-          token,
-          password,
-        },
-      );
+      const response = await api.post<{ email?: string }>("/auth/accept-invite", {
+        token,
+        password,
+      });
 
-      // ✅ Save email from backend response
       if (response.data?.email) {
         sessionStorage.setItem("prefillEmail", response.data.email);
       }
@@ -85,99 +91,31 @@ const AcceptInvite = () => {
   };
 
   return (
-    <div className="lp-root animate-fade-in">
-      {/* ── Left Panel ── */}
-      <div className="lp-left">
-        {/* Decorative grid overlay */}
-        <div className="lp-left-grid" aria-hidden="true" />
-        {/* Corner ornaments */}
-        <div className="lp-corner lp-corner-tl" aria-hidden="true" />
-        <div className="lp-corner lp-corner-br" aria-hidden="true" />
+    <div className="lnd-root" data-theme={theme}>
+      <MarketingHeader />
+      <div className="luxury-login-root">
+        <div className="luxury-login-glow" aria-hidden="true" />
 
-        <div className="lp-left-inner">
-          {/* Crown logo */}
-          <div className="lp-crown-wrap">
-            <Crown className="lp-crown-icon" />
+        <div className="luxury-login-card">
+          <div className="luxury-login-crown-wrap">
+            <Crown className="luxury-login-crown-icon" />
           </div>
 
-          {/* Brand */}
-          <p className="lp-enterprise-label">ENTERPRISE PLATFORM</p>
-          <h1 className="lp-brand-title">LUXURY HMS</h1>
-          <div className="lp-divider" />
-          <p className="lp-brand-tagline">Global Hospitality Command Center</p>
-          <p className="lp-brand-desc">
-            Enterprise-grade property management for the world's most{" "}
-            <span className="lp-brand-desc-highlight">
-              distinguished hotel collections
-            </span>
-            . Trusted by leading luxury hospitality groups across six
-            continents.
-          </p>
-
-          {/* Stats */}
-          <div className="lp-stats-row">
-            <div className="lp-stat">
-              <span className="lp-stat-value">248</span>
-              <span className="lp-stat-label">PROPERTIES</span>
-            </div>
-            <div className="lp-stat-divider" />
-            <div className="lp-stat">
-              <span className="lp-stat-value">42</span>
-              <span className="lp-stat-label">COUNTRIES</span>
-            </div>
-            <div className="lp-stat-divider" />
-            <div className="lp-stat">
-              <span className="lp-stat-value">7★</span>
-              <span className="lp-stat-label">STANDARD</span>
-            </div>
-          </div>
-
-          {/* Compliance badges */}
-          <div className="lp-compliance-row">
-            <div className="lp-compliance-badge">
-              <Shield className="lp-compliance-icon" />
-              <span>SOC 2 CERTIFIED</span>
-            </div>
-            <div className="lp-compliance-badge">
-              <Globe className="lp-compliance-icon" />
-              <span>GDPR COMPLIANT</span>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <p className="lp-left-footer">
-            © 2026 Luxury HMS · All Rights Reserved
-          </p>
-        </div>
-      </div>
-
-      {/* ── Right Panel ── */}
-      <div className="lp-right">
-        {/* Subtle radial glow behind card */}
-        <div className="lp-right-glow" aria-hidden="true" />
-
-        <div className="lp-form-card">
-          {/* Crown logo */}
-          <div className="lp-form-crown-wrap">
-            <Crown className="lp-form-crown-icon" />
-          </div>
-
-          <h2 className="lp-form-title">Set Your Password</h2>
-          <p className="lp-form-subtitle">
+          <h2 className="luxury-login-title">Set Your Password</h2>
+          <p className="luxury-login-subtitle">
             Welcome to the team! Secure your new account.
           </p>
 
-          <form onSubmit={handleSubmit} className="lp-form">
-            {/* Password */}
-            <div className="lp-field-group">
-              <label htmlFor="lp-password" className="lp-field-label">
+          <form onSubmit={handleSubmit} className="luxury-login-form">
+            <div className="luxury-login-field">
+              <label htmlFor="lp-password" className="luxury-login-label">
                 NEW PASSWORD
               </label>
-              <div className="lp-password-wrap">
+              <div className="luxury-login-password-wrap">
                 <input
                   id="lp-password"
                   type={showPassword ? "text" : "password"}
-                  className="lp-input lp-input-password"
+                  className="luxury-login-input"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -186,30 +124,32 @@ const AcceptInvite = () => {
                 />
                 <button
                   type="button"
-                  className="lp-eye-btn"
+                  className="luxury-login-eye"
                   onClick={() => setShowPassword((v) => !v)}
                   tabIndex={-1}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <EyeOff className="lp-eye-icon" />
+                    <EyeOff className="luxury-login-eye-icon" />
                   ) : (
-                    <Eye className="lp-eye-icon" />
+                    <Eye className="luxury-login-eye-icon" />
                   )}
                 </button>
               </div>
             </div>
 
-            {/* Confirm Password */}
-            <div className="lp-field-group">
-              <label htmlFor="lp-confirm-password" className="lp-field-label">
+            <div className="luxury-login-field">
+              <label
+                htmlFor="lp-confirm-password"
+                className="luxury-login-label"
+              >
                 CONFIRM PASSWORD
               </label>
-              <div className="lp-password-wrap">
+              <div className="luxury-login-password-wrap">
                 <input
                   id="lp-confirm-password"
                   type={showConfirmPassword ? "text" : "password"}
-                  className="lp-input lp-input-password"
+                  className="luxury-login-input"
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -218,7 +158,7 @@ const AcceptInvite = () => {
                 />
                 <button
                   type="button"
-                  className="lp-eye-btn"
+                  className="luxury-login-eye"
                   onClick={() => setShowConfirmPassword((v) => !v)}
                   tabIndex={-1}
                   aria-label={
@@ -226,26 +166,47 @@ const AcceptInvite = () => {
                   }
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="lp-eye-icon" />
+                    <EyeOff className="luxury-login-eye-icon" />
                   ) : (
-                    <Eye className="lp-eye-icon" />
+                    <Eye className="luxury-login-eye-icon" />
                   )}
                 </button>
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="lp-submit-btn">
+            <button
+              type="submit"
+              disabled={loading}
+              className="luxury-login-btn"
+            >
               {loading ? (
                 <>
-                  <span className="lp-spinner" aria-hidden="true" />
+                  <span className="luxury-login-spinner" aria-hidden="true" />
                   PROCESSING…
                 </>
               ) : (
                 "SET PASSWORD"
               )}
             </button>
+
+            <div className="luxury-login-ssl">
+              <Lock className="luxury-login-ssl-icon" />
+              <span>256-bit SSL encrypted connection</span>
+            </div>
           </form>
         </div>
+
+        <p className="luxury-login-footer-note">
+          Back to sign in?{" "}
+          <Link to="/login" className="luxury-login-link">
+            Return to login
+          </Link>
+        </p>
+
+        <p className="luxury-login-bottom-note">
+          <span className="luxury-login-bold">Account Setup</span> · Create your
+          password to continue
+        </p>
       </div>
     </div>
   );

@@ -174,8 +174,30 @@
   overflow: hidden;
 }
 
+.hr-pending-invitations-card {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+}
+
 .hr-table-scroll {
   overflow-x: auto;
+}
+
+.hr-pending-invitations-scroll {
+  max-height: 33rem;
+  overflow-y: auto;
+}
+
+.hr-standard-table-card {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+}
+
+.hr-standard-table-scroll {
+  max-height: 33rem;
+  overflow-y: auto;
 }
 .hr-table-scroll::-webkit-scrollbar       { height: 5px; }
 .hr-table-scroll::-webkit-scrollbar-track { background: transparent; }

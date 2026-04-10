@@ -663,12 +663,15 @@ const HR = () => {
   const [staffPage, setStaffPage] = useState(1);
   const [invitationPage, setInvitationPage] = useState(1);
   const [payrollPage, setPayrollPage] = useState(1);
-  const itemsPerPage = 4;
+  const itemsPerPage = 7;
+  const invitationItemsPerPage = 7;
 
-  const totalInvitationPages = Math.ceil(pendingInvitations.length / itemsPerPage);
+  const totalInvitationPages = Math.ceil(
+    pendingInvitations.length / invitationItemsPerPage,
+  );
   const paginatedInvitations = pendingInvitations.slice(
-    (invitationPage - 1) * itemsPerPage,
-    invitationPage * itemsPerPage,
+    (invitationPage - 1) * invitationItemsPerPage,
+    invitationPage * invitationItemsPerPage,
   );
 
   const totalStaffPages = Math.ceil(activeStaff.length / itemsPerPage);
@@ -1204,12 +1207,12 @@ const HR = () => {
       </div>
 
       {/* ── Staff List Table ── */}
-      <div className="luxury-card hr-table-card">
+      <div className="luxury-card hr-table-card hr-pending-invitations-card">
         <div className="hr-section-header">
           <h3 className="hr-section-title">Pending Invitations</h3>
         </div>
 
-        <div className="hr-table-scroll">
+        <div className="hr-table-scroll hr-pending-invitations-scroll">
           <table className="luxury-table">
             <thead>
               <tr>
@@ -1238,7 +1241,7 @@ const HR = () => {
                 paginatedInvitations.map((invitation, i) => (
                   <tr key={invitation._id}>
                     <td className="col-serial">
-                      {(invitationPage - 1) * itemsPerPage + i + 1}
+                      {(invitationPage - 1) * invitationItemsPerPage + i + 1}
                     </td>
                     <td className="hr-cell-bold">{invitation.name}</td>
                     <td className="text-muted-foreground">
@@ -1257,7 +1260,7 @@ const HR = () => {
                     </td>
                     <td>
                       <span className="luxury-badge badge-warning text-[0.65rem]">
-                        {invitation.staffStatus || "Invited"}
+                        Pending
                       </span>
                     </td>
                     <td className="text-muted-foreground">
@@ -1314,7 +1317,7 @@ const HR = () => {
             <span className="pagination-info">
               Showing {(invitationPage - 1) * itemsPerPage + 1} to{" "}
               {Math.min(
-                invitationPage * itemsPerPage,
+                invitationPage * invitationItemsPerPage,
                 pendingInvitations.length,
               )}{" "}
               of {pendingInvitations.length} entries
@@ -1344,12 +1347,12 @@ const HR = () => {
         )}
       </div>
 
-      <div className="luxury-card hr-table-card">
+      <div className="luxury-card hr-table-card hr-standard-table-card">
         <div className="hr-section-header">
           <h3 className="hr-section-title">Staff List</h3>
         </div>
 
-        <div className="hr-table-scroll">
+        <div className="hr-table-scroll hr-standard-table-scroll">
           <table className="luxury-table">
             <thead>
               <tr>
@@ -1525,12 +1528,12 @@ const HR = () => {
       </div>
 
       {/* ── Payroll Records Table ── */}
-      <div className="luxury-card hr-table-card">
+      <div className="luxury-card hr-table-card hr-standard-table-card">
         <div className="hr-section-header">
           <h3 className="hr-section-title">Payroll Records</h3>
         </div>
 
-        <div className="hr-table-scroll">
+        <div className="hr-table-scroll hr-standard-table-scroll">
           <table className="luxury-table">
             <thead>
               <tr>
