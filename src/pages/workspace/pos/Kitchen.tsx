@@ -246,15 +246,15 @@ const Kitchen = () => {
 
             return (
               <div key={`${group.groupType}-${group.sessionId}`} className="kt-card">
-                <div className="kt-card-header">
+                {/* <div className="kt-card-header">
                   <div className="kt-order-title">
                     <span className="kt-order-number">{group.groupLabel}</span>
                   </div>
                   <span className="kt-order-time">
                     <Clock size={14} />
-                    {groupElapsed}
+                     {groupElapsed}
                   </span>
-                </div>
+                </div> */}
 
                 <div className="kt-items-list">
                   {group.orders.map((order) => {

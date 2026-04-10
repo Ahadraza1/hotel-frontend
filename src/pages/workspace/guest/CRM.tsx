@@ -102,8 +102,15 @@ const CRM = () => {
   }, []);
 
   const getGuestDocumentUrl = useCallback(
-    (documentName: string) =>
-      `${uploadsBaseUrl || ""}/uploads/guest-identities/${encodeURIComponent(documentName)}`,
+    (documentName: string) => {
+      const normalizedPath = decodeURIComponent(String(documentName || "").trim())
+        .replace(/^https?:\/\/[^/]+/i, "")
+        .replace(/^\/+/, "")
+        .replace(/^uploads\/+/i, "")
+        .replace(/\\/g, "/");
+
+      return `${uploadsBaseUrl || ""}/uploads/${normalizedPath}`;
+    },
     [uploadsBaseUrl],
   );
 
