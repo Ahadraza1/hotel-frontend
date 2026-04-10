@@ -41,6 +41,7 @@ interface Booking {
   totalAmount: number;
   status: string;
   paymentStatus: string;
+  updatedAt?: string;
 }
 
 const isBookedStatus = (status?: string) =>
@@ -183,6 +184,13 @@ const Bookings = () => {
       checkOuts: bookings.filter(
         (b) => new Date(b.checkOutDate).toDateString() === today,
       ).length,
+      totalCancelled: bookings.filter((b) => b.status === "CANCELLED").length,
+      todayCancelled: bookings.filter(
+        (b) =>
+          b.status === "CANCELLED" &&
+          b.updatedAt &&
+          new Date(b.updatedAt).toDateString() === today,
+      ).length,
       confirmed: bookings.filter((b) => isBookedStatus(b.status)).length,
       checkedIn: bookings.filter((b) => b.status === "CHECKED_IN").length,
     };
@@ -309,6 +317,32 @@ const Bookings = () => {
           />
           <span className="bk-kpi-value bk-kpi-gold">{kpi.confirmed}</span>
           <span className="bk-kpi-label">Pending Confirmations</span>
+        </div>
+        <div className="bk-kpi-card">
+          <X
+            size={16}
+            style={{
+              color: "hsl(var(--destructive))",
+              marginBottom: "0.25rem",
+            }}
+          />
+          <span className="bk-kpi-value" style={{ color: "hsl(var(--destructive))" }}>
+            {kpi.totalCancelled}
+          </span>
+          <span className="bk-kpi-label">Total Cancel Booking</span>
+        </div>
+        <div className="bk-kpi-card">
+          <X
+            size={16}
+            style={{
+              color: "hsl(var(--destructive))",
+              marginBottom: "0.25rem",
+            }}
+          />
+          <span className="bk-kpi-value" style={{ color: "hsl(var(--destructive))" }}>
+            {kpi.todayCancelled}
+          </span>
+          <span className="bk-kpi-label">Today Cancel Booking</span>
         </div>
         <div className="bk-kpi-card">
           <LogIn

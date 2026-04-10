@@ -325,10 +325,17 @@ const SubscriptionPlans = () => {
     currentOrganization?.subscription.planType ||
     currentOrganization?.subscription.billingCycle ||
     null;
+  const hasInactiveSubscription =
+    currentOrganization?.subscription.status === "cancelled" ||
+    currentOrganization?.subscription.status === "expired";
 
   const getPlanActionState = useCallback(
     (plan: Plan, selectedBillingType: BillingCycle): PlanActionState => {
       if (!currentPlan) {
+        return "select";
+      }
+
+      if (!isSuperAdmin && hasInactiveSubscription) {
         return "select";
       }
 
@@ -369,6 +376,8 @@ const SubscriptionPlans = () => {
       return "select";
     },
     [
+      hasInactiveSubscription,
+      isSuperAdmin,
       currentOrganization?.subscription.activePlan?.planId,
       currentOrganization?.subscription.planId,
       currentPlan,
@@ -928,7 +937,9 @@ const SubscriptionPlans = () => {
                 >
                   {processingPlanId === plan._id
                     ? "Processing..."
-                    : planActionState === "current"
+                    : !isSuperAdmin && hasInactiveSubscription
+                      ? "Buy Plan"
+                      : planActionState === "current"
                       ? "Current Plan"
                       : planActionState === "downgrade"
                         ? "Downgrade not allowed"

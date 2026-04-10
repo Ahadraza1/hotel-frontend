@@ -15,7 +15,9 @@ interface User {
   _id: string;
   firstName: string;
   lastName: string;
-  department: string;
+  department?: string;
+  designation?: string;
+  role?: string;
 }
 
 const CreateHousekeepingTask = () => {
@@ -49,9 +51,17 @@ const CreateHousekeepingTask = () => {
         ]);
         setRooms(roomsRes.data.data || []);
         setHousekeepers(
-          (staffRes.data.data || []).filter(
-            (s: any) => s.department === "HOUSEKEEPING",
-          ),
+          (staffRes.data.data || []).filter((s: any) => {
+            const department = String(s.department || "").trim().toUpperCase();
+            const designation = String(s.designation || "").trim().toUpperCase();
+            const role = String(s.role || "").trim().toUpperCase();
+
+            return (
+              department === "HOUSEKEEPING" ||
+              designation === "HOUSEKEEPING" ||
+              role === "HOUSEKEEPING"
+            );
+          }),
         );
       } catch {
         console.error("Failed to load data");

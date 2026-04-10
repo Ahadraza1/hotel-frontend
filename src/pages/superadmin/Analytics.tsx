@@ -13,7 +13,7 @@ import { BarChart2 } from "lucide-react";
 import api from "@/api/axios";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 
-const tabs = ["Revenue", "Occupancy", "RevPAR"];
+const tabs = ["Revenue", "Occupancy", "RevPAR", "Cancel Booking"];
 const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 interface AnalyticsSeries {
@@ -60,6 +60,8 @@ const Analytics = () => {
   const [occupancySeries, setOccupancySeries] = useState<AnalyticsSeries[]>([]);
   const [revParTrend, setRevParTrend] = useState<AnalyticsPoint[]>([]);
   const [revParSeries, setRevParSeries] = useState<AnalyticsSeries[]>([]);
+  const [cancelledBookingTrend, setCancelledBookingTrend] = useState<AnalyticsPoint[]>([]);
+  const [cancelledBookingSeries, setCancelledBookingSeries] = useState<AnalyticsSeries[]>([]);
   const [comparison, setComparison] = useState<{ current: number; previous: number; growth: number } | null>(null);
 
   const currentYear = new Date().getFullYear();
@@ -69,7 +71,7 @@ const Analytics = () => {
     const fetchAnalytics = async () => {
       try {
         const commonParams = { view, year, month: selectedMonth, mode };
-        const [revenueRes, occupancyRes, revParRes] = await Promise.all([
+        const [revenueRes, occupancyRes, revParRes, cancelledBookingRes] = await Promise.all([
           api.get<{ data: RevenueTrendResponse }>("/analytics/revenue-by-branch", {
             params: commonParams,
           }),
@@ -79,11 +81,15 @@ const Analytics = () => {
           api.get<{ data: TrendResponse }>("/analytics/revpar-trend", {
             params: commonParams,
           }),
+          api.get<{ data: TrendResponse }>("/analytics/cancelled-booking-trend", {
+            params: commonParams,
+          }),
         ]);
 
         const revenueData = revenueRes.data.data;
         const occupancyData = occupancyRes.data.data;
         const revParData = revParRes.data.data;
+        const cancelledBookingData = cancelledBookingRes.data.data;
 
         setRevenueTrend(revenueData?.chartData || []);
         setRevenueSeries(revenueData?.series || []);
@@ -92,6 +98,8 @@ const Analytics = () => {
         setOccupancySeries(occupancyData?.series || []);
         setRevParTrend(revParData?.chartData || []);
         setRevParSeries(revParData?.series || []);
+        setCancelledBookingTrend(cancelledBookingData?.chartData || []);
+        setCancelledBookingSeries(cancelledBookingData?.series || []);
       } catch (error) {
         console.error("Failed to load analytics", error);
       } finally {
@@ -388,6 +396,26 @@ const Analytics = () => {
               yAxisFormatter: (value) => formatCompactCurrency(value),
               tooltipFormatter: (value, name) => [formatCurrency(value), name],
               cursorStroke: "#CCA365",
+            })}
+          </div>
+        )}
+
+        {activeTab === "Cancel Booking" && (
+          <div className="luxury-card an-chart-card" style={{ gridColumn: "1 / -1" }}>
+            <div className="gf-section-header an-section-header">
+              <div className="an-section-heading">
+                <span className="gf-section-title">
+                  {mode === "organization" ? "Cancelled Bookings by Organization" : "Cancelled Booking Trend"}
+                </span>
+              </div>
+              {renderControls()}
+            </div>
+            {renderTrendChart({
+              data: cancelledBookingTrend,
+              series: cancelledBookingSeries,
+              yAxisFormatter: (value) => `${value}`,
+              tooltipFormatter: (value, name) => [`${value}`, name],
+              cursorStroke: "hsl(0, 58%, 39%)",
             })}
           </div>
         )}
