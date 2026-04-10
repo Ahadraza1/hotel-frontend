@@ -7,6 +7,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import MarketingHeader from "@/components/layout/MarketingHeader";
 import "@/pages/landing.css";
 
+const invitePasswordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
 const AcceptInvite = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -53,6 +55,7 @@ const AcceptInvite = () => {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (loading) return;
 
     if (!password || !confirmPassword) {
       toast.warning("All fields are required");
@@ -64,8 +67,10 @@ const AcceptInvite = () => {
       return;
     }
 
-    if (password.length < 6) {
-      toast.warning("Password must be at least 6 characters");
+    if (!invitePasswordRegex.test(password)) {
+      toast.warning(
+        "Password must be at least 8 characters and include an uppercase letter, number, and symbol",
+      );
       return;
     }
 

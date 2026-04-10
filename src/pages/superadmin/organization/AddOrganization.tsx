@@ -1,17 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Building2,
   ArrowLeft,
-  Shield,
-  Globe,
-  DollarSign,
-  UserCog,
-  Mail,
-  Phone,
-  MapPin,
-  Hash,
+  Building2,
   CheckCircle2,
+  DollarSign,
+  Globe,
+  Hash,
+  Mail,
+  MapPin,
+  Phone,
+  Shield,
+  UserCog,
 } from "lucide-react";
 import api from "@/api/axios";
 import { useToast } from "@/components/confirm/ConfirmProvider";
@@ -20,23 +20,26 @@ import {
   validatePhoneField,
 } from "@/lib/fieldValidation";
 
-const TIERS = [
-  {
-    name: "Starter",
-    desc: "Essential features for small operations",
-    badge: "Basic",
-  },
-  {
-    name: "Professional",
-    desc: "Advanced tools for growing businesses",
-    badge: "Popular",
-  },
-  {
-    name: "Enterprise",
-    desc: "Complete suite for large organizations",
-    badge: "Full",
-  },
-];
+interface SubscriptionPlan {
+  _id: string;
+  name: string;
+  description: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  branchLimit: number | null;
+  features: string[];
+  isActive: boolean;
+}
+
+const formatPriceLabel = (amount: number) =>
+  amount === 0 ? "Free" : `$${amount.toLocaleString()}`;
+
+const getPlanBadge = (plan: SubscriptionPlan, index: number) => {
+  if (plan.monthlyPrice === 0 && plan.yearlyPrice === 0) return "Trial";
+  if (index === 1) return "Popular";
+  if (plan.branchLimit === null) return "Unlimited";
+  return "Active";
+};
 
 const AddOrganization = () => {
   const navigate = useNavigate();
@@ -49,7 +52,8 @@ const AddOrganization = () => {
     organizationEmail: "",
     primaryCurrency: "USD - United States Dollar",
     globalTimezone: "(GMT+00:00) UTC",
-    serviceTier: "Professional",
+    selectedPlanId: "",
+    billingCycle: "monthly",
   });
 
   const [corporateAdmin, setCorporateAdmin] = useState({
@@ -57,9 +61,38 @@ const AddOrganization = () => {
     email: "",
     phone: "",
   });
-
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setPlansLoading(true);
+        const response = await api.get<{ data: SubscriptionPlan[] }>(
+          "/subscriptions/plans",
+        );
+        const activePlans = (response.data.data || []).filter(
+          (plan) => plan.isActive,
+        );
+
+        setPlans(activePlans);
+        setFormState((prev) => ({
+          ...prev,
+          selectedPlanId:
+            prev.selectedPlanId || activePlans[0]?._id || prev.selectedPlanId,
+        }));
+      } catch (error) {
+        console.error("Failed to load subscription plans", error);
+        toast.error("Failed to load subscription plans");
+      } finally {
+        setPlansLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, [toast]);
 
   const getFieldError = (name: string, value: string) => {
     switch (name) {
@@ -92,6 +125,14 @@ const AddOrganization = () => {
         return next;
       });
     }
+
+    if (name === "selectedPlanId") {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next.selectedPlanId;
+        return next;
+      });
+    }
   };
 
   const handleAdminChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,7 +154,9 @@ const AddOrganization = () => {
   };
 
   const handleBlur = (
-    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    e: React.FocusEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
 
@@ -148,13 +191,19 @@ const AddOrganization = () => {
       "organizationEmail",
       formState.organizationEmail,
     );
-    if (organizationEmailError) nextErrors.organizationEmail = organizationEmailError;
+    if (organizationEmailError) {
+      nextErrors.organizationEmail = organizationEmailError;
+    }
 
     const adminEmailError = getFieldError("email", corporateAdmin.email);
     if (adminEmailError) nextErrors.adminEmail = adminEmailError;
 
     const adminPhoneError = getFieldError("phone", corporateAdmin.phone);
     if (adminPhoneError) nextErrors.adminPhone = adminPhoneError;
+
+    if (!formState.selectedPlanId) {
+      nextErrors.selectedPlanId = "Please choose a subscription plan";
+    }
 
     setFieldErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
@@ -164,10 +213,7 @@ const AddOrganization = () => {
     try {
       setLoading(true);
 
-      // ✅ Extract proper currency code
       const currencyCode = formState.primaryCurrency.split(" - ")[0];
-
-      // ✅ Extract timezone value only
       const timezoneValue = formState.globalTimezone;
 
       const payload = {
@@ -176,7 +222,8 @@ const AddOrganization = () => {
         headquartersAddress: formState.headquartersAddress.trim(),
         currency: currencyCode,
         timezone: timezoneValue,
-        serviceTier: formState.serviceTier.toUpperCase(),
+        planId: formState.selectedPlanId,
+        billingCycle: formState.billingCycle,
         corporateAdmin,
       };
 
@@ -198,8 +245,6 @@ const AddOrganization = () => {
 
   return (
     <div className="animate-fade-in ao-root">
-
-      {/* ── Back Button ── */}
       <button
         onClick={() => navigate(-1)}
         className="add-branch-back-btn"
@@ -211,7 +256,6 @@ const AddOrganization = () => {
         <span className="add-branch-back-label">Back to Organizations</span>
       </button>
 
-      {/* ── Page Header ── */}
       <div className="add-branch-header">
         <div className="add-branch-header-icon-wrap">
           <Building2 className="add-branch-header-icon" />
@@ -224,13 +268,8 @@ const AddOrganization = () => {
         </div>
       </div>
 
-      {/* ── Main Grid ── */}
       <div className="ao-grid">
-
-        {/* ══ LEFT COLUMN ══ */}
         <div className="ao-left-col">
-
-          {/* Core Details */}
           <div className="luxury-card ao-section-card">
             <div className="ao-section-header">
               <div className="ao-section-icon-wrap">
@@ -238,13 +277,14 @@ const AddOrganization = () => {
               </div>
               <div>
                 <h3 className="ao-section-title">Core Details</h3>
-                <p className="ao-section-subtitle">Basic organization information</p>
+                <p className="ao-section-subtitle">
+                  Basic organization information
+                </p>
               </div>
             </div>
 
             <div className="ao-fields">
               <div className="ao-field-row">
-                {/* Organization Name */}
                 <div className="ao-field">
                   <label htmlFor="organizationName" className="add-branch-label">
                     Organization Name
@@ -264,7 +304,6 @@ const AddOrganization = () => {
                   </div>
                 </div>
 
-                {/* System Identifier */}
                 <div className="ao-field">
                   <label htmlFor="systemIdentifier" className="add-branch-label">
                     System Identifier
@@ -285,7 +324,6 @@ const AddOrganization = () => {
                 </div>
               </div>
 
-              {/* Organization Email */}
               <div className="ao-field">
                 <label htmlFor="organizationEmail" className="add-branch-label">
                   Organization Email
@@ -305,15 +343,24 @@ const AddOrganization = () => {
                   />
                 </div>
                 {fieldErrors.organizationEmail ? (
-                  <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                  <span
+                    style={{
+                      color: "#dc2626",
+                      display: "block",
+                      fontSize: "0.875rem",
+                      marginTop: "0.35rem",
+                    }}
+                  >
                     {fieldErrors.organizationEmail}
                   </span>
                 ) : null}
               </div>
 
-              {/* HQ Address */}
               <div className="ao-field">
-                <label htmlFor="headquartersAddress" className="add-branch-label">
+                <label
+                  htmlFor="headquartersAddress"
+                  className="add-branch-label"
+                >
                   Headquarters Address
                 </label>
                 <div className="add-branch-input-wrap ao-textarea-wrap">
@@ -321,7 +368,7 @@ const AddOrganization = () => {
                   <textarea
                     id="headquartersAddress"
                     name="headquartersAddress"
-                    placeholder="Enter full corporate address…"
+                    placeholder="Enter full corporate address..."
                     className="luxury-input add-branch-input-with-icon ao-textarea"
                     rows={3}
                     value={formState.headquartersAddress}
@@ -332,7 +379,6 @@ const AddOrganization = () => {
             </div>
           </div>
 
-          {/* Corporate Admin Details */}
           <div className="luxury-card ao-section-card">
             <div className="ao-section-header">
               <div className="ao-section-icon-wrap">
@@ -340,13 +386,14 @@ const AddOrganization = () => {
               </div>
               <div>
                 <h3 className="ao-section-title">Corporate Admin Details</h3>
-                <p className="ao-section-subtitle">Primary administrator account</p>
+                <p className="ao-section-subtitle">
+                  Primary administrator account
+                </p>
               </div>
             </div>
 
             <div className="ao-fields">
               <div className="ao-field-row">
-                {/* Admin Name */}
                 <div className="ao-field">
                   <label htmlFor="adminName" className="add-branch-label">
                     Full Name
@@ -366,7 +413,6 @@ const AddOrganization = () => {
                   </div>
                 </div>
 
-                {/* Admin Email */}
                 <div className="ao-field">
                   <label htmlFor="adminEmail" className="add-branch-label">
                     Email Address
@@ -386,14 +432,20 @@ const AddOrganization = () => {
                     />
                   </div>
                   {fieldErrors.adminEmail ? (
-                    <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                    <span
+                      style={{
+                        color: "#dc2626",
+                        display: "block",
+                        fontSize: "0.875rem",
+                        marginTop: "0.35rem",
+                      }}
+                    >
                       {fieldErrors.adminEmail}
                     </span>
                   ) : null}
                 </div>
               </div>
 
-              {/* Admin Phone */}
               <div className="ao-field">
                 <label htmlFor="adminPhone" className="add-branch-label">
                   Phone Number
@@ -412,7 +464,14 @@ const AddOrganization = () => {
                   />
                 </div>
                 {fieldErrors.adminPhone ? (
-                  <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                  <span
+                    style={{
+                      color: "#dc2626",
+                      display: "block",
+                      fontSize: "0.875rem",
+                      marginTop: "0.35rem",
+                    }}
+                  >
                     {fieldErrors.adminPhone}
                   </span>
                 ) : null}
@@ -420,7 +479,6 @@ const AddOrganization = () => {
             </div>
           </div>
 
-          {/* Regional Policy */}
           <div className="luxury-card ao-section-card">
             <div className="ao-section-header">
               <div className="ao-section-icon-wrap">
@@ -428,13 +486,14 @@ const AddOrganization = () => {
               </div>
               <div>
                 <h3 className="ao-section-title">Regional Policy</h3>
-                <p className="ao-section-subtitle">Currency &amp; timezone settings</p>
+                <p className="ao-section-subtitle">
+                  Currency &amp; timezone settings
+                </p>
               </div>
             </div>
 
             <div className="ao-fields">
               <div className="ao-field-row">
-                {/* Currency */}
                 <div className="ao-field">
                   <label htmlFor="primaryCurrency" className="add-branch-label">
                     Primary Currency
@@ -459,7 +518,6 @@ const AddOrganization = () => {
                   </div>
                 </div>
 
-                {/* Timezone */}
                 <div className="ao-field">
                   <label htmlFor="globalTimezone" className="add-branch-label">
                     Global Timezone
@@ -488,10 +546,7 @@ const AddOrganization = () => {
           </div>
         </div>
 
-        {/* ══ RIGHT COLUMN ══ */}
         <div className="ao-right-col">
-
-          {/* Service Tier */}
           <div className="luxury-card ao-tier-card">
             <div className="ao-section-header">
               <div className="ao-section-icon-wrap ao-section-icon-primary">
@@ -499,55 +554,127 @@ const AddOrganization = () => {
               </div>
               <div>
                 <h3 className="ao-section-title">Service Tier</h3>
-                <p className="ao-section-subtitle">Choose a subscription plan</p>
+                <p className="ao-section-subtitle">
+                  Choose a subscription plan
+                </p>
+              </div>
+            </div>
+
+            <div className="ao-fields" style={{ marginBottom: "1rem" }}>
+              <div className="ao-field">
+                <label htmlFor="billingCycle" className="add-branch-label">
+                  Billing Cycle
+                </label>
+                <div className="add-branch-input-wrap">
+                  <DollarSign className="add-branch-field-icon" />
+                  <select
+                    id="billingCycle"
+                    name="billingCycle"
+                    className="luxury-input luxury-select add-branch-input-with-icon"
+                    value={formState.billingCycle}
+                    onChange={handleChange}
+                  >
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </div>
               </div>
             </div>
 
             <div className="ao-tier-list">
-              {TIERS.map((tier) => {
-                const isSelected = formState.serviceTier === tier.name;
-                return (
-                  <label
-                    key={tier.name}
-                    className={`ao-tier-row ${isSelected ? "ao-tier-row-active" : ""}`}
-                  >
-                    <input
-                      type="radio"
-                      name="serviceTier"
-                      value={tier.name}
-                      className="ao-tier-radio"
-                      checked={isSelected}
-                      onChange={handleChange}
-                    />
-                    <div className="ao-tier-info">
-                      <div className="ao-tier-name-row">
-                        <span className="ao-tier-name">{tier.name}</span>
-                        <span className={`ao-tier-badge ${isSelected ? "ao-tier-badge-active" : ""}`}>
-                          {tier.badge}
+              {plansLoading ? (
+                <div className="ao-tier-row">
+                  <div className="ao-tier-info">
+                    <span className="ao-tier-name">Loading plans...</span>
+                    <span className="ao-tier-desc">
+                      Fetching subscription plans created by super admin.
+                    </span>
+                  </div>
+                </div>
+              ) : plans.length === 0 ? (
+                <div className="ao-tier-row">
+                  <div className="ao-tier-info">
+                    <span className="ao-tier-name">No active plans found</span>
+                    <span className="ao-tier-desc">
+                      Create a plan in the subscription page before registering
+                      a new organization.
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                plans.map((plan, index) => {
+                  const isSelected = formState.selectedPlanId === plan._id;
+                  const price =
+                    formState.billingCycle === "yearly"
+                      ? plan.yearlyPrice
+                      : plan.monthlyPrice;
+
+                  return (
+                    <label
+                      key={plan._id}
+                      className={`ao-tier-row ${isSelected ? "ao-tier-row-active" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name="selectedPlanId"
+                        value={plan._id}
+                        className="ao-tier-radio"
+                        checked={isSelected}
+                        onChange={handleChange}
+                      />
+                      <div className="ao-tier-info">
+                        <div className="ao-tier-name-row">
+                          <span className="ao-tier-name">{plan.name}</span>
+                          <span
+                            className={`ao-tier-badge ${isSelected ? "ao-tier-badge-active" : ""}`}
+                          >
+                            {getPlanBadge(plan, index)}
+                          </span>
+                        </div>
+                        <span className="ao-tier-desc">
+                          {plan.description || "No description added for this plan."}
+                        </span>
+                        <span
+                          className="ao-tier-desc"
+                          style={{ marginTop: "0.45rem", display: "block" }}
+                        >
+                          {formatPriceLabel(price)} / {formState.billingCycle}
+                          {plan.branchLimit === null
+                            ? " - Unlimited branches"
+                            : ` - ${plan.branchLimit} branches`}
                         </span>
                       </div>
-                      <span className="ao-tier-desc">{tier.desc}</span>
-                    </div>
-                    {isSelected && (
-                      <CheckCircle2 className="ao-tier-check" />
-                    )}
-                  </label>
-                );
-              })}
+                      {isSelected ? <CheckCircle2 className="ao-tier-check" /> : null}
+                    </label>
+                  );
+                })
+              )}
             </div>
+
+            {fieldErrors.selectedPlanId ? (
+              <span
+                style={{
+                  color: "#dc2626",
+                  display: "block",
+                  fontSize: "0.875rem",
+                  marginTop: "0.75rem",
+                }}
+              >
+                {fieldErrors.selectedPlanId}
+              </span>
+            ) : null}
           </div>
 
-          {/* Action Buttons */}
           <div className="luxury-card ao-actions-card">
             <button
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || plansLoading || plans.length === 0}
               className="luxury-btn luxury-btn-primary ao-submit-btn"
             >
               {loading ? (
                 <>
                   <span className="add-branch-spinner" />
-                  Registering…
+                  Registering...
                 </>
               ) : (
                 <>
@@ -564,14 +691,13 @@ const AddOrganization = () => {
             </button>
           </div>
 
-          {/* Billing notice */}
           <div className="ao-billing-notice">
             <div className="ao-billing-icon-wrap">
               <DollarSign className="ao-billing-icon" />
             </div>
             <p className="ao-billing-text">
-              New registrations are billed pro-rata based on the remaining days
-              of the current billing cycle.
+              The selected plan will be attached to the organization as soon as
+              registration is completed.
             </p>
           </div>
         </div>
