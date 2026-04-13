@@ -435,6 +435,15 @@
   margin: 0;
 }
 
+.lnd-hero-trust {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--lnd-dim);
+  line-height: 1.6;
+  max-width: 520px;
+  margin: 0;
+}
+
 .lnd-hero-stats {
   display: flex;
   align-items: center;

@@ -4,7 +4,7 @@ const Index = () => {
   return (
     <div className="index-page">
       <div className="index-center">
-        <h1 className="page-title index-title">Welcome to Luxury HMS</h1>
+        <h1 className="page-title index-title">Welcome to Hotel Desk</h1>
         <p className="page-subtitle index-subtitle">Global Super Admin Control Panel</p>
       </div>
     </div>

@@ -269,7 +269,7 @@ export const AppSidebar = ({
     >
       <div className="sidebar-brand">
         <Crown className="sidebar-logo" />
-        <span className="sidebar-brand-name">LUXURY HMS</span>
+        <span className="sidebar-brand-name">Hotel Desk</span>
 
         <button
           className="desktop-toggle-btn"

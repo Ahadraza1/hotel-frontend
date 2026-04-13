@@ -263,7 +263,7 @@ const AddOrganization = () => {
         <div>
           <h1 className="page-title">Register New Organization</h1>
           <p className="page-subtitle">
-            Onboard a new hospitality group into the LUXURY HMS ecosystem.
+            Onboard a new hospitality group into the Hotel Desk ecosystem.
           </p>
         </div>
       </div>

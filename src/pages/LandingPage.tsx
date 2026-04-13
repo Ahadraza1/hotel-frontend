@@ -17,32 +17,32 @@ const features = [
   {
     icon: "🏨",
     title: "Multi-Branch Management",
-    desc: "Oversee unlimited hotel properties from a single, unified command center. Real-time sync across all locations.",
+    desc: "Manage all your hotel properties from a single, centralized dashboard. Monitor performance, bookings, and operations across multiple locations in real time — without switching between systems.",
   },
   {
     icon: "📅",
     title: "Booking & Reservation System",
-    desc: "Smart booking engine with conflict detection, auto-confirmations, and seamless channel management.",
+    desc: "Simplify your booking process with a smart reservation system that handles real-time availability, prevents double bookings, and syncs seamlessly across channels.",
   },
   {
     icon: "👤",
     title: "CRM & Guest Management",
-    desc: "Build lasting guest relationships with rich profiles, preferences, loyalty tiers, and personalized experiences.",
+    desc: "Build stronger relationships with your guests using detailed profiles, preferences, and stay history — so you can deliver personalized experiences that keep them coming back.",
   },
   {
     icon: "👥",
     title: "HR & Payroll Management",
-    desc: "Manage your entire workforce—from hiring to payroll—with full compliance and automated calculations.",
+    desc: "Easily manage your hotel staff from hiring to payroll. Automate salary calculations, track attendance, and ensure smooth workforce operations without extra effort.",
   },
   {
     icon: "📊",
     title: "Advanced Analytics & Reports",
-    desc: "Actionable insights with beautiful dashboards, revenue forecasting, and exportable performance reports.",
+    desc: "Make smarter business decisions with real-time insights into revenue, occupancy rates, and performance trends — all in one easy-to-understand dashboard.",
   },
   {
     icon: "🔐",
     title: "Role-Based Access Control",
-    desc: "Granular permissions per role, per branch. Control exactly who sees and does what across your empire.",
+    desc: "Give the right access to the right people. Control permissions by role or location to keep your hotel operations secure and well-managed.",
   },
 ];
 
@@ -51,54 +51,54 @@ const steps = [
     num: "01",
     icon: "🏗️",
     title: "Add Your Hotels",
-    desc: "Onboard each property in minutes. Set up rooms, rates, amenities, and staff structure instantly.",
+    desc: "Set up your hotel properties in just a few clicks. Add rooms, pricing, amenities, and staff details — and get your entire operation online without any hassle.",
   },
   {
     num: "02",
     icon: "⚙️",
     title: "Manage Bookings & Staff",
-    desc: "Handle reservations, housekeeping, HR, POS, and inventory — all from one dashboard.",
+    desc: "Handle reservations, guest check-ins, housekeeping, and staff management from one place. Keep everything organized and running smoothly every day.",
   },
   {
     num: "03",
     icon: "📈",
     title: "Track Growth & Revenue",
-    desc: "Watch occupancy rates and revenue climb with real-time analytics and intelligent reports.",
+    desc: "Monitor occupancy rates, revenue, and performance with real-time analytics. Make smarter decisions and grow your hotel business with confidence.",
   },
 ];
 
 const testimonials = [
   {
     name: "Arjun Mehta",
-    role: "Hotel Chain Owner · 12 Properties",
+    role: "Hotel Chain Owner • 12 Properties",
     avatar: "AM",
     variant: "gold",
     review:
-      "HotelOS completely transformed how we operate. Managing 12 hotels used to require 3 different tools. Now everything is in one place — bookings, staff, finances. Revenue is up 28% in 6 months.",
+      "Managing multiple hotels used to be overwhelming. Now everything is in one place — bookings, staff, and reports. We’ve improved efficiency across all properties and increased our revenue by 25% in just a few months.",
   },
   {
     name: "Sofia Reyes",
-    role: "General Manager · Grand Palace Group",
+    role: "General Manager • Grand Palace Group",
     avatar: "SR",
     variant: "grandeur",
     review:
-      "The analytics alone are worth every rupee. I get a live view of occupancy, revenue, and staff performance across all our branches before my morning coffee. Game changer.",
+      "The real-time analytics are a game changer. I can track occupancy, revenue, and staff performance instantly without relying on multiple tools. It’s made managing our hotel operations much easier.",
   },
   {
     name: "James Okafor",
-    role: "Property Manager · Oceanic Resorts",
+    role: "Property Manager • Oceanic Resorts",
     avatar: "JO",
     variant: "gold-dark",
     review:
-      "Role-based access means my branch managers only see what they need. The HR and payroll module saved us 40 hours a month. I can't imagine going back.",
+      "The role-based access feature keeps everything organized. My team only sees what they need, and the HR & payroll system alone saves us hours every week.",
   },
   {
     name: "Priya Nair",
-    role: "Director of Operations · Heritage Hotels",
+    role: "Director of Operations • Heritage Hotels",
     avatar: "PN",
     variant: "gold-light",
     review:
-      "Setup took less than a day. The CRM has helped us identify our top guests and offer personalized upgrades. Guest satisfaction scores have never been higher.",
+      "Setup was incredibly fast and simple. Within a day, we had everything running. The CRM helps us understand our guests better and offer personalized experiences — which has improved our guest satisfaction a lot.",
   },
 ];
 
@@ -410,31 +410,32 @@ const LandingPage = () => {
           <div className="lnd-hero-left">
             <div className="lnd-hero-badge">
               <span className="lnd-badge-dot" />
-              All-in-One Hotel Operating System
+              All-in-One Hotel Management System for Modern Hotels
             </div>
             <h1 className="lnd-hero-headline">
               Manage Multiple Hotels from One{" "}
-              <span className="lnd-gradient-text">Powerful Dashboard</span>
+              <span className="lnd-gradient-text">Smart Dashboard</span>
             </h1>
             <p className="lnd-hero-sub">
-              All-in-one platform to manage bookings, staff, revenue, and
-              operations across all your properties. Trusted by 500+ hotel
-              chains worldwide.
+              Simplify your hotel operations with one easy-to-use platform. Manage bookings, staff, revenue, and guest experiences across all your properties — all in real time, from a single dashboard.
+            </p>
+            <p className="lnd-hero-trust">
+              Trusted by growing hotels and property managers to run smoother, smarter, and more profitable operations.
             </p>
             <div className="lnd-hero-stats">
               <div className="lnd-hero-stat">
                 <span>500+</span>
-                <small>Hotels</small>
+                <small>Hotels Managed</small>
               </div>
               <div className="lnd-hero-stat-divider" />
               <div className="lnd-hero-stat">
-                <span>98%</span>
-                <small>Uptime</small>
+                <span>99.9%</span>
+                <small>Reliable Uptime</small>
               </div>
               <div className="lnd-hero-stat-divider" />
               <div className="lnd-hero-stat">
                 <span>40+</span>
-                <small>Countries</small>
+                <small>Countries Served</small>
               </div>
             </div>
             <div className="lnd-hero-actions">
@@ -449,11 +450,11 @@ const LandingPage = () => {
                 className="lnd-btn-outline lnd-btn-lg"
                 onClick={() => scrollTo("how-it-works")}
               >
-                Book Demo
+                Book a Live Demo
               </button>
             </div>
             <p className="lnd-hero-disclaimer">
-              No credit card required · 14-day free trial · Cancel anytime
+              No credit card required • 14-day free trial • Cancel anytime
             </p>
           </div>
 
@@ -491,11 +492,10 @@ const LandingPage = () => {
             <div className="lnd-section-badge">Features</div>
             <h2 className="lnd-section-title">
               Everything You Need to Run a{" "}
-              <span className="lnd-gradient-text">5-Star Operation</span>
+              <span className="lnd-gradient-text">Modern Hotel Business</span>
             </h2>
             <p className="lnd-section-sub">
-              From bookings to payroll, HotelOS covers every inch of your
-              hospitality business so you can focus on guest experience.
+              From bookings and guest management to staff, analytics, and multi-property control — our all-in-one hotel management system helps you run smoother operations and deliver better guest experiences every day.
             </p>
           </div>
 
@@ -517,7 +517,7 @@ const LandingPage = () => {
       </section>
 
       {/* ── ANALYTICS / KPI ── */}
-      <section
+      {/* <section
         className="lnd-section lnd-analytics-section"
         id="analytics"
         ref={kpiRef}
@@ -569,9 +569,9 @@ const LandingPage = () => {
               variant="gold-dark"
               isVisible={kpiVisible}
             />
-          </div>
+          </div> */}
 
-          {/* Revenue chart showcase */}
+          {/* Revenue chart showcase
           <div className="lnd-chart-showcase">
             <div className="lnd-chart-showcase-header">
               <div>
@@ -628,8 +628,8 @@ const LandingPage = () => {
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </div> */}
+      {/* </section> */}
 
       {/* ── HOW IT WORKS ── */}
       <section className="lnd-section" id="how-it-works">
@@ -637,12 +637,11 @@ const LandingPage = () => {
           <div className="lnd-section-header">
             <div className="lnd-section-badge">How It Works</div>
             <h2 className="lnd-section-title">
-              Up and Running in{" "}
-              <span className="lnd-gradient-text">Under an Hour</span>
+              Get Your Hotel Business{" "}
+              <span className="lnd-gradient-text">Running in Minutes</span>
             </h2>
             <p className="lnd-section-sub">
-              No complicated setup. No IT team required. Just three steps to
-              bring your entire hotel empire online.
+              No complicated setup. No technical skills needed. Our hotel management system helps you get started quickly and manage everything from one simple dashboard.
             </p>
           </div>
 
@@ -667,12 +666,11 @@ const LandingPage = () => {
           <div className="lnd-section-header">
             <div className="lnd-section-badge">Reviews</div>
             <h2 className="lnd-section-title">
-              Loved by Hotel Owners{" "}
-              <span className="lnd-gradient-text">Worldwide</span>
+              Trusted by{" "}
+              <span className="lnd-gradient-text">Hotel Owners & Managers Worldwide</span>
             </h2>
             <p className="lnd-section-sub">
-              Don't take our word for it — hear directly from the hoteliers
-              who've transformed their operations with HotelOS.
+              See how hotels are using our hotel management system to simplify operations, increase revenue, and deliver better guest experiences every day.
             </p>
           </div>
 
@@ -735,7 +733,7 @@ const LandingPage = () => {
           <div className="lnd-footer-brand">
             <div className="lnd-logo">
               <span className="lnd-logo-icon">🏨</span>
-              <span className="lnd-logo-text">LUXURY HMS</span>
+              <span className="lnd-logo-text">Hotel Desk</span>
             </div>
             <p className="lnd-footer-tagline">
               The all-in-one hotel management platform for modern hospitality
@@ -799,7 +797,7 @@ const LandingPage = () => {
                   Pricing
                 </button>
 
-              <a href="#analytics">Analytics</a>
+              {/* <a href="#analytics">Analytics</a> */}
               <a href="#how-it-works">How It Works</a>
             </div>
             <div className="lnd-footer-col">

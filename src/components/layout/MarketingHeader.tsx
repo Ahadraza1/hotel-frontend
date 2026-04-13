@@ -49,12 +49,18 @@ const MarketingHeader: React.FC = () => {
       <div className="lnd-nav-inner">
         <div className="lnd-logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           <span className="lnd-logo-icon">🏨</span>
-          <span className="lnd-logo-text">LUXURY HMS</span>
+          <span className="lnd-logo-text">HotelDesk</span>
         </div>
 
         <div className="lnd-nav-links">
+            <button 
+            onClick={() => navigate("/")}
+            className={location.pathname === "/" ? "lnd-contact-nav-active" : ""}
+          >
+            Home
+          </button>
           <button onClick={() => scrollTo("features")}>Features</button>
-          <button onClick={() => scrollTo("analytics")}>Analytics</button>
+          {/* <button onClick={() => scrollTo("analytics")}>Analytics</button> */}
           <button 
             onClick={() => navigate("/pricing")}
             className={location.pathname === "/pricing" ? "lnd-contact-nav-active" : ""}

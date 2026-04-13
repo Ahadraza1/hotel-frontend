@@ -682,7 +682,7 @@ const SubscriptionPlans = () => {
         key: payload.key,
         amount: payload.order.amount,
         currency: payload.order.currency,
-        name: "Luxury HMS",
+        name: "Hotel Desk",
         description: `${plan.name} ${billingCycle} subscription`,
         order_id: payload.order.id,
 
