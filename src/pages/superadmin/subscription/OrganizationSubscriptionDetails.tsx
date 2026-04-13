@@ -580,6 +580,7 @@ const OrganizationSubscriptionDetails = () => {
                   className="page-btn pagination-nav-btn"
                   onClick={() => setPage((current) => Math.max(1, current - 1))}
                   disabled={page === 1}
+                  title="Previous page"
                 />
                 <span className="pagination-page-indicator">
                   Page {page} of {totalPages}
@@ -589,6 +590,7 @@ const OrganizationSubscriptionDetails = () => {
                   className="page-btn pagination-nav-btn"
                   onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
                   disabled={page === totalPages}
+                  title="Next page"
                 />
               </div>
             </div>
