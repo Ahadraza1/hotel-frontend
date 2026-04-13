@@ -11,6 +11,11 @@ interface Room {
   roomType: string;
   pricePerNight: number;
   status: string;
+  pricingSummary?: {
+    totalPrice?: number;
+    averageNightlyRate?: number;
+    nights?: number;
+  };
 }
 
 const BOOKING_SOURCE_OPTIONS = ["Walk-in", "Pre-booking", "Online"] as const;
@@ -216,7 +221,7 @@ const AddBooking = () => {
     return Math.max(0, Math.round(diff / 86400000));
   })();
 
-  const estimatedTotal = selectedRoom ? nights * selectedRoom.pricePerNight : 0;
+  const estimatedTotal = selectedRoom?.pricingSummary?.totalPrice ?? (selectedRoom ? nights * selectedRoom.pricePerNight : 0);
 
   /* ── Submit ── */
   const handleSubmit = async (e: React.FormEvent) => {

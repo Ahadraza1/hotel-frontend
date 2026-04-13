@@ -1,0 +1,268 @@
+.rp-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.rp-page-header,
+.rp-panel-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.rp-page-header {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: end;
+}
+
+.rp-title-wrap,
+.rp-header-actions,
+.rp-card-header,
+.rp-form-grid,
+.rp-bulk-grid,
+.rp-bulk-actions,
+.rp-room-type-cell,
+.rp-type-chip,
+.rp-date-field,
+.rp-range-toggle {
+  display: flex;
+}
+
+.rp-title-wrap,
+.rp-card-header,
+.rp-room-type-cell,
+.rp-type-chip,
+.rp-date-field {
+  flex-direction: column;
+}
+
+.rp-room-type-cell {
+  white-space: normal;
+}
+
+.rp-header-actions,
+.rp-form-grid,
+.rp-bulk-grid,
+.rp-bulk-actions,
+.rp-range-toggle {
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rp-header-actions {
+  justify-content: flex-end;
+  align-items: end;
+}
+
+.rp-date-field span,
+.rp-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.35rem;
+}
+
+.rp-panel-grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.rp-card,
+.rp-grid-card {
+  padding: 1.25rem;
+}
+
+.rp-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.rp-card-subtitle {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+}
+
+.rp-field {
+  flex: 1 1 180px;
+}
+
+.rp-add-type-btn {
+  align-self: end;
+}
+
+.rp-cancel-type-btn {
+  align-self: end;
+}
+
+.rp-type-chips {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.rp-type-chip {
+  gap: 0.15rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 14px;
+  background: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
+}
+
+.rp-type-chip-main,
+.rp-type-chip-actions {
+  display: flex;
+  align-items: center;
+}
+
+.rp-type-chip-main {
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rp-type-chip-actions {
+  gap: 0.35rem;
+}
+
+.rp-chip-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border));
+  background: white;
+  color: hsl(var(--muted-foreground));
+}
+
+.rp-chip-icon-btn:hover {
+  color: hsl(var(--foreground));
+}
+
+.rp-chip-icon-btn-danger:hover {
+  color: #b91c1c;
+}
+
+.rp-type-chip small,
+.rp-room-type-cell small,
+.rp-cell-hint,
+.rp-table th small {
+  color: hsl(var(--muted-foreground));
+}
+
+.rp-cell-hint {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.rp-price-input-wrap {
+  position: relative;
+}
+
+.rp-price-input-wrap svg {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: hsl(var(--muted-foreground));
+}
+
+.rp-price-input-wrap .luxury-input {
+  padding-left: 2.2rem;
+}
+
+.rp-grid-card {
+  overflow: hidden;
+}
+
+.rp-table-wrap {
+  overflow: auto;
+}
+
+.rp-table {
+  width: 100%;
+  min-width: max-content;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.rp-table th,
+.rp-table td {
+  padding: 1rem 0.85rem;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  text-align: left;
+  vertical-align: top;
+  min-width: 120px;
+  white-space: nowrap;
+}
+
+.rp-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: hsl(var(--secondary));
+  font-weight: 600;
+}
+
+.rp-sticky-left {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  min-width: 220px;
+  background: hsl(var(--background));
+  border-right: 1px solid hsl(var(--border));
+}
+
+.rp-table th.rp-sticky-left {
+  background: hsl(var(--secondary));
+  z-index: 4;
+}
+
+.rp-cell-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 0 0.7rem;
+  background: white;
+}
+
+.rp-cell-dirty {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+.rp-currency {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.85rem;
+}
+
+.rp-price-cell {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.75rem 0.35rem;
+  outline: none;
+}
+
+.rp-empty-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+}
+
+@media (max-width: 768px) {
+  .rp-header-actions {
+    justify-content: stretch;
+  }
+
+  .rp-header-actions > * {
+    width: 100%;
+  }
+
+  .rp-bulk-actions button {
+    flex: 1 1 100%;
+  }
+}

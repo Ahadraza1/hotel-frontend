@@ -50,6 +50,7 @@ import BranchOverview from "./pages/workspace/BranchOverview";
 import Rooms from "./pages/workspace/rooms/Rooms";
 import AddRoom from "./pages/workspace/rooms/AddRoom";
 import EditRoom from "./pages/workspace/rooms/EditRoom";
+import RoomPrice from "./pages/workspace/rooms/RoomPrice";
 import Bookings from "./pages/workspace/bookings/Bookings";
 import AddBooking from "./pages/workspace/bookings/AddBooking";
 import EditBooking from "./pages/workspace/bookings/EditBooking";
@@ -365,6 +366,15 @@ const App = () => {
                             element={
                               <ProtectedRoute permission="ACCESS_ROOMS">
                                 {withModuleErrorBoundary("Edit Room", <EditRoom />)}
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          <Route
+                            path="room-price"
+                            element={
+                              <ProtectedRoute permission="ACCESS_ROOMS">
+                                {withModuleErrorBoundary("Room Price", <RoomPrice />)}
                               </ProtectedRoute>
                             }
                           />

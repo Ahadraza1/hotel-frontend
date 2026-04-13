@@ -19,6 +19,7 @@
 @import './styles/pos.css';
 @import './styles/kitchen.css';
 @import './styles/reports.css';
+@import './styles/room-pricing.css';
 
 /* Any lingering project-specific global styles can go here */
 #root {

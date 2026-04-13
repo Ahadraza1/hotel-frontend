@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, BedDouble, Save } from "lucide-react";
 import api from "@/api/axios";
 import { useToast } from "@/components/confirm/ConfirmProvider";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 
-const roomTypes     = ["STANDARD", "DELUXE", "SUITE", "PRESIDENTIAL"];
+interface RoomTypeOption {
+  _id: string;
+  name: string;
+}
+
 const floorOptions  = Array.from({ length: 20 }, (_, i) => i + 1);
 const bedTypeOptions = [
   { label: "King Size", value: "King" },
@@ -29,13 +33,17 @@ const AddRoom = () => {
   const navigate     = useNavigate();
   const toast = useToast();
   const { formatCurrency } = useSystemSettings();
+  const todayDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const [saving, setSaving] = useState(false);
+  const [loadingRoomTypes, setLoadingRoomTypes] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [roomTypes, setRoomTypes] = useState<RoomTypeOption[]>([]);
+  const [todayPrices, setTodayPrices] = useState<Record<string, number>>({});
 
   const [form, setForm] = useState({
     roomNumber:    "",
-    roomType:      "STANDARD",
+    roomType:      "",
     pricePerNight: "",
     capacity:      "2",
     floor:         "1",
@@ -45,6 +53,53 @@ const AddRoom = () => {
     amenities:     [] as string[],
     description:   "",
   });
+
+  useEffect(() => {
+    const loadRoomTypeData = async () => {
+      try {
+        setLoadingRoomTypes(true);
+        const [roomTypeRes, priceRes] = await Promise.all([
+          api.get<{ data: RoomTypeOption[] }>("/room-types"),
+          api.get<{ data: Array<{ roomTypeId: string; price: number }> }>("/room-prices", {
+            params: { startDate: todayDate, endDate: todayDate },
+          }),
+        ]);
+
+        const fetchedRoomTypes = roomTypeRes.data.data || [];
+        const priceMap = (priceRes.data.data || []).reduce<Record<string, number>>(
+          (acc, item) => {
+            acc[item.roomTypeId] = Number(item.price || 0);
+            return acc;
+          },
+          {},
+        );
+
+        setRoomTypes(fetchedRoomTypes);
+        setTodayPrices(priceMap);
+        setForm((prev) => {
+          const roomType = prev.roomType || fetchedRoomTypes[0]?.name || "";
+          const selectedType = fetchedRoomTypes.find((item) => item.name === roomType);
+          const derivedPrice =
+            selectedType && priceMap[selectedType._id] !== undefined
+              ? String(priceMap[selectedType._id])
+              : prev.pricePerNight;
+
+          return {
+            ...prev,
+            roomType,
+            pricePerNight: derivedPrice,
+          };
+        });
+      } catch (error) {
+        console.error("Failed to load room types", error);
+        toast.error("Failed to load room types.");
+      } finally {
+        setLoadingRoomTypes(false);
+      }
+    };
+
+    loadRoomTypeData();
+  }, [todayDate, toast]);
 
   const validateField = (name: string, value: string | string[]) => {
     if (name === "description") return "";
@@ -58,7 +113,14 @@ const AddRoom = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    const nextRoomType = name === "roomType" ? roomTypes.find((item) => item.name === value) : null;
+    setForm({
+      ...form,
+      [name]: value,
+      ...(name === "roomType" && nextRoomType && todayPrices[nextRoomType._id] !== undefined
+        ? { pricePerNight: String(todayPrices[nextRoomType._id]) }
+        : {}),
+    });
     setFieldErrors((prev) => {
       const next = { ...prev };
       const nextError = validateField(name, value);
@@ -136,6 +198,7 @@ const AddRoom = () => {
         branchId,
         roomNumber:    form.roomNumber.trim(),
         roomType:      form.roomType,
+        roomTypeId: roomTypes.find((item) => item.name === form.roomType)?._id,
         pricePerNight: Number(form.pricePerNight),
         capacity:      Number(form.capacity),
         floor:         Number(form.floor),
@@ -226,12 +289,19 @@ const AddRoom = () => {
                   onBlur={handleBlur}
                   className="luxury-input"
                   style={fieldErrors.roomType ? { borderColor: "#dc2626" } : undefined}
+                  disabled={loadingRoomTypes || roomTypes.length === 0}
                 >
-                  {roomTypes.map((t) => <option key={t}>{t}</option>)}
+                  {!roomTypes.length ? <option value="">No room types available</option> : null}
+                  {roomTypes.map((t) => <option key={t._id} value={t.name}>{t.name}</option>)}
                 </select>
                 {fieldErrors.roomType ? (
                   <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
                     {fieldErrors.roomType}
+                  </span>
+                ) : null}
+                {!loadingRoomTypes && roomTypes.length === 0 ? (
+                  <span style={{ color: "#92400e", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>
+                    Create room types from the Room Price page first.
                   </span>
                 ) : null}
               </div>
@@ -258,6 +328,9 @@ const AddRoom = () => {
                     {fieldErrors.pricePerNight}
                   </span>
                 ) : null}
+                <span style={{ color: "#64748b", display: "block", fontSize: "0.8rem", marginTop: "0.35rem" }}>
+                  Auto-filled from today's room-type rate when available.
+                </span>
               </div>
 
               <div className="ar-field">

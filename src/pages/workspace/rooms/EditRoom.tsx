@@ -6,7 +6,11 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/components/confirm/ConfirmProvider";
 import { useSystemSettings } from "@/contexts/SystemSettingsContext";
 
-const roomTypes = ["STANDARD", "DELUXE", "SUITE", "PRESIDENTIAL"];
+interface RoomTypeOption {
+  _id: string;
+  name: string;
+}
+
 const bedTypeOptions = [
   { label: "King Size", value: "King" },
   { label: "Queen Size", value: "Queen" },
@@ -30,8 +34,11 @@ const EditRoom: React.FC = () => {
   const { branchId } = useParams();
   const toast = useToast();
   const { currencySymbol } = useSystemSettings();
+  const todayDate = new Date().toISOString().slice(0, 10);
   
   const room = location.state?.room as Room;
+  const [roomTypes, setRoomTypes] = useState<RoomTypeOption[]>([]);
+  const [todayPrices, setTodayPrices] = useState<Record<string, number>>({});
 
   const [editForm, setEditForm] = useState({
     roomNumber:    "",
@@ -44,6 +51,31 @@ const EditRoom: React.FC = () => {
     bedType:       "",
     amenities:     [] as string[],
   });
+
+  useEffect(() => {
+    const loadRoomTypeData = async () => {
+      try {
+        const [roomTypeRes, priceRes] = await Promise.all([
+          api.get<{ data: RoomTypeOption[] }>("/room-types"),
+          api.get<{ data: Array<{ roomTypeId: string; price: number }> }>("/room-prices", {
+            params: { startDate: todayDate, endDate: todayDate },
+          }),
+        ]);
+
+        setRoomTypes(roomTypeRes.data.data || []);
+        setTodayPrices(
+          (priceRes.data.data || []).reduce<Record<string, number>>((acc, item) => {
+            acc[item.roomTypeId] = Number(item.price || 0);
+            return acc;
+          }, {}),
+        );
+      } catch (error) {
+        console.error("Failed to load room types", error);
+      }
+    };
+
+    loadRoomTypeData();
+  }, [todayDate]);
 
   useEffect(() => {
     if (!room) {
@@ -68,7 +100,16 @@ const EditRoom: React.FC = () => {
   if (!room) return null;
 
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const matchedRoomType = name === "roomType" ? roomTypes.find((item) => item.name === value) : null;
+
+    setEditForm({
+      ...editForm,
+      [name]: value,
+      ...(name === "roomType" && matchedRoomType && todayPrices[matchedRoomType._id] !== undefined
+        ? { pricePerNight: String(todayPrices[matchedRoomType._id]) }
+        : {}),
+    });
   };
 
   const handleAmenityChange = (amenity: string) => {
@@ -105,6 +146,7 @@ const EditRoom: React.FC = () => {
       await api.put(`/rooms/${room._id}`, {
         roomNumber: editForm.roomNumber,
         roomType: editForm.roomType,
+        roomTypeId: roomTypes.find((item) => item.name === editForm.roomType)?._id,
         pricePerNight: Number(editForm.pricePerNight),
         capacity:      Number(editForm.capacity),
         floor:         Number(editForm.floor),
@@ -184,7 +226,7 @@ const EditRoom: React.FC = () => {
                 onChange={handleEditInputChange}
                 className="luxury-input"
               >
-                {roomTypes.map((t) => <option key={t}>{t}</option>)}
+                {roomTypes.map((t) => <option key={t._id} value={t.name}>{t.name}</option>)}
               </select>
             </div>
 

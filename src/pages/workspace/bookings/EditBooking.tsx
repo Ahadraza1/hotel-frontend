@@ -12,6 +12,11 @@ interface Room {
   roomType: string;
   pricePerNight: number;
   status: string;
+  pricingSummary?: {
+    totalPrice?: number;
+    averageNightlyRate?: number;
+    nights?: number;
+  };
 }
 
 interface GuestRow {
@@ -131,12 +136,19 @@ const EditBooking = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [roomsRes, bookingRes] = await Promise.all([
-          api.get<{ data: Room[] }>("/rooms", { params: { branchId } }),
-          api.get<{ data: BookingDetails }>(`/bookings/${bookingId}`),
-        ]);
-
+        const bookingRes = await api.get<{ data: BookingDetails }>(`/bookings/${bookingId}`);
         const booking = bookingRes.data.data;
+        const [roomsRes, allRoomsRes] = await Promise.all([
+          api.get<{ data: Room[] }>("/rooms", {
+            params: {
+              branchId,
+              checkInDate: booking.checkInDate ? new Date(booking.checkInDate).toISOString().slice(0, 10) : "",
+              checkOutDate: booking.checkOutDate ? new Date(booking.checkOutDate).toISOString().slice(0, 10) : "",
+              totalGuests: booking.totalGuests || 1,
+            },
+          }),
+          api.get<{ data: Room[] }>("/rooms", { params: { branchId } }),
+        ]);
         const phoneData = splitPhoneNumber(booking.guestPhone || "");
         const guestRows = Array.from(
           { length: Math.max(0, (booking.totalGuests || 1) - 1) },
@@ -149,7 +161,16 @@ const EditBooking = () => {
           }),
         );
 
-        setRooms(roomsRes.data.data || []);
+        const availableRooms = roomsRes.data.data || [];
+        const currentRoom =
+          availableRooms.find((room) => room._id === booking.roomId) ||
+          (allRoomsRes.data.data || []).find((room) => room._id === booking.roomId);
+
+        setRooms(
+          currentRoom && !availableRooms.some((room) => room._id === currentRoom._id)
+            ? [currentRoom, ...availableRooms]
+            : availableRooms,
+        );
         setGuests(guestRows);
         setExistingMainGuestIdentity(
           booking.identityProof?.url || null,
@@ -183,6 +204,42 @@ const EditBooking = () => {
 
     loadData();
   }, [branchId, bookingId, navigate, toast]);
+
+  useEffect(() => {
+    if (!branchId || !form.checkInDate || !form.checkOutDate) return;
+
+    const refreshRooms = async () => {
+      try {
+        const [availableRes, allRoomsRes] = await Promise.all([
+          api.get<{ data: Room[] }>("/rooms", {
+            params: {
+              branchId,
+              checkInDate: form.checkInDate,
+              checkOutDate: form.checkOutDate,
+              totalGuests: form.totalGuests,
+            },
+          }),
+          api.get<{ data: Room[] }>("/rooms", { params: { branchId } }),
+        ]);
+
+        const availableRooms = availableRes.data.data || [];
+        const selectedExistingRoom =
+          availableRooms.find((room) => room._id === form.roomId) ||
+          (allRoomsRes.data.data || []).find((room) => room._id === form.roomId);
+
+        setRooms(
+          selectedExistingRoom &&
+            !availableRooms.some((room) => room._id === selectedExistingRoom._id)
+            ? [selectedExistingRoom, ...availableRooms]
+            : availableRooms,
+        );
+      } catch (error) {
+        console.error("Failed to refresh rooms", error);
+      }
+    };
+
+    refreshRooms();
+  }, [branchId, form.checkInDate, form.checkOutDate, form.totalGuests, form.roomId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -313,7 +370,7 @@ const EditBooking = () => {
     return Math.max(0, Math.round(diff / 86400000));
   }, [form.checkInDate, form.checkOutDate]);
 
-  const estimatedTotal = selectedRoom ? nights * selectedRoom.pricePerNight : 0;
+  const estimatedTotal = selectedRoom?.pricingSummary?.totalPrice ?? (selectedRoom ? nights * selectedRoom.pricePerNight : 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

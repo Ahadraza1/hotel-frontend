@@ -125,12 +125,18 @@ const workspaceMenuGroups: MenuGroup[] = [
     items: [{ title: "Branch Overview", route: "", icon: Home, permissionKey: null }],
   },
   {
-    title: "Hotel",
+    title: "Rooms Management",
     items: [
       {
         title: "Rooms",
         route: "rooms",
         icon: Hotel,
+        permissionKey: "ACCESS_ROOMS",
+      },
+      {
+        title: "Room Price",
+        route: "room-price",
+        icon: DollarSign,
         permissionKey: "ACCESS_ROOMS",
       },
       {
