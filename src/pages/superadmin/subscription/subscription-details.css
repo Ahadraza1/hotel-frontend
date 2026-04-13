@@ -1,0 +1,428 @@
+.hms-subscription-details-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hms-subscription-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: flex-start;
+  background:
+    radial-gradient(circle at top right, hsl(var(--primary) / 0.14), transparent 34%),
+    linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--secondary) / 0.45) 100%);
+  box-shadow: 0 20px 48px hsl(220 20% 8% / 0.06);
+}
+
+.hms-subscription-eyebrow {
+  display: inline-flex;
+  margin-bottom: 0.85rem;
+  color: hsl(var(--primary));
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hms-subscription-hero-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.hms-subscription-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.hms-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.hms-kpi-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 12.5rem;
+  padding: 1.35rem;
+  border: 1px solid hsl(var(--border) / 0.72);
+  border-color: hsl(var(--border) / 0.7);
+  box-shadow:
+    0 14px 34px hsl(220 20% 8% / 0.06),
+    inset 0 1px 0 hsl(0 0% 100% / 0.65);
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    border-color 0.24s ease;
+}
+
+.hms-kpi-card:hover {
+  transform: translateY(-3px);
+  border-color: hsl(var(--primary) / 0.22);
+  box-shadow:
+    0 22px 44px hsl(220 20% 8% / 0.09),
+    inset 0 1px 0 hsl(0 0% 100% / 0.72);
+}
+
+.hms-kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.92), hsl(var(--accent) / 0.62));
+  opacity: 0.95;
+}
+
+.hms-kpi-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -8px -14px auto;
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.11) 0%, transparent 72%);
+  pointer-events: none;
+}
+
+.hms-kpi-card-blue {
+  background:
+    linear-gradient(160deg, hsl(var(--card)) 0%, hsl(var(--primary) / 0.075) 100%);
+}
+
+.hms-kpi-card-green {
+  background:
+    linear-gradient(160deg, hsl(var(--card)) 0%, hsl(var(--premium-green) / 0.08) 100%);
+}
+
+.hms-kpi-card-soft {
+  background:
+    linear-gradient(160deg, hsl(var(--card)) 0%, hsl(var(--secondary) / 0.92) 100%);
+}
+
+.hms-kpi-card-gray {
+  background:
+    linear-gradient(160deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.82) 100%);
+}
+
+.hms-kpi-card-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hms-kpi-label {
+  max-width: 75%;
+  line-height: 1.35;
+}
+
+.hms-kpi-icon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.85rem;
+  height: 2.85rem;
+  flex-shrink: 0;
+  border-radius: 16px;
+  color: hsl(var(--primary));
+  background:
+    linear-gradient(180deg, hsl(var(--card) / 0.96) 0%, hsl(var(--background) / 0.88) 100%);
+  border: 1px solid hsl(var(--border) / 0.95);
+  box-shadow:
+    0 10px 24px hsl(220 20% 8% / 0.08),
+    inset 0 1px 0 hsl(0 0% 100% / 0.7);
+}
+
+.hms-kpi-value {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  max-width: calc(100% - 0.5rem);
+  text-wrap: balance;
+}
+
+.hms-kpi-card-bottom {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  padding-top: 0.9rem;
+  border-top: 1px solid hsl(var(--border) / 0.72);
+}
+
+.hms-kpi-meta {
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: hsl(var(--muted-foreground));
+}
+
+.hms-subscription-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.hms-info-card,
+.hms-payments-card {
+  box-shadow: 0 16px 36px hsl(220 20% 8% / 0.05);
+}
+
+.hms-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.hms-card-heading h2 {
+  font-size: 1.1rem;
+  color: hsl(var(--foreground));
+}
+
+.hms-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.hms-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--secondary) / 0.5) 100%);
+  border: 1px solid hsl(var(--border) / 0.7);
+}
+
+.hms-detail-item span {
+  font-size: 0.72rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hms-detail-item strong {
+  font-size: 0.95rem;
+  color: hsl(var(--foreground));
+  line-height: 1.45;
+}
+
+.hms-payments-heading {
+  align-items: flex-end;
+}
+
+.hms-search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: min(100%, 18rem);
+  padding: 0.8rem 0.95rem;
+  border-radius: 14px;
+  border: 1px solid hsl(var(--border) / 0.9);
+  background: hsl(var(--background));
+}
+
+.hms-search-box input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.hms-table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.hms-payments-table th:first-child,
+.hms-payments-table td:first-child {
+  width: 72px;
+  min-width: 72px;
+}
+
+.hms-payments-table td {
+  white-space: nowrap;
+}
+
+.hms-payments-table th:nth-child(6),
+.hms-payments-table td:nth-child(6) {
+  min-width: 104px;
+}
+
+.hms-action-btn {
+  min-height: 2.3rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.78rem;
+}
+
+.hms-serial-cell {
+  color: hsl(var(--muted-foreground));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.hms-invoice-id-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.hms-invoice-id-cell span {
+  font-weight: 600;
+}
+
+.hms-invoice-id-cell small {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.hms-empty-state,
+.hms-subscription-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  min-height: 16rem;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+}
+
+.hms-subscription-state-error {
+  min-height: 12rem;
+}
+
+.hms-empty-illustration {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.25rem;
+  height: 5.25rem;
+  border-radius: 1.5rem;
+  color: hsl(var(--primary));
+  background:
+    radial-gradient(circle at top, hsl(var(--primary) / 0.16), transparent 60%),
+    hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
+}
+
+.hms-spin {
+  animation: hms-spin 0.9s linear infinite;
+}
+
+@keyframes hms-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1400px) {
+  .hms-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .hms-subscription-hero,
+  .hms-subscription-info-grid {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .hms-subscription-hero-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .hms-kpi-grid,
+  .hms-subscription-info-grid,
+  .hms-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hms-card-heading,
+  .hms-payments-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hms-search-box {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .hms-payments-card .table-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hms-payments-table {
+    min-width: 720px;
+  }
+
+  .hms-payments-table th,
+  .hms-payments-table td {
+    padding: 0.75rem 0.6rem;
+  }
+
+  .hms-payments-table th {
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+  }
+
+  .hms-payments-table td {
+    font-size: 0.78rem;
+  }
+
+  .hms-payments-table .luxury-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.28rem 0.62rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.03em;
+  }
+
+  .hms-payments-table .hms-invoice-id-cell small {
+    font-size: 0.66rem;
+  }
+
+  .hms-table-actions {
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+  }
+
+  .hms-action-btn {
+    min-height: 2rem;
+    padding: 0.38rem 0.65rem;
+    font-size: 0.68rem;
+  }
+
+  .hms-subscription-hero-actions .luxury-btn {
+    width: 100%;
+  }
+}

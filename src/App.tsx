@@ -19,6 +19,7 @@ import BranchManagement from "./pages/superadmin/branch/BranchManagement";
 import AddBranch from "@/pages/superadmin/branch/AddBranch";
 import EditBranch from "./pages/superadmin/branch/EditBranch";
 import SubscriptionPlans from "./pages/superadmin/subscription/SubscriptionPlans";
+import OrganizationSubscriptionDetails from "./pages/superadmin/subscription/OrganizationSubscriptionDetails";
 import UsersRoles from "./pages/superadmin/UsersRoles";
 import RolePermissionEditor from "./pages/superadmin/RolePermissionEditor";
 import GlobalFinance from "./pages/superadmin/financialReport";
@@ -208,6 +209,19 @@ const App = () => {
                               allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
                             >
                               {withModuleErrorBoundary("Subscription Plans", <SubscriptionPlans />)}
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/subscriptions/:organizationId"
+                          element={
+                            <ProtectedRoute
+                              allowedRoles={["SUPER_ADMIN", "CORPORATE_ADMIN"]}
+                            >
+                              {withModuleErrorBoundary(
+                                "Organization Subscription Details",
+                                <OrganizationSubscriptionDetails />,
+                              )}
                             </ProtectedRoute>
                           }
                         />

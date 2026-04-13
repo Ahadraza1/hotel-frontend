@@ -158,6 +158,13 @@ export const getPageTitle = (
     };
   }
 
+  if (pathname.startsWith("/subscriptions/")) {
+    return {
+      title: "Organization Subscription Details",
+      subtitle: "Review plan health, billing, and invoices",
+    };
+  }
+
   if (pathname.startsWith("/branches/edit/")) {
     return {
        title: "Edit Branch",

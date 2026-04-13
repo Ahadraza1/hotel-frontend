@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   Building2,
@@ -7,6 +8,7 @@ import {
   Check,
   CreditCard,
   Crown,
+  Eye,
   Layers3,
   MoreHorizontal,
   Pencil,
@@ -200,6 +202,7 @@ const SubscriptionPlans = () => {
   const confirm = useConfirm();
   const { formatCurrency } = useSystemSettings();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1056,6 +1059,30 @@ const SubscriptionPlans = () => {
                               }}
                               onClick={(event) => event.stopPropagation()}
                             >
+                              <button
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "12px",
+                                  padding: "11px 18px",
+                                  fontSize: "14px",
+                                  fontWeight: 500,
+                                  color: "hsl(var(--foreground))",
+                                  background: "transparent",
+                                  border: "none",
+                                  width: "100%",
+                                  cursor: "pointer",
+                                  textAlign: "left",
+                                }}
+                                onClick={() => {
+                                  setOpenOrganizationActionId(null);
+                                  navigate(`/subscriptions/${organization.organizationId}`);
+                                }}
+                              >
+                                <Eye size={16} />
+                                View Details
+                              </button>
+
                               <button
                                 style={{
                                   display: "flex",
