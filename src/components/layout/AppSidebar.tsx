@@ -192,6 +192,17 @@ const workspaceMenuGroups: MenuGroup[] = [
     ],
   },
   {
+    title: "Analytics",
+    items: [
+      {
+        title: "Reports",
+        route: "reports",
+        icon: BarChart3,
+        permissionKey: null,
+      },
+    ],
+  },
+  {
     title: "Invoices",
     items: [
       {

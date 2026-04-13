@@ -177,6 +177,7 @@ const Analytics = () => {
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(Number(e.target.value))}
             className="year-filter"
+            aria-label="Select month"
           >
             {monthLabels.map((label, index) => (
               <option key={label} value={index}>
@@ -188,6 +189,7 @@ const Analytics = () => {
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
             className="year-filter"
+            aria-label="Select year"
           >
             {years.map((optionYear) => (
               <option key={optionYear} value={optionYear}>
@@ -205,6 +207,7 @@ const Analytics = () => {
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
             className="year-filter"
+            aria-label="Select year"
           >
             {years.map((optionYear) => (
               <option key={optionYear} value={optionYear}>

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { BranchWorkspaceProvider } from "@/contexts/BranchWorkspaceContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -70,6 +70,7 @@ import HR from "./pages/workspace/hr/HR";
 import AddStaff from "./pages/workspace/hr/AddStaff";
 import Finance from "./pages/workspace/Finance";
 import BranchSettings from "./pages/workspace/BranchSettings";
+import Reports from "./pages/workspace/Reports";
 import Notifications from "./pages/Notifications";
 import PlatformUsers from "./pages/platform/PlatformUsers";
 
@@ -78,6 +79,11 @@ const queryClient = new QueryClient();
 const withModuleErrorBoundary = (moduleName: string, element: ReactNode) => (
   <ModuleErrorBoundary moduleName={moduleName}>{element}</ModuleErrorBoundary>
 );
+
+const BranchReportsAlias = () => {
+  const { branchId } = useParams();
+  return <Navigate to={`/workspace/${branchId}/reports`} replace />;
+};
 
 const App = () => {
   const handleLogin = () => {};
@@ -571,6 +577,15 @@ const App = () => {
                           />
 
                           <Route
+                            path="reports"
+                            element={
+                              <ProtectedRoute>
+                                {withModuleErrorBoundary("Reports", <Reports />)}
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          <Route
                             path="settings"
                             element={
                               <ProtectedRoute permission="ACCESS_BRANCH_SETTINGS">
@@ -588,6 +603,15 @@ const App = () => {
                             }
                           />
                         </Route>
+
+                        <Route
+                          path="/branch/:branchId/reports"
+                          element={
+                            <ProtectedRoute>
+                              <BranchReportsAlias />
+                            </ProtectedRoute>
+                          }
+                        />
 
                         <Route
                           path="/profile"

@@ -25,6 +25,7 @@ interface SubscriptionAccess {
   activePlan?: {
     name: string;
     isFreeTrialPlan?: boolean;
+    features?: string[];
   } | null;
 }
 

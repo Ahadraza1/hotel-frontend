@@ -414,7 +414,7 @@
 
   .luxury-table th,
   .luxury-table td {
-    hsl(210 20% 98%)-space: nowrap;
+    white-space: nowrap;
   }
 
   .luxury-table th {

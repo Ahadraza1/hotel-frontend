@@ -18,6 +18,7 @@
 @import './styles/crm.css';
 @import './styles/pos.css';
 @import './styles/kitchen.css';
+@import './styles/reports.css';
 
 /* Any lingering project-specific global styles can go here */
 #root {
