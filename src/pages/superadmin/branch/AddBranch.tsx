@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { City, Country, State } from "country-state-city";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import {
   ArrowLeft,
   Building2,
@@ -10,7 +12,6 @@ import {
   Clock,
   User,
   Mail,
-  Phone,
 } from "lucide-react";
 import api from "@/api/axios";
 import { useAuth } from "@/contexts/AuthContext";
@@ -218,6 +219,37 @@ const AddBranch = () => {
 
       if (nextError) next[name] = nextError;
       else delete next[name];
+
+      return next;
+    });
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const formattedValue = value ? `+${value}` : "";
+
+    setForm((prev) => ({
+      ...prev,
+      managerPhone: formattedValue,
+    }));
+
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      const nextError = getFieldError("managerPhone", formattedValue);
+
+      if (nextError && prev.managerPhone) next.managerPhone = nextError;
+      else delete next.managerPhone;
+
+      return next;
+    });
+  };
+
+  const handlePhoneBlur = () => {
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      const nextError = getFieldError("managerPhone", form.managerPhone);
+
+      if (nextError) next.managerPhone = nextError;
+      else delete next.managerPhone;
 
       return next;
     });
@@ -594,16 +626,27 @@ const AddBranch = () => {
             <label htmlFor="manager-phone" className="add-branch-label">
               Manager Phone
             </label>
-            <div className="add-branch-input-wrap">
-              <Phone className="add-branch-field-icon" />
-              <input
-                id="manager-phone"
-                name="managerPhone"
-                value={form.managerPhone}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className="luxury-input add-branch-input-with-icon"
-                placeholder="+91 99999 00000"
+            <div className="add-branch-phone-wrap">
+              <PhoneInput
+                country="in"
+                value={form.managerPhone.replace(/^\+/, "")}
+                onChange={handlePhoneChange}
+                onBlur={handlePhoneBlur}
+                inputProps={{
+                  id: "manager-phone",
+                  name: "managerPhone",
+                }}
+                enableSearch
+                disableSearchIcon
+                countryCodeEditable={false}
+                specialLabel=""
+                inputClass="add-branch-phone-input"
+                buttonClass="add-branch-phone-button"
+                dropdownClass="add-branch-phone-dropdown"
+                searchClass="add-branch-phone-search"
+                isValid={(value) =>
+                  !value || validatePhoneField(`+${value}`) === ""
+                }
               />
             </div>
             {fieldErrors.managerPhone ? (

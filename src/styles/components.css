@@ -2027,6 +2027,89 @@
   padding-left: 2.25rem !important;
 }
 
+.add-branch-phone-wrap {
+  position: relative;
+}
+
+.add-branch-phone-wrap .react-tel-input {
+  width: 100%;
+}
+
+.add-branch-phone-wrap .form-control.add-branch-phone-input {
+  width: 100%;
+  height: auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.85rem;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  padding: 0.72rem 1rem 0.72rem 4rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  box-shadow: var(--shadow-xs);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.add-branch-phone-wrap .form-control.add-branch-phone-input:focus {
+  border-color: hsl(var(--primary) / 0.45);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
+  background: hsl(var(--card));
+}
+
+.add-branch-phone-wrap .flag-dropdown.add-branch-phone-button {
+  border: 1px solid hsl(var(--border));
+  border-right: none;
+  border-radius: 0.85rem 0 0 0.85rem;
+  background: hsl(var(--muted) / 0.35);
+}
+
+.add-branch-phone-wrap .selected-flag {
+  border-radius: 0.85rem 0 0 0.85rem;
+  background: transparent !important;
+}
+
+.add-branch-phone-wrap .selected-flag:hover,
+.add-branch-phone-wrap .selected-flag:focus,
+.add-branch-phone-wrap .flag-dropdown.open,
+.add-branch-phone-wrap .flag-dropdown.open .selected-flag {
+  background: hsl(var(--primary) / 0.08) !important;
+}
+
+.add-branch-phone-wrap .country-list.add-branch-phone-dropdown {
+  background: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.85rem;
+  box-shadow: var(--shadow-popover);
+  color: hsl(var(--popover-foreground));
+}
+
+.add-branch-phone-wrap .country-list .country,
+.add-branch-phone-wrap .country-list .search {
+  background: transparent;
+  color: hsl(var(--popover-foreground));
+}
+
+.add-branch-phone-wrap .country-list .country:hover,
+.add-branch-phone-wrap .country-list .country.highlight {
+  background: hsl(var(--primary) / 0.1);
+}
+
+.add-branch-phone-wrap .search-box.add-branch-phone-search {
+  width: calc(100% - 1rem);
+  margin: 0.5rem;
+  border-radius: 0.65rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.add-branch-phone-wrap .search-box.add-branch-phone-search:focus {
+  outline: none;
+  border-color: hsl(var(--primary) / 0.45);
+}
+
 /*  Gold divider between sections  */
 .add-branch-divider {
   height: 1px;
