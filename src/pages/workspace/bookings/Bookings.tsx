@@ -29,6 +29,8 @@ interface Booking {
   guestName: string;
   totalGuests?: number;
   bookingSource?: string;
+  sourceType?: "direct" | "ota";
+  sourceName?: string | null;
   identityProof?: {
     url?: string | null;
     fileName?: string | null;
@@ -56,6 +58,11 @@ const formatBookingStatus = (status?: string) => {
   return status?.replace("_", " ") || "-";
 };
 
+const getBookingSourceLabel = (booking: Booking) =>
+  booking.sourceType === "ota"
+    ? booking.sourceName || "OTA"
+    : "Direct";
+
 const getDocumentUrl = (documentPath?: string | null) => {
   if (!documentPath) return null;
 
@@ -68,7 +75,9 @@ const getDocumentUrl = (documentPath?: string | null) => {
     ? documentPath
     : documentPath.startsWith("/uploads/")
       ? documentPath
-      : `/uploads/guest-identities/${documentPath.replace(/^\/+/, "")}`;
+      : documentPath.includes("guest-identities/")
+        ? `/uploads/${documentPath.replace(/^\/+/, "")}`
+        : `/uploads/guest-identities/${documentPath.replace(/^\/+/, "")}`;
 
   return filePath.startsWith("http") ? filePath : `${baseUrl}${filePath}`;
 };
@@ -472,7 +481,7 @@ const Bookings = () => {
                         </span>
                       </button>
                     </td>
-                    <td>{b.bookingSource || "Walk-in"}</td>
+                    <td>{getBookingSourceLabel(b)}</td>
                     <td className="bk-cell-dates">
                       {new Date(b.checkInDate).toLocaleDateString()}
                     </td>

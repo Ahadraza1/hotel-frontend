@@ -61,6 +61,8 @@ interface BookingDetail {
   bookingId: string;
   status: BookingStatus;
   bookingSource?: string;
+  sourceType?: "direct" | "ota";
+  sourceName?: string | null;
   mealType?: MealType;
   includedMeals?: Array<"BREAKFAST" | "LUNCH" | "DINNER">;
   paymentMode?: PaymentMode;
@@ -205,6 +207,11 @@ const formatIncludedMeals = (includedMeals?: string[] | null) => {
   return includedMeals.map((meal) => INCLUDED_MEAL_LABELS[meal] || meal).join(", ");
 };
 
+const getBookingSourceLabel = (booking?: Pick<BookingDetail, "sourceType" | "sourceName"> | null) =>
+  booking?.sourceType === "ota"
+    ? booking.sourceName || "OTA"
+    : "Direct";
+
 const getDocumentUrl = (documentPath?: string | null) => {
   if (!documentPath) return null;
 
@@ -217,7 +224,9 @@ const getDocumentUrl = (documentPath?: string | null) => {
     ? documentPath
     : documentPath.startsWith("/uploads/")
       ? documentPath
-      : `/uploads/guest-identities/${documentPath.replace(/^\/+/, "")}`;
+      : documentPath.includes("guest-identities/")
+        ? `/uploads/${documentPath.replace(/^\/+/, "")}`
+        : `/uploads/guest-identities/${documentPath.replace(/^\/+/, "")}`;
 
   return filePath.startsWith("http") ? filePath : `${baseUrl}${filePath}`;
 };
@@ -598,7 +607,7 @@ const ViewBooking = () => {
             <div>
               <h1 className="bvd-title">{booking.bookingId}</h1>
               <p className="bvd-subtitle">
-                Created {new Date(booking.createdAt).toLocaleDateString()} • {booking.bookingSource || "Walk-in"}
+                Created {new Date(booking.createdAt).toLocaleDateString()} • {getBookingSourceLabel(booking)}
               </p>
             </div>
           </div>

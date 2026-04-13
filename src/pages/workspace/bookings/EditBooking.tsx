@@ -45,7 +45,13 @@ const PAYMENT_MODE_OPTIONS = [
 
 interface BookingDetails {
   bookingId: string;
-  roomId: string;
+  roomId:
+    | string
+    | {
+        _id?: string;
+        roomNumber?: string;
+        roomType?: string;
+      };
   guestName: string;
   guestType: "ADULT" | "CHILD";
   bookingSource?: "Walk-in" | "Pre-booking" | "Online";
@@ -71,9 +77,22 @@ interface BookingDetails {
     email?: string;
     phone?: string;
   }>;
+  room?: {
+    _id?: string;
+    roomNumber?: string;
+    roomType?: string;
+  } | null;
 }
 
 const COUNTRY_CODES = ["+1", "+44", "+91", "+971"];
+
+const getResolvedRoomId = (booking: BookingDetails) => {
+  if (typeof booking.roomId === "string") {
+    return booking.roomId;
+  }
+
+  return booking.roomId?._id || booking.room?._id || "";
+};
 
 const splitPhoneNumber = (value: string) => {
   const matchedCode =
@@ -83,6 +102,25 @@ const splitPhoneNumber = (value: string) => {
     countryCode: matchedCode,
     phone: value?.startsWith(matchedCode) ? value.slice(matchedCode.length) : value,
   };
+};
+
+const getDocumentUrl = (documentPath?: string | null) => {
+  if (!documentPath) return null;
+
+  const baseUrl =
+    (import.meta.env.VITE_API_BASE_URL || window.location.origin).replace(
+      /\/api\/?$/,
+      "",
+    );
+  const filePath = documentPath.startsWith("http")
+    ? documentPath
+    : documentPath.startsWith("/uploads/")
+      ? documentPath
+      : documentPath.includes("guest-identities/")
+        ? `/uploads/${documentPath.replace(/^\/+/, "")}`
+        : `/uploads/guest-identities/${documentPath.replace(/^\/+/, "")}`;
+
+  return filePath.startsWith("http") ? filePath : `${baseUrl}${filePath}`;
 };
 
 const EditBooking = () => {
@@ -118,8 +156,18 @@ const EditBooking = () => {
   });
   const [mainGuestIdentity, setMainGuestIdentity] = useState<File | null>(null);
 
-  const validateRequired = (value: string | number | File | null) => {
+  const handleViewIdentity = (url: string | null) => {
+    const documentUrl = getDocumentUrl(url);
+    if (!documentUrl) {
+      toast.warning("Document not available");
+      return;
+    }
+    window.open(documentUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const validateRequired = (value: string | number | File | string[] | null) => {
     if (value instanceof File) return "";
+    if (Array.isArray(value)) return value.length > 0 ? "" : "This field is required";
     if (typeof value === "number") return value ? "" : "This field is required";
     return String(value ?? "").trim() ? "" : "This field is required";
   };
@@ -150,6 +198,7 @@ const EditBooking = () => {
           api.get<{ data: Room[] }>("/rooms", { params: { branchId } }),
         ]);
         const phoneData = splitPhoneNumber(booking.guestPhone || "");
+        const resolvedRoomId = getResolvedRoomId(booking);
         const guestRows = Array.from(
           { length: Math.max(0, (booking.totalGuests || 1) - 1) },
           (_, index) => ({
@@ -163,8 +212,8 @@ const EditBooking = () => {
 
         const availableRooms = roomsRes.data.data || [];
         const currentRoom =
-          availableRooms.find((room) => room._id === booking.roomId) ||
-          (allRoomsRes.data.data || []).find((room) => room._id === booking.roomId);
+          availableRooms.find((room) => room._id === resolvedRoomId) ||
+          (allRoomsRes.data.data || []).find((room) => room._id === resolvedRoomId);
 
         setRooms(
           currentRoom && !availableRooms.some((room) => room._id === currentRoom._id)
@@ -176,7 +225,7 @@ const EditBooking = () => {
           booking.identityProof?.url || null,
         );
         setForm({
-          roomId: booking.roomId,
+          roomId: resolvedRoomId,
           guestName: booking.guestName,
           guestType: booking.guestType || "",
           bookingSource: booking.bookingSource || "Walk-in",
@@ -383,15 +432,15 @@ const EditBooking = () => {
       "bookingSource",
       "mealType",
       "paymentMode",
-      "email",
-      "countryCode",
-      "phone",
+      // "email",
+      // "countryCode",
+      // "phone",
       "totalGuests",
       "checkInDate",
-      "checkInTime",
+      // "checkInTime",
       "checkOutDate",
-      "checkOutTime",
-      "notes",
+      // "checkOutTime",
+      // "notes",
     ];
 
     requiredFields.forEach((field) => {
@@ -746,7 +795,13 @@ const EditBooking = () => {
                   style={fieldErrors.mainGuestIdentity ? { borderColor: "#dc2626" } : undefined}
                 />
                 {existingMainGuestIdentity ? (
-                  <span className="text-xs text-muted-foreground">Existing ID attached</span>
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline block mt-1 text-left"
+                    onClick={() => handleViewIdentity(existingMainGuestIdentity)}
+                  >
+                    View Existing ID
+                  </button>
                 ) : null}
                 {fieldErrors.mainGuestIdentity ? <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>{fieldErrors.mainGuestIdentity}</span> : null}
               </div>
@@ -815,7 +870,13 @@ const EditBooking = () => {
                     style={fieldErrors[`guest-${index}-identity`] ? { borderColor: "#dc2626" } : undefined}
                   />
                   {guest.existingIdentity ? (
-                    <span className="text-xs text-muted-foreground">Existing ID attached</span>
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline block mt-1 text-left"
+                      onClick={() => handleViewIdentity(guest.existingIdentity || null)}
+                    >
+                      View Existing ID
+                    </button>
                   ) : null}
                   {fieldErrors[`guest-${index}-identity`] ? <span style={{ color: "#dc2626", display: "block", fontSize: "0.875rem", marginTop: "0.35rem" }}>{fieldErrors[`guest-${index}-identity`]}</span> : null}
                 </div>
