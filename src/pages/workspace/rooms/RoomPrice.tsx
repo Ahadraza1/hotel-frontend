@@ -277,43 +277,58 @@ const RoomPrice = () => {
           </div>
         </div>
 
-        <div className="rp-header-actions">
-          <label className="rp-date-field">
-            <span>Start date</span>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(event) => setStartDate(event.target.value)}
-              className="luxury-input"
-            />
-          </label>
+        <div className="rp-toolbar-card">
+          <div className="rp-header-actions">
+            <label className="rp-date-field">
+              <span>Start date</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(event) => setStartDate(event.target.value)}
+                className="luxury-input"
+              />
+            </label>
 
-          <div className="rp-range-toggle">
-            <button
-              type="button"
-              className={`luxury-btn ${rangeDays === 7 ? "luxury-btn-primary" : "luxury-btn-outline"}`}
-              onClick={() => setRangeDays(7)}
-            >
-              7 Days
-            </button>
-            <button
-              type="button"
-              className={`luxury-btn ${rangeDays === 14 ? "luxury-btn-primary" : "luxury-btn-outline"}`}
-              onClick={() => setRangeDays(14)}
-            >
-              14 Days
-            </button>
+            <div className="rp-range-control">
+              <span className="rp-control-label">Range</span>
+              <div className="rp-range-toggle">
+                <button
+                  type="button"
+                  className={`luxury-btn ${rangeDays === 7 ? "luxury-btn-primary" : "luxury-btn-outline"}`}
+                  onClick={() => setRangeDays(7)}
+                >
+                  7 Days
+                </button>
+                <button
+                  type="button"
+                  className={`luxury-btn ${rangeDays === 14 ? "luxury-btn-primary" : "luxury-btn-outline"}`}
+                  onClick={() => setRangeDays(14)}
+                >
+                  14 Days
+                </button>
+              </div>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSavePrices}
-            disabled={saving || !dirtyUpdates.length}
-            className="luxury-btn luxury-btn-primary"
-          >
-            <Save size={15} />
-            {saving ? "Saving..." : "Save Prices"}
-          </button>
+          <div className="rp-toolbar-meta">
+            <div className="rp-meta-block">
+              <span className="rp-meta-label">Room types</span>
+              <strong>{roomTypes.length}</strong>
+            </div>
+            <div className="rp-meta-block">
+              <span className="rp-meta-label">Pending changes</span>
+              <strong>{dirtyUpdates.length}</strong>
+            </div>
+            <button
+              type="button"
+              onClick={handleSavePrices}
+              disabled={saving || !dirtyUpdates.length}
+              className="luxury-btn luxury-btn-primary rp-save-btn"
+            >
+              <Save size={15} />
+              {saving ? "Saving..." : "Save Prices"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -351,21 +366,23 @@ const RoomPrice = () => {
               />
             </div>
 
-            <button type="submit" className="luxury-btn luxury-btn-outline rp-add-type-btn">
-              <Plus size={15} />
-              {editingRoomTypeId ? "Update Room Type" : "Add Room Type"}
-            </button>
-
-            {editingRoomTypeId ? (
-              <button
-                type="button"
-                className="luxury-btn luxury-btn-outline rp-cancel-type-btn"
-                onClick={handleCancelEdit}
-              >
-                <X size={15} />
-                Cancel
+            <div className="rp-type-form-actions">
+              <button type="submit" className="luxury-btn luxury-btn-outline rp-add-type-btn">
+                <Plus size={15} />
+                {editingRoomTypeId ? "Update Room Type" : "Add Room Type"}
               </button>
-            ) : null}
+
+              {editingRoomTypeId ? (
+                <button
+                  type="button"
+                  className="luxury-btn luxury-btn-outline rp-cancel-type-btn"
+                  onClick={handleCancelEdit}
+                >
+                  <X size={15} />
+                  Cancel
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div className="rp-type-chips">
@@ -491,7 +508,7 @@ const RoomPrice = () => {
                   <th className="rp-sticky-left">Room Type</th>
                   {dateKeys.map((date) => (
                     <th key={date}>
-                      <div>{format(new Date(`${date}T00:00:00`), "dd MMM")}</div>
+                      <div className="rp-date-heading">{format(new Date(`${date}T00:00:00`), "dd MMM")}</div>
                       <small>{format(new Date(`${date}T00:00:00`), "EEE")}</small>
                     </th>
                   ))}
