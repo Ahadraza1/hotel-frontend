@@ -39,6 +39,7 @@ interface Plan {
   yearlyPrice: number;
   branchLimit: number | null;
   features: string[];
+  featureFlags: string[];
   isActive: boolean;
   isPopular?: boolean;
 }
@@ -91,6 +92,7 @@ interface PlanFormState {
   yearlyPrice: string;
   branchLimit: string;
   features: string;
+  featureFlags: string[];
   isActive: boolean;
   isPopular: boolean;
 }
@@ -112,6 +114,16 @@ const calculateSavingsPercentage = (monthlyPrice: number, yearlyPrice: number) =
   return finalPercentage > 0 ? finalPercentage : null;
 };
 
+const FEATURE_FLAGS = [
+  { label: "Room Management", value: "ROOM_MANAGEMENT" },
+  { label: "Housekeeping", value: "HOUSEKEEPING" },
+  { label: "Inventory", value: "INVENTORY" },
+  { label: "HR Management", value: "HR" },
+  { label: "Analytics", value: "ANALYTICS" },
+  { label: "Invoice", value: "INVOICE" },
+  { label: "Restaurant Management", value: "RESTAURANT" },
+];
+
 const emptyPlanForm: PlanFormState = {
   name: "",
   description: "",
@@ -119,6 +131,7 @@ const emptyPlanForm: PlanFormState = {
   yearlyPrice: "0",
   branchLimit: "",
   features: "",
+  featureFlags: [],
   isActive: true,
   isPopular: false,
 };
@@ -474,6 +487,7 @@ const SubscriptionPlans = () => {
       yearlyPrice: String(plan.yearlyPrice ?? 0),
       branchLimit: plan.branchLimit === null ? "" : String(plan.branchLimit),
       features: (plan.features || []).join("\n"),
+      featureFlags: plan.featureFlags || [],
       isActive: plan.isActive ?? true,
       isPopular: plan.isPopular ?? false,
     });
@@ -503,6 +517,7 @@ const SubscriptionPlans = () => {
           .split("\n")
           .map((item) => item.trim())
           .filter(Boolean),
+        featureFlags: planForm.featureFlags,
         isActive: planForm.isActive,
         isPopular: planForm.isPopular,
       };
@@ -1351,6 +1366,57 @@ const SubscriptionPlans = () => {
                     </label>
                   </div>
                 </div>
+
+                <div className="add-branch-field add-branch-field-full" style={{ marginTop: "1rem" }}>
+                  <span className="add-branch-section-pill" style={{ marginBottom: "1rem" }}>Feature Flags (Module Access Control)</span>
+                  <div className="sb-feature-flags-grid" style={{ 
+                    display: "grid", 
+                    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", 
+                    gap: "12px",
+                    marginTop: "1.25rem",
+                    padding: "1.5rem",
+                    background: "rgba(0, 0, 0, 0.02)",
+                    borderRadius: "12px",
+                    border: "1px solid rgba(0, 0, 0, 0.05)"
+                  }}>
+                    {FEATURE_FLAGS.map((feature) => (
+                      <label 
+                        key={feature.value} 
+                        style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          gap: "10px", 
+                          cursor: "pointer",
+                          fontSize: "0.9rem",
+                          fontWeight: 500,
+                          color: "hsl(var(--foreground))"
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={planForm.featureFlags.includes(feature.value)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setPlanForm(prev => ({
+                              ...prev,
+                              featureFlags: checked 
+                                ? [...prev.featureFlags, feature.value]
+                                : prev.featureFlags.filter(f => f !== feature.value)
+                            }));
+                          }}
+                          style={{
+                            width: "18px",
+                            height: "18px",
+                            accentColor: "hsl(var(--primary))",
+                            cursor: "pointer",
+                          }}
+                        />
+                        {feature.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="add-branch-field add-branch-field-full">
                   <label htmlFor="planFeatures" className="add-branch-label">
                     Features (One per line)

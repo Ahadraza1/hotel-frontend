@@ -14,6 +14,13 @@ interface User {
   organizationId?: string | null;
   branchId?: string | null;
   isPlatformAdmin?: boolean;
+  featureFlags?: string[];
+  organization?: {
+    id: string;
+    organizationId: string;
+    name: string;
+    featureFlags: string[];
+  } | null;
   subscriptionAccess?: SubscriptionAccess | null;
 }
 

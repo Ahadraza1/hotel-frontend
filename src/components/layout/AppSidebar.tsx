@@ -29,6 +29,7 @@ interface MenuItem {
   roles?: string[];
   permission?: string | null;
   permissionKey?: string | null;
+  featureKey?: "ROOM_MANAGEMENT" | "HOUSEKEEPING" | "INVENTORY" | "HR" | "ANALYTICS" | "INVOICE" | "RESTAURANT" | null;
 }
 
 interface MenuGroup {
@@ -107,6 +108,7 @@ const globalMenuItems = [
     icon: BarChart3,
     roles: ["SUPER_ADMIN", "CORPORATE_ADMIN"],
     permission: "VIEW_ANALYTICS",
+    featureKey: "ANALYTICS",
   },
 
   {
@@ -132,42 +134,48 @@ const workspaceMenuGroups: MenuGroup[] = [
         route: "rooms",
         icon: Hotel,
         permissionKey: "ACCESS_ROOMS",
+        featureKey: "ROOM_MANAGEMENT",
       },
       {
         title: "Room Price",
         route: "room-price",
         icon: DollarSign,
         permissionKey: "ACCESS_ROOMS",
+        featureKey: "ROOM_MANAGEMENT",
       },
       {
         title: "Bookings",
         route: "bookings",
         icon: LayoutDashboard,
         permissionKey: "ACCESS_BOOKINGS",
+        featureKey: "ROOM_MANAGEMENT",
       },
       {
         title: "Guests (CRM)",
         route: "crm",
         icon: Building2,
         permissionKey: "ACCESS_CRM",
+        featureKey: "ROOM_MANAGEMENT",
       },
     ],
   },
   {
     title: "Restaurant",
     items: [
-      { title: "Menu", route: "pos", icon: Plug, permissionKey: "ACCESS_POS" },
+      { title: "Menu", route: "pos", icon: Plug, permissionKey: "ACCESS_POS", featureKey: "RESTAURANT" },
       {
         title: "Order Sessions",
         route: "order-sessions",
         icon: LayoutDashboard,
         permissionKey: "ACCESS_POS",
+        featureKey: "RESTAURANT",
       },
       {
         title: "Kitchen Display",
         route: "kitchen",
         icon: AlertTriangle,
         permissionKey: "ACCESS_POS",
+        featureKey: "RESTAURANT",
       },
     ],
   },
@@ -179,12 +187,13 @@ const workspaceMenuGroups: MenuGroup[] = [
         route: "housekeeping",
         icon: Shield,
         permissionKey: "ACCESS_HOUSEKEEPING",
+        featureKey: "HOUSEKEEPING",
       },
     ],
   },
   {
     title: "HR",
-    items: [{ title: "HR", route: "hr", icon: Users, permissionKey: "ACCESS_HR" }],
+    items: [{ title: "HR", route: "hr", icon: Users, permissionKey: "ACCESS_HR", featureKey: "HR" }],
   },
   {
     title: "Inventory",
@@ -194,6 +203,7 @@ const workspaceMenuGroups: MenuGroup[] = [
         route: "inventory",
         icon: Plug,
         permissionKey: "ACCESS_INVENTORY",
+        featureKey: "INVENTORY",
       },
     ],
   },
@@ -205,6 +215,7 @@ const workspaceMenuGroups: MenuGroup[] = [
         route: "reports",
         icon: BarChart3,
         permissionKey: null,
+        featureKey: "ANALYTICS",
       },
     ],
   },
@@ -216,6 +227,7 @@ const workspaceMenuGroups: MenuGroup[] = [
         route: "finance",
         icon: DollarSign,
         permissionKey: "ACCESS_FINANCE",
+        featureKey: "INVOICE",
       },
     ],
   },
@@ -324,21 +336,36 @@ export const AppSidebar = ({
                       : `/workspace/${activeBranch?._id}`;
 
                     const isActive = location.pathname === itemPath;
+                    const hasFeatureAccess = !item.featureKey || (user?.organization?.featureFlags || user?.featureFlags || []).includes(item.featureKey);
+
+                    if (hasFeatureAccess) {
+                      return (
+                        <Link
+                          key={`${group.title}-${item.title}-${index}`}
+                          to={itemPath}
+                          className={`sidebar-item ${isActive ? "active" : ""}`}
+                          onClick={() => {
+                            if (isOpen) {
+                              onClose();
+                            }
+                          }}
+                        >
+                          <item.icon className="sidebar-item-icon" />
+                          <span className="sidebar-item-text">{item.title}</span>
+                        </Link>
+                      );
+                    }
 
                     return (
-                      <Link
+                      <div
                         key={`${group.title}-${item.title}-${index}`}
-                        to={itemPath}
-                        className={`sidebar-item ${isActive ? "active" : ""}`}
-                        onClick={() => {
-                          if (isOpen) {
-                            onClose();
-                          }
-                        }}
+                        className="sidebar-item sidebar-item-locked"
+                        title="Module locked - Upgrade plan to access"
                       >
                         <item.icon className="sidebar-item-icon" />
                         <span className="sidebar-item-text">{item.title}</span>
-                      </Link>
+                        <Lock size={12} className="sidebar-lock-icon" style={{ marginLeft: "auto", opacity: 0.6 }} />
+                      </div>
                     );
                   })}
                 </div>
@@ -348,21 +375,36 @@ export const AppSidebar = ({
               if (!canViewGlobalItem(item)) return null;
 
               const isActive = location.pathname === item.path;
+              const hasFeatureAccess = !item.featureKey || (user?.organization?.featureFlags || user?.featureFlags || []).includes(item.featureKey);
+
+              if (hasFeatureAccess) {
+                return (
+                  <Link
+                    key={`${item.title}-${index}`}
+                    to={item.path!}
+                    className={`sidebar-item ${isActive ? "active" : ""}`}
+                    onClick={() => {
+                      if (isOpen) {
+                        onClose();
+                      }
+                    }}
+                  >
+                    <item.icon className="sidebar-item-icon" />
+                    <span className="sidebar-item-text">{item.title}</span>
+                  </Link>
+                );
+              }
 
               return (
-                <Link
+                <div
                   key={`${item.title}-${index}`}
-                  to={item.path!}
-                  className={`sidebar-item ${isActive ? "active" : ""}`}
-                  onClick={() => {
-                    if (isOpen) {
-                      onClose();
-                    }
-                  }}
+                  className="sidebar-item sidebar-item-locked"
+                  title="Module locked - Upgrade plan to access"
                 >
                   <item.icon className="sidebar-item-icon" />
                   <span className="sidebar-item-text">{item.title}</span>
-                </Link>
+                  <Lock size={12} className="sidebar-lock-icon" style={{ marginLeft: "auto", opacity: 0.6 }} />
+                </div>
               );
             })}
       </nav>
