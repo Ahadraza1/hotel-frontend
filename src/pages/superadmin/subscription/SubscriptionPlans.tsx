@@ -333,6 +333,7 @@ const SubscriptionPlans = () => {
         branchLimit:
           currentOrganization?.subscription.activePlan?.branchLimit ?? null,
         features: currentOrganization?.subscription.activePlan?.features || [],
+        featureFlags: [],
         isActive: true,
       }
     );
