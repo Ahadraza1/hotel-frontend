@@ -40,6 +40,7 @@ interface Plan {
   branchLimit: number | null;
   features: string[];
   isActive: boolean;
+  isPopular?: boolean;
 }
 
 interface SubscriptionSummary {
@@ -89,7 +90,9 @@ interface PlanFormState {
   monthlyPrice: string;
   yearlyPrice: string;
   branchLimit: string;
-  features: string[];
+  features: string;
+  isActive: boolean;
+  isPopular: boolean;
 }
 
 const calculateSavingsPercentage = (monthlyPrice: number, yearlyPrice: number) => {
@@ -115,7 +118,9 @@ const emptyPlanForm: PlanFormState = {
   monthlyPrice: "0",
   yearlyPrice: "0",
   branchLimit: "",
-  features: [""],
+  features: "",
+  isActive: true,
+  isPopular: false,
 };
 
 const PLAN_HIERARCHY = ["FREE", "BASIC", "PROFESSIONAL", "ENTERPRISE"] as const;
@@ -468,7 +473,9 @@ const SubscriptionPlans = () => {
       monthlyPrice: String(plan.monthlyPrice ?? 0),
       yearlyPrice: String(plan.yearlyPrice ?? 0),
       branchLimit: plan.branchLimit === null ? "" : String(plan.branchLimit),
-      features: plan.features.length ? [...plan.features] : [""],
+      features: (plan.features || []).join("\n"),
+      isActive: plan.isActive ?? true,
+      isPopular: plan.isPopular ?? false,
     });
     setPlanModalOpen(true);
   };
@@ -478,31 +485,6 @@ const SubscriptionPlans = () => {
     setPlanForm(emptyPlanForm);
   };
 
-  const updateFeature = (index: number, value: string) => {
-    setPlanForm((prev) => ({
-      ...prev,
-      features: prev.features.map((feature, featureIndex) =>
-        featureIndex === index ? value : feature,
-      ),
-    }));
-  };
-
-  const removeFeature = (index: number) => {
-    setPlanForm((prev) => ({
-      ...prev,
-      features:
-        prev.features.length === 1
-          ? [""]
-          : prev.features.filter((_, featureIndex) => featureIndex !== index),
-    }));
-  };
-
-  const addFeature = () => {
-    setPlanForm((prev) => ({
-      ...prev,
-      features: [...prev.features, ""],
-    }));
-  };
 
   const savePlan = async () => {
     try {
@@ -517,7 +499,12 @@ const SubscriptionPlans = () => {
           planForm.branchLimit.trim() === ""
             ? null
             : Number(planForm.branchLimit),
-        features: planForm.features.map((item) => item.trim()).filter(Boolean),
+        features: planForm.features
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        isActive: planForm.isActive,
+        isPopular: planForm.isPopular,
       };
 
       if (planForm._id) {
@@ -864,7 +851,10 @@ const SubscriptionPlans = () => {
             planActionState === "upgrade" || planActionState === "select";
           const planPrice =
             billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
-          const showPopular = sortedPlans.length >= 3 && index === 1;
+          const showPopular = plan.isPopular;
+          const isPlanActive = plan.isActive;
+
+          if (!isSuperAdmin && !isPlanActive) return null;
 
           return (
             <div
@@ -873,6 +863,10 @@ const SubscriptionPlans = () => {
             >
               {showPopular && (
                 <span className="sb-popular-pill">Most Popular</span>
+              )}
+
+              {!isPlanActive && isSuperAdmin && (
+                <span className="sb-popular-pill sb-inactive-pill" style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", top: showPopular ? "4.5rem" : "1.5rem" }}>Inactive</span>
               )}
 
               {isSuperAdmin && (
@@ -1285,40 +1279,96 @@ const SubscriptionPlans = () => {
                     }
                   />
                 </div>
-              </div>
 
-              <div className="sb-feature-block">
-                <label className="add-branch-label">Features</label>
-                <div className="sb-feature-list">
-                  {planForm.features.map((feature, index) => (
-                    <div key={`${index}-${feature}`} className="sb-feature-row">
-                      <input
-                        className="luxury-input"
-                        value={feature}
-                        placeholder="Feature"
-                        onChange={(event) =>
-                          updateFeature(index, event.target.value)
-                        }
-                      />
-                      <button
-                        className="sb-icon-btn sb-icon-btn-danger"
-                        onClick={() => removeFeature(index)}
-                        aria-label="Remove feature"
-                        title="Remove feature"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))}
+                <div className="add-branch-field">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      checked={planForm.isActive}
+                      onChange={(e) =>
+                        setPlanForm((prev) => ({
+                          ...prev,
+                          isActive: e.target.checked,
+                        }))
+                      }
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        accentColor: "hsl(var(--primary))",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <label
+                      htmlFor="isActive"
+                      className="add-branch-label"
+                      style={{ margin: 0, cursor: "pointer" }}
+                    >
+                      Plan is Active
+                    </label>
+                  </div>
                 </div>
 
-                <button
-                  className="luxury-btn luxury-btn-outline sb-add-feature-btn"
-                  onClick={addFeature}
-                >
-                  <Plus size={16} />
-                  Add
-                </button>
+                <div className="add-branch-field">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      id="isPopular"
+                      checked={planForm.isPopular}
+                      onChange={(e) =>
+                        setPlanForm((prev) => ({
+                          ...prev,
+                          isPopular: e.target.checked,
+                        }))
+                      }
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        accentColor: "hsl(var(--lux-primary))",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <label
+                      htmlFor="isPopular"
+                      className="add-branch-label"
+                      style={{ margin: 0, cursor: "pointer" }}
+                    >
+                      Plan is Popular
+                    </label>
+                  </div>
+                </div>
+                <div className="add-branch-field add-branch-field-full">
+                  <label htmlFor="planFeatures" className="add-branch-label">
+                    Features (One per line)
+                  </label>
+                  <textarea
+                    id="planFeatures"
+                    className="luxury-input sb-textarea"
+                    style={{ minHeight: "120px" }}
+                    placeholder="Enter features, one per line..."
+                    value={planForm.features}
+                    onChange={(event) =>
+                      setPlanForm((prev) => ({
+                        ...prev,
+                        features: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
               </div>
 
               <div className="add-branch-actions">

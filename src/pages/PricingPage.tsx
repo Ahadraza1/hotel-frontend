@@ -17,6 +17,7 @@ type PricingPlan = {
   features: string[];
   maxBranches: number | null;
   isPopular: boolean;
+  isActive: boolean;
 };
 
 const calculateSavingsPercentage = (monthlyPrice: number, yearlyPrice: number) => {
@@ -59,7 +60,8 @@ const PricingPage = () => {
           "/public/subscription-plans",
         );
         if (!active) return;
-        setPlans(Array.isArray(response.data) ? response.data : []);
+        const allPlans = Array.isArray(response.data) ? response.data : [];
+        setPlans(allPlans.filter(p => p.isActive !== false));
       } catch (error) {
         if (!active) return;
         console.error("Failed to load pricing plans", error);
