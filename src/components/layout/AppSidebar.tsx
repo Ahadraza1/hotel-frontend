@@ -336,7 +336,7 @@ export const AppSidebar = ({
                       : `/workspace/${activeBranch?._id}`;
 
                     const isActive = location.pathname === itemPath;
-                    const hasFeatureAccess = !item.featureKey || (user?.organization?.featureFlags || user?.featureFlags || []).includes(item.featureKey);
+                    const hasFeatureAccess = user?.role === "SUPER_ADMIN" || !item.featureKey || (user?.organization?.featureFlags || user?.featureFlags || []).includes(item.featureKey);
 
                     if (hasFeatureAccess) {
                       return (
@@ -375,7 +375,7 @@ export const AppSidebar = ({
               if (!canViewGlobalItem(item)) return null;
 
               const isActive = location.pathname === item.path;
-              const hasFeatureAccess = !item.featureKey || (user?.organization?.featureFlags || user?.featureFlags || []).includes(item.featureKey);
+              const hasFeatureAccess = user?.role === "SUPER_ADMIN" || !item.featureKey || (user?.organization?.featureFlags || user?.featureFlags || []).includes(item.featureKey);
 
               if (hasFeatureAccess) {
                 return (
